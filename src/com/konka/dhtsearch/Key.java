@@ -16,7 +16,7 @@ public class Key implements Serializable, Comparable<Key> {
 
 	public Key(final byte[] bytes) {
 		this.bytes = bytes;
-	}
+	}  
 	/**
 	 * Check if a key is 0 key
 	 * 
