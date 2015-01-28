@@ -73,7 +73,8 @@ public class JoinOperation {
 				e.printStackTrace();
 				continue;
 			}
-			n.addEndpoint(kadScheme, uri.getPort());
+//			n.addEndpoint(kadScheme, uri.getPort());
+			n.setPoint(uri.getPort());
 			bootstrap.add(n);
 		}
 

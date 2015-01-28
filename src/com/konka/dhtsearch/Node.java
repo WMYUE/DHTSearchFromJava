@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sound.sampled.Port;
+
 /**
  * Represents contact information about a node in the network.
  * This class is serializable and can be sent/saved for other/later use by
@@ -26,7 +28,8 @@ public class Node implements Serializable,Comparable<Node> {
 	
 	private final Key key;
 	private InetAddress addr = null;
-	private Map<String, Integer> portFromScheme = new HashMap<String, Integer>();
+	private Integer point=0;
+//	private Map<String, Integer> portFromScheme = new HashMap<String, Integer>();
 	
 	// dummy node
 	/**
@@ -58,43 +61,31 @@ public class Node implements Serializable,Comparable<Node> {
 	 *  
 	 * @return node's protocols
 	 */
-	public Map<String, Integer> getAllEndpoints() {
-		return portFromScheme;
-	}
+//	public Map<String, Integer> getAllEndpoints() {
+//		return portFromScheme;
+//	}
 	
 	/**
 	 * Creates a uri from a given protocol name
 	 * @param scheme the protocol name (such as http or openkad.udp)
 	 * @return the uri
 	 */
-	public URI getURI(String scheme) {
-		try {
-			return new URI(scheme+"://"+addr.getHostAddress()+":"+getPort(scheme)+"/"+key.toBase64());
-		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
-		}
-	}
+//	public URI getURI(String scheme) {
+//		try {
+//			return new URI(scheme+"://"+addr.getHostAddress()+":"+getPort(scheme)+"/"+key.toBase64());
+//		} catch (URISyntaxException e) {
+//			throw new RuntimeException(e);
+//		}
+//	}
 	
-	/**
-	 * Creates a uri list of all the node's protocols
-	 * @return a uri list
-	 */
-	public List<URI> toURIs() {
-		List<String> schemes = new ArrayList<String>(portFromScheme.keySet());
-		Collections.sort(schemes);
-		List<URI> $ = new ArrayList<URI>();
-		for (String scheme : schemes)
-			$.add(getURI(scheme));
-		return $;
-	}
 	
 	/**
 	 * Creates a SocketAddress from a protocol name
 	 * @param scheme the protocol name
 	 * @return
 	 */
-	public SocketAddress getSocketAddress(String scheme) {
-		return new InetSocketAddress(addr, getPort(scheme));
+	public SocketAddress getSocketAddress() {
+		return new InetSocketAddress(addr,point);
 	}
 	
 	/**
@@ -104,10 +95,12 @@ public class Node implements Serializable,Comparable<Node> {
 	 * @param scheme the protocol name
 	 * @param port the protocol port
 	 */
-	public void addEndpoint(String scheme, int port) {
-		portFromScheme.put(scheme, port);
+//	public void addEndpoint(String scheme, int port) {
+//		portFromScheme.put(scheme, port);
+//	}
+	public void setPoint(Integer point) {
+		this.point = point;
 	}
-	
 	/**
 	 * 
 	 * @return the IP address of this node
@@ -131,8 +124,8 @@ public class Node implements Serializable,Comparable<Node> {
 	 * @param scheme the protocol name
 	 * @return the port number
 	 */
-	public int getPort(String scheme) {
-		return portFromScheme.get(scheme);
+	public int getPort() {
+		return point;
 	}
 	
 	@Override

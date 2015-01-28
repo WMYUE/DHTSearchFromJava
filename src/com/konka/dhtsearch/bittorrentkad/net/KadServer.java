@@ -36,7 +36,7 @@ public class KadServer   implements Runnable{
 	private final ExecutorService srvExecutor;
 	private final Set<MessageDispatcher<?>> expecters;// 过滤器在这里
 	private final Set<MessageDispatcher<?>> nonConsumableExpecters;
-	private final String kadScheme;
+//	private final String kadScheme;
 
 
 	// state
@@ -44,14 +44,14 @@ public class KadServer   implements Runnable{
 
 	// private final BlockingQueue<DatagramPacket> pktsout;
 
-	KadServer( final String kadScheme, final DatagramSocket sockProvider, //
+	KadServer( final DatagramSocket sockProvider, //
 			final BlockingQueue<DatagramPacket> pkts, final BlockingQueue<DatagramPacket> pktsout,//
 			final ExecutorService srvExecutor, final Set<MessageDispatcher<?>> expecters, //
 			final Set<MessageDispatcher<?>> nonConsumableExpecters //
 
 	) {
 
-		this.kadScheme = kadScheme;
+//		this.kadScheme = kadScheme;
 //		this.serializer = serializer;
 		this.sockProvider = sockProvider;
 		this.pkts = pkts;
@@ -90,7 +90,7 @@ public class KadServer   implements Runnable{
 
 			final DatagramPacket pkt = new DatagramPacket(bytes, 0, bytes.length);
 
-			pkt.setSocketAddress(to.getSocketAddress(this.kadScheme));
+			pkt.setSocketAddress(to.getSocketAddress());
 			this.sockProvider.send(pkt);
 
 		} finally {
