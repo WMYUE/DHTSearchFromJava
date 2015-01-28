@@ -27,7 +27,7 @@ import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
  * @author eyal.kibbar@gmail.com
  * 
  */
-public class KadServer implements Communicator {
+public class KadServer   implements Runnable{
 
 	// dependencies
 //	private final KadSerializer serializer;
@@ -71,7 +71,7 @@ public class KadServer implements Communicator {
 	 * @throws IOException
 	 *             any socket exception
 	 */
-	@Override
+//	@Override
 	public void send(final Node to, final KadMessage msg) throws IOException {
 		// System.out.println("KadServer: send: " + msg + " to: " +
 		// to.getKey());
@@ -211,7 +211,7 @@ public class KadServer implements Communicator {
 	 * 
 	 * @param kadServerThread
 	 */
-	@Override
+//	@Override
 	public void shutdown(final Thread kadServerThread) {
 		this.isActive.set(false);
 		this.sockProvider.close();

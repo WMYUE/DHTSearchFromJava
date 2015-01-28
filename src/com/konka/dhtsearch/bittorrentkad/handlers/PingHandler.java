@@ -9,7 +9,7 @@ import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingResponse;
-import com.konka.dhtsearch.bittorrentkad.net.Communicator;
+import com.konka.dhtsearch.bittorrentkad.net.KadServer;
 import com.konka.dhtsearch.bittorrentkad.net.MessageDispatcher;
 import com.konka.dhtsearch.bittorrentkad.net.filter.MessageFilter;
 import com.konka.dhtsearch.bittorrentkad.net.filter.TypeMessageFilter;
@@ -22,11 +22,11 @@ import com.konka.dhtsearch.bittorrentkad.net.filter.TypeMessageFilter;
  */
 public class PingHandler extends AbstractHandler {
 
-	private final Communicator kadServer;
+	private final KadServer kadServer;
 	private final Node localNode;
 	private final AtomicInteger nrIncomingPings;
 
-	PingHandler(MessageDispatcher<Void> msgDispatcherProvider, Communicator kadServer, Node localNode,//
+	PingHandler(MessageDispatcher<Void> msgDispatcherProvider, KadServer kadServer, Node localNode,//
 			AtomicInteger nrIncomingPings) {
 		super(msgDispatcherProvider);
 		this.kadServer = kadServer;

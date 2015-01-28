@@ -42,11 +42,11 @@ public class MessageDispatcher<A> {
 	private final Set<MessageDispatcher<?>> nonConsumableexpecters; // must be sync'ed set
 
 	private final Timer timer;
-	private final Communicator communicator;
+	private final KadServer communicator;
 
 	public MessageDispatcher(BlockingQueue<MessageDispatcher<?>> outstandingRequests, //
 			Set<MessageDispatcher<?>> expecters, Set<MessageDispatcher<?>> nonConsumableexpecters, //
-			Timer timer, long timeout, Communicator communicator) {
+			Timer timer, long timeout, KadServer communicator) {
 
 		this.outstandingRequests = outstandingRequests;
 		this.expecters = expecters;
