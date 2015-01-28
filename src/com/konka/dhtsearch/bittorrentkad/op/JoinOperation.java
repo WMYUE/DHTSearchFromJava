@@ -54,7 +54,7 @@ public class JoinOperation {
 		this.zeroKey = zeroKey;
 		this.kadScheme = kadScheme;
 		this.localNode = localNode;
-	}
+	}   
 
 	/*
 	 * (non-Javadoc)
