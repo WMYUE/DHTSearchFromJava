@@ -7,6 +7,7 @@ public class UndeadKadNode extends KadNode {
 		
 	}
 	
+	@Override
 	public void markDead() {
 		// does nothing
 	}

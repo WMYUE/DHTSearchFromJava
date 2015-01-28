@@ -12,7 +12,6 @@ import java.util.Arrays;
 public class Key implements Serializable, Comparable<Key> {
 
 	private static final long serialVersionUID = 4137662182397711129L;
-	private int color;
 	private final byte[] bytes;
 
 	public Key(final byte[] bytes) {
@@ -28,19 +27,6 @@ public class Key implements Serializable, Comparable<Key> {
 			if (x != 0)
 				return false;
 		return true;
-	}
-
-	/**
-	 * A key color is a number between 0 and nrColors that is calculated using
-	 * its LSBs
-	 * 
-	 * @param nrColors
-	 * @return the calculated color
-	 */
-	public int getColor(final int nrColors) {
-		if (this.color < 0)
-			this.color = Math.abs(getInt().intValue()) % nrColors;
-		return this.color;
 	}
 
 	/**

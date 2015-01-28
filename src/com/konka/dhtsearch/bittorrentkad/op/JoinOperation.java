@@ -23,12 +23,13 @@ import com.konka.dhtsearch.bittorrentkad.net.filter.TypeMessageFilter;
 
 /**
  * Join operation as defined in the kademlia algorithm
+ * 
  * @author eyal.kibbar@gmail.com
  *
  */
-public class JoinOperation  {
+public class JoinOperation {
 
-	//dependencies
+	// dependencies
 	private final FindNodeOperation findNodeOperationProvider;
 	private final PingRequest pingRequestProvider;
 	private final MessageDispatcher<Void> msgDispatcherProvider;
@@ -39,21 +40,12 @@ public class JoinOperation  {
 	private final KadNode kadNodeProvider;
 	// state
 	private Collection<Node> bootstrap = new HashSet<Node>();
-	
-	
-	JoinOperation(
-			FindNodeOperation findNodeOperationProvider,
-			PingRequest pingRequestProvider,
-			MessageDispatcher<Void> msgDispatcherProvider,
-			KadNode kadNodeProvider,
-			KBuckets kBuckets,
-			 Key zeroKey,
-			 String kadScheme,
-			 Node localNode,
-			 Timer timer,
-			 long refreshInterval,
+
+	JoinOperation(FindNodeOperation findNodeOperationProvider, PingRequest pingRequestProvider,//
+			MessageDispatcher<Void> msgDispatcherProvider, KadNode kadNodeProvider, KBuckets kBuckets, //
+			Key zeroKey, String kadScheme, Node localNode, Timer timer, long refreshInterval, //
 			TimerTask refreshTask) {
-		
+
 		this.kadNodeProvider = kadNodeProvider;
 		this.findNodeOperationProvider = findNodeOperationProvider;
 		this.pingRequestProvider = pingRequestProvider;
@@ -63,13 +55,16 @@ public class JoinOperation  {
 		this.kadScheme = kadScheme;
 		this.localNode = localNode;
 	}
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see il.technion.ewolf.kbr.openkad.op.JoinOperation#addBootstrap(java.util.Collection)
 	 */
 	public JoinOperation addBootstrap(Collection<URI> bootstrapUri) {
-		
+
 		for (URI uri : bootstrapUri) {
-			
+
 			Node n = new Node(zeroKey);
 			try {
 				System.out.println(InetAddress.getByName(uri.getHost()));
@@ -81,11 +76,13 @@ public class JoinOperation  {
 			n.addEndpoint(kadScheme, uri.getPort());
 			bootstrap.add(n);
 		}
-		
+
 		return this;
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see il.technion.ewolf.kbr.openkad.op.JoinOperation#doJoin()
 	 */
 	public void doJoin() {
@@ -96,9 +93,7 @@ public class JoinOperation  {
 			@Override
 			public void completed(KadMessage msg, Void nothing) {
 				try {
-					kBuckets.insert(kadNodeProvider 
-						.setNode(msg.getSrc())
-						.setNodeWasContacted());
+					kBuckets.insert(kadNodeProvider.setNode(msg.getSrc()).setNodeWasContacted());
 				} finally {
 					latch.countDown();
 				}
@@ -109,44 +104,34 @@ public class JoinOperation  {
 				latch.countDown();
 			}
 		};
-		
+
 		for (Node n : bootstrap) {
 			PingRequest pingRequest = pingRequestProvider;
-			msgDispatcherProvider
-				.addFilter(new IdMessageFilter(pingRequest.getId()))
-				.addFilter(new TypeMessageFilter(PingResponse.class))
-				.setConsumable(true)
-				.setCallback(null, callback)
-				.send(n, pingRequest);
+			msgDispatcherProvider.addFilter(new IdMessageFilter(pingRequest.getId())).addFilter(new TypeMessageFilter(PingResponse.class)).setConsumable(true).setCallback(null, callback).send(n, pingRequest);
 		}
-		
+
 		// waiting for responses
-		
+
 		try {
 			latch.await();
 		} catch (InterruptedException e1) {
 			throw new RuntimeException(e1);
 		}
-		
-		findNodeOperationProvider
-			.setKey(localNode.getKey())
-			.doFindNode();
-		
+
+		findNodeOperationProvider.setKey(localNode.getKey()).doFindNode();
+
 		for (Key key : kBuckets.randomKeysForAllBuckets()) {
-			findNodeOperationProvider
-				.setKey(key)
-				.doFindNode();
+			findNodeOperationProvider.setKey(key).doFindNode();
 		}
-		
+
 		if (kBuckets.getClosestNodesByKey(zeroKey, 1).isEmpty())
 			throw new IllegalStateException("all bootstrap nodes are down");
-		
+
 		try {
-			//timer.scheduleAtFixedRate(refreshTask, refreshInterval, refreshInterval);
+			// timer.scheduleAtFixedRate(refreshTask, refreshInterval, refreshInterval);
 		} catch (IllegalStateException e) {
 			// if I couldn't schedule the refresh task i don't care
 		}
 	}
-	
 
 }

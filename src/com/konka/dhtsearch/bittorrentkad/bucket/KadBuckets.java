@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.konka.dhtsearch.Key;
-import com.konka.dhtsearch.KeyColorComparator;
 import com.konka.dhtsearch.KeyComparator;
 import com.konka.dhtsearch.KeyFactory;
 import com.konka.dhtsearch.Node;
@@ -64,6 +63,7 @@ public class KadBuckets implements KBuckets {
 	 * 
 	 * @return a list of random keys where no 2 keys will fit into the same bucket
 	 */
+	@Override
 	public List<Key> randomKeysForAllBuckets() {
 		List<Key> $ = new ArrayList<Key>();
 		for (int i = 0; i < kbuckets.length; ++i) {
@@ -76,6 +76,7 @@ public class KadBuckets implements KBuckets {
 	/**
 	 * Register this data structure to listen to incoming messages and update itself accordingly. Invoke this method after creating the entire system
 	 */
+	@Override
 	public synchronized void registerIncomingMessageHandler() {
 		msgDispatcherProvider.setConsumable(false)
 		// do not add PingResponse since it might create a loop
@@ -163,6 +164,7 @@ public class KadBuckets implements KBuckets {
 	 * 
 	 * @param node
 	 */
+	@Override
 	public void insert(KadNode node) {
 		int i = getKBucketIndex(node.getNode().getKey());// 产生一个0-159之间的数，由key决定
 		// 其实i就代表是哪一层
@@ -177,6 +179,7 @@ public class KadBuckets implements KBuckets {
 	 * 
 	 * @return a list containing all the nodes in the data structure
 	 */
+	@Override
 	public List<Node> getAllNodes() {
 		List<Node> $ = new ArrayList<Node>();
 		for (int i = 0; i < kbuckets.length; ++i) {
@@ -185,6 +188,7 @@ public class KadBuckets implements KBuckets {
 		return $;
 	}
 
+	@Override
 	public void markAsDead(Node n) {
 		int i = getKBucketIndex(n.getKey());
 		if (i == -1)
@@ -201,6 +205,7 @@ public class KadBuckets implements KBuckets {
 	 * @return a list of nodes from a particular bucket
 	 */
 	// 返回指定桶中的内容
+	@Override
 	public List<Node> getAllFromBucket(Key k) {
 		int i = getKBucketIndex(k);
 		if (i == -1)
@@ -223,6 +228,7 @@ public class KadBuckets implements KBuckets {
 	 * 返回相似的n个节点
 	 */
 
+	@Override
 	public List<Node> getClosestNodesByKey(Key k, int n) {
 		List<Node> $ = getClosestNodes(k, n, getKBucketIndex(k), kbuckets);
 		if ($.isEmpty())
@@ -245,11 +251,12 @@ public class KadBuckets implements KBuckets {
 	/**
 	 * 这个和上面一样，只是比较器不一样
 	 */
+	@Override
 	public List<Node> getClosestNodesByColor(Key k, int n) {
 		List<Node> $ = getClosestNodes(k, n, getKBucketIndex(k), kbuckets);
 		if ($.isEmpty())
 			return $;
-		$ = sort($, on(Node.class).getKey(), new KeyColorComparator(k, nrColors));
+//		$ = sort($, on(Node.class).getKey(), new KeyColorComparator(k, nrColors));
 		if ($.size() > n)
 			$.subList(n, $.size()).clear();
 		return $;

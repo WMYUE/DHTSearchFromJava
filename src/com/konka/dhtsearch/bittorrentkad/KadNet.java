@@ -21,7 +21,6 @@ import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
 import com.konka.dhtsearch.bittorrentkad.concurrent.FutureTransformer;
 import com.konka.dhtsearch.bittorrentkad.handlers.FindNodeHandler;
-import com.konka.dhtsearch.bittorrentkad.handlers.ForwardHandler;
 import com.konka.dhtsearch.bittorrentkad.handlers.PingHandler;
 import com.konka.dhtsearch.bittorrentkad.handlers.StoreHandler;
 import com.konka.dhtsearch.bittorrentkad.msg.ContentMessage;
@@ -48,7 +47,7 @@ public class KadNet implements KeybasedRouting {
 	private final FindNodeHandler findNodeHandlerProvider;
 	private final PingHandler pingHandler;
 	private final StoreHandler storeHandlerProvider;
-	private final ForwardHandler forwardHandlerProvider;
+	// private final ForwardHandler forwardHandlerProvider;
 
 	private final Node localNode;
 	private final Communicator kadServer;
@@ -66,11 +65,13 @@ public class KadNet implements KeybasedRouting {
 	private final Map<String, MessageDispatcher<?>> dispatcherFromTag = new HashMap<String, MessageDispatcher<?>>();
 	private Thread kadServerThread = null;
 
-	protected KadNet(MessageDispatcher<Object> msgDispatcherProvider, JoinOperation joinOperationProvider, ContentRequest contentRequestProvider, ContentMessage contentMessageProvider, IncomingContentHandler<Object> incomingContentHandlerProvider, FindValueOperation findValueOperationProvider, FindNodeHandler findNodeHandlerProvider, PingHandler pingHandler, StoreHandler storeHandlerProvider, ForwardHandler forwardHandlerProvider,
-
-	Node localNode, Communicator kadServer, NodeStorage nodeStorage, KeyFactory keyFactory, ExecutorService clientExecutor, int bucketSize, TimerTask refreshTask, BootstrapNodesSaver bootstrapNodesSaver,
-
-	// testing
+	protected KadNet(MessageDispatcher<Object> msgDispatcherProvider, JoinOperation joinOperationProvider, //
+			ContentRequest contentRequestProvider, ContentMessage contentMessageProvider, //
+			IncomingContentHandler<Object> incomingContentHandlerProvider, FindValueOperation findValueOperationProvider, //
+			FindNodeHandler findNodeHandlerProvider, PingHandler pingHandler, StoreHandler storeHandlerProvider,//
+			Node localNode, Communicator kadServer, NodeStorage nodeStorage, //
+			KeyFactory keyFactory, ExecutorService clientExecutor, int bucketSize, TimerTask refreshTask,//
+			BootstrapNodesSaver bootstrapNodesSaver,// testing
 			List<Integer> findNodeHopsHistogram) {
 
 		this.msgDispatcherProvider = msgDispatcherProvider;
@@ -82,7 +83,7 @@ public class KadNet implements KeybasedRouting {
 		this.findNodeHandlerProvider = findNodeHandlerProvider;
 		this.pingHandler = pingHandler;
 		this.storeHandlerProvider = storeHandlerProvider;
-		this.forwardHandlerProvider = forwardHandlerProvider;
+		// this.forwardHandlerProvider = forwardHandlerProvider;
 
 		this.localNode = localNode;
 		this.kadServer = kadServer;
@@ -104,7 +105,7 @@ public class KadNet implements KeybasedRouting {
 		pingHandler.register();
 		findNodeHandlerProvider.register();
 		storeHandlerProvider.register();
-		forwardHandlerProvider.register();
+//		forwardHandlerProvider.register();
 
 		nodeStorage.registerIncomingMessageHandler();
 		kadServerThread = new Thread(kadServer);
@@ -213,9 +214,9 @@ public class KadNet implements KeybasedRouting {
 	}
 
 	public static void main(String[] args) throws Exception {
-//		Injector injector = Guice.createInjector(new KadNetModule().setProperty("openkad.net.udp.port", "5555"));
-//		KeybasedRouting kbr = injector.getInstance(KeybasedRouting.class);
-//		kbr.create();
+		// Injector injector = Guice.createInjector(new KadNetModule().setProperty("openkad.net.udp.port", "5555"));
+		// KeybasedRouting kbr = injector.getInstance(KeybasedRouting.class);
+		// kbr.create();
 	}
 
 	@Override

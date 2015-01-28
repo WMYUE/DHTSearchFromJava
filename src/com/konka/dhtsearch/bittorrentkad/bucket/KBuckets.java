@@ -54,6 +54,7 @@ public interface KBuckets extends NodeStorage {
 	 */
 	public abstract List<Node> getClosestNodesByColor(Key k, int n);
 
+	@Override
 	public abstract String toString();
 
 }
