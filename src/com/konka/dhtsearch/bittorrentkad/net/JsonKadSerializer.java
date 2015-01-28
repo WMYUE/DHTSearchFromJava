@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.konka.dhtsearch.bittorrentkad.msg.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 
 /**
  * Serialize a message into a gun-ziped json message

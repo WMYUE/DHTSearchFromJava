@@ -3,7 +3,7 @@ package com.konka.dhtsearch.bittorrentkad.handlers;
 import java.util.Collection;
 
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
-import com.konka.dhtsearch.bittorrentkad.msg.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.net.MessageDispatcher;
 import com.konka.dhtsearch.bittorrentkad.net.filter.MessageFilter;
 

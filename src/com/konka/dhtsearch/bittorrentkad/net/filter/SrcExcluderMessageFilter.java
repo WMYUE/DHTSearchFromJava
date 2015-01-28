@@ -1,13 +1,11 @@
 package com.konka.dhtsearch.bittorrentkad.net.filter;
 
 import com.konka.dhtsearch.Node;
-import com.konka.dhtsearch.bittorrentkad.msg.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 
 /**
  * Rejects all messages from src other than the given src
- * 
- * @author eyal.kibbar@gmail.com
- *
+ * 只接受指定节点的消息
  */
 public class SrcExcluderMessageFilter implements MessageFilter {
 

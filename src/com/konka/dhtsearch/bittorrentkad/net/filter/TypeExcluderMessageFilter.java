@@ -1,10 +1,10 @@
 package com.konka.dhtsearch.bittorrentkad.net.filter;
 
-import com.konka.dhtsearch.bittorrentkad.msg.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 
 /**
  * Rejects all messages in the given class
- * @author eyal.kibbar@gmail.com
+ * 过滤给定类的所有消息
  *
  */
 public class TypeExcluderMessageFilter implements MessageFilter {

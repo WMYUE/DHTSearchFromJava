@@ -1,8 +1,9 @@
-package com.konka.dhtsearch.bittorrentkad.msg;
+package com.konka.dhtsearch.bittorrentkad.krpc.find_node;
 
 import java.util.List;
 
 import com.konka.dhtsearch.Node;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadResponse;
 
 /**
  * A findNode response as defined in the kademlia protocol

@@ -1,8 +1,8 @@
 package com.konka.dhtsearch.bittorrentkad.net.filter;
 
-import com.konka.dhtsearch.bittorrentkad.msg.ContentMessage;
-import com.konka.dhtsearch.bittorrentkad.msg.ContentRequest;
-import com.konka.dhtsearch.bittorrentkad.msg.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.ContentMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.ContentRequest;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 
 /**
  * Reject all message with different tag than the given tag

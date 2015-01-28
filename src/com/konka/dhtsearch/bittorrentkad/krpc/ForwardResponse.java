@@ -1,4 +1,4 @@
-package com.konka.dhtsearch.bittorrentkad.msg;
+package com.konka.dhtsearch.bittorrentkad.krpc;
 
 import java.util.List;
 
@@ -7,7 +7,6 @@ import com.konka.dhtsearch.Node;
 /**
  * A forward response as defined in the colors protocol
  * TODO: add a link to the published article
- * @author eyal.kibbar@gmail.com
  *
  */
 public class ForwardResponse extends KadResponse {

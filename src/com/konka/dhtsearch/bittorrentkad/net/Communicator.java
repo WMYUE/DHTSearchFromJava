@@ -4,7 +4,7 @@ package com.konka.dhtsearch.bittorrentkad.net;
 import java.io.IOException;
 
 import com.konka.dhtsearch.Node;
-import com.konka.dhtsearch.bittorrentkad.msg.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 
 public interface Communicator extends Runnable {
 

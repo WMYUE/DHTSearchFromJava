@@ -1,6 +1,6 @@
 package com.konka.dhtsearch.bittorrentkad.net.filter;
 
-import com.konka.dhtsearch.bittorrentkad.msg.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 
 /**
  * Interface for all message filters

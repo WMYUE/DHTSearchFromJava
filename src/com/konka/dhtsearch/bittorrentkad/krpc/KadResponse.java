@@ -1,4 +1,4 @@
-package com.konka.dhtsearch.bittorrentkad.msg;
+package com.konka.dhtsearch.bittorrentkad.krpc;
 
 import com.konka.dhtsearch.Node;
 

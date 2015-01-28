@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.Node;
-import com.konka.dhtsearch.bittorrentkad.msg.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 
 public interface FindNodeOperation {
 

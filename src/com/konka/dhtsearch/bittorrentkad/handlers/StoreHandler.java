@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import com.konka.dhtsearch.bittorrentkad.cache.KadCache;
-import com.konka.dhtsearch.bittorrentkad.msg.KadMessage;
-import com.konka.dhtsearch.bittorrentkad.msg.StoreMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.StoreMessage;
 import com.konka.dhtsearch.bittorrentkad.net.MessageDispatcher;
 import com.konka.dhtsearch.bittorrentkad.net.filter.MessageFilter;
 import com.konka.dhtsearch.bittorrentkad.net.filter.TypeMessageFilter;

@@ -23,10 +23,10 @@ import com.konka.dhtsearch.bittorrentkad.concurrent.FutureTransformer;
 import com.konka.dhtsearch.bittorrentkad.handlers.FindNodeHandler;
 import com.konka.dhtsearch.bittorrentkad.handlers.PingHandler;
 import com.konka.dhtsearch.bittorrentkad.handlers.StoreHandler;
-import com.konka.dhtsearch.bittorrentkad.msg.ContentMessage;
-import com.konka.dhtsearch.bittorrentkad.msg.ContentRequest;
-import com.konka.dhtsearch.bittorrentkad.msg.ContentResponse;
-import com.konka.dhtsearch.bittorrentkad.msg.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.ContentMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.ContentRequest;
+import com.konka.dhtsearch.bittorrentkad.krpc.ContentResponse;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.net.Communicator;
 import com.konka.dhtsearch.bittorrentkad.net.MessageDispatcher;
 import com.konka.dhtsearch.bittorrentkad.net.filter.IdMessageFilter;
@@ -38,15 +38,15 @@ import com.konka.dhtsearch.bittorrentkad.op.JoinOperation;
 public class KadNet implements KeybasedRouting {
 
 	// dependencies
-	private final MessageDispatcher<Object> msgDispatcherProvider;
-	private final JoinOperation joinOperationProvider;
+	private final MessageDispatcher<Object> msgDispatcher;
+	private final JoinOperation joinOperation;
 	private final ContentRequest contentRequestProvider;
-	private final ContentMessage contentMessageProvider;
-	private final IncomingContentHandler<Object> incomingContentHandlerProvider;
-	private final FindValueOperation findValueOperationProvider;
-	private final FindNodeHandler findNodeHandlerProvider;
+	private final ContentMessage contentMessage;
+	private final IncomingContentHandler<Object> incomingContentHandler;
+	private final FindValueOperation findValueOperation;
+	private final FindNodeHandler findNodeHandler;
 	private final PingHandler pingHandler;
-	private final StoreHandler storeHandlerProvider;
+	private final StoreHandler storeHandler;
 	// private final ForwardHandler forwardHandlerProvider;
 
 	private final Node localNode;
@@ -74,15 +74,15 @@ public class KadNet implements KeybasedRouting {
 			BootstrapNodesSaver bootstrapNodesSaver,// testing
 			List<Integer> findNodeHopsHistogram) {
 
-		this.msgDispatcherProvider = msgDispatcherProvider;
-		this.joinOperationProvider = joinOperationProvider;
+		this.msgDispatcher = msgDispatcherProvider;
+		this.joinOperation = joinOperationProvider;
 		this.contentRequestProvider = contentRequestProvider;
-		this.contentMessageProvider = contentMessageProvider;
-		this.incomingContentHandlerProvider = incomingContentHandlerProvider;
-		this.findValueOperationProvider = findValueOperationProvider;
-		this.findNodeHandlerProvider = findNodeHandlerProvider;
+		this.contentMessage = contentMessageProvider;
+		this.incomingContentHandler = incomingContentHandlerProvider;
+		this.findValueOperation = findValueOperationProvider;
+		this.findNodeHandler = findNodeHandlerProvider;
 		this.pingHandler = pingHandler;
-		this.storeHandlerProvider = storeHandlerProvider;
+		this.storeHandler = storeHandlerProvider;
 		// this.forwardHandlerProvider = forwardHandlerProvider;
 
 		this.localNode = localNode;
@@ -103,9 +103,9 @@ public class KadNet implements KeybasedRouting {
 		// bind communicator and register all handlers
 		// kadServer.bind();
 		pingHandler.register();
-		findNodeHandlerProvider.register();
-		storeHandlerProvider.register();
-//		forwardHandlerProvider.register();
+		findNodeHandler.register();
+		storeHandler.register();
+		// forwardHandlerProvider.register();
 
 		nodeStorage.registerIncomingMessageHandler();
 		kadServerThread = new Thread(kadServer);
@@ -117,12 +117,12 @@ public class KadNet implements KeybasedRouting {
 
 	@Override
 	public void join(Collection<URI> bootstraps) {
-		joinOperationProvider.addBootstrap(bootstraps).doJoin();
+		joinOperation.addBootstrap(bootstraps).doJoin();
 	}
 
 	@Override
 	public List<Node> findNode(Key k) {
-		FindValueOperation op = findValueOperationProvider.setKey(k);
+		FindValueOperation op = findValueOperation.setKey(k);
 
 		List<Node> result = op.doFindValue();
 		findNodeHopsHistogram.add(op.getNrQueried());
@@ -163,15 +163,15 @@ public class KadNet implements KeybasedRouting {
 		if (dispatcher != null)
 			dispatcher.cancel(new CancellationException());
 
-		dispatcher = msgDispatcherProvider.addFilter(new TagMessageFilter(tag)).setConsumable(false)//
-				.setCallback(null, incomingContentHandlerProvider.setHandler(handler).setTag(tag)).register();
+		dispatcher = msgDispatcher.addFilter(new TagMessageFilter(tag)).setConsumable(false)//
+				.setCallback(null, incomingContentHandler.setHandler(handler).setTag(tag)).register();
 
 		dispatcherFromTag.put(tag, dispatcher);
 	}
 
 	@Override
 	public void sendMessage(Node to, String tag, Serializable msg) throws IOException {
-		kadServer.send(to, contentMessageProvider.setTag(tag).setContent(msg));
+		kadServer.send(to, contentMessage.setTag(tag).setContent(msg));
 	}
 
 	@Override
@@ -179,8 +179,10 @@ public class KadNet implements KeybasedRouting {
 
 		ContentRequest contentRequest = contentRequestProvider.setTag(tag).setContent(msg);
 
-		Future<KadMessage> futureSend = msgDispatcherProvider.setConsumable(true)//
-				.addFilter(new TypeMessageFilter(ContentResponse.class)).addFilter(new IdMessageFilter(contentRequest.getId())).futureSend(to, contentRequest);
+		Future<KadMessage> futureSend = msgDispatcher.setConsumable(true)//
+				.addFilter(new TypeMessageFilter(ContentResponse.class))//
+				.addFilter(new IdMessageFilter(contentRequest.getId()))//
+				.futureSend(to, contentRequest);
 
 		return new FutureTransformer<KadMessage, Serializable>(futureSend) {
 			@Override
@@ -194,7 +196,7 @@ public class KadNet implements KeybasedRouting {
 	public <A> void sendRequest(Node to, String tag, Serializable msg, final A attachment, final CompletionHandler<Serializable, A> handler) {
 		ContentRequest contentRequest = contentRequestProvider.setTag(tag).setContent(msg);
 
-		msgDispatcherProvider.setConsumable(true).addFilter(new TypeMessageFilter(ContentResponse.class)).addFilter(new IdMessageFilter(contentRequest.getId())).setCallback(null, new CompletionHandler<KadMessage, Object>() {
+		msgDispatcher.setConsumable(true).addFilter(new TypeMessageFilter(ContentResponse.class)).addFilter(new IdMessageFilter(contentRequest.getId())).setCallback(null, new CompletionHandler<KadMessage, Object>() {
 			@Override
 			public void completed(KadMessage msg, Object nothing) {
 				final ContentResponse contentResponse = (ContentResponse) msg;

@@ -17,12 +17,9 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import com.konka.dhtsearch.Node;
-import com.konka.dhtsearch.bittorrentkad.msg.KadMessage;
-import com.konka.dhtsearch.bittorrentkad.msg.PingRequest;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 
 /**
  * Low level communication handler. This class does all the serialze/de-serialze and socket programming.
@@ -41,20 +38,18 @@ public class KadServer implements Communicator {
 	private final Set<MessageDispatcher<?>> nonConsumableExpecters;
 	private final String kadScheme;
 
-	// testing
-	private final AtomicInteger nrOutgoingPings;
-	private final AtomicInteger nrIncomingMessages;
-	private final AtomicLong nrBytesSent;
-	private final AtomicLong nrBytesRecved;
 
 	// state
 	private final AtomicBoolean isActive = new AtomicBoolean(false);
 
 	// private final BlockingQueue<DatagramPacket> pktsout;
 
-	KadServer(final KadSerializer serializer, final String kadScheme, final DatagramSocket sockProvider, final BlockingQueue<DatagramPacket> pkts, final BlockingQueue<DatagramPacket> pktsout, final ExecutorService srvExecutor, final Set<MessageDispatcher<?>> expecters, //
-			final Set<MessageDispatcher<?>> nonConsumableExpecters, final AtomicInteger nrOutgoingPings, final AtomicInteger nrIncomingMessages, //
-			final AtomicLong nrBytesSent, final AtomicLong nrBytesRecved) {
+	KadServer(final KadSerializer serializer, final String kadScheme, final DatagramSocket sockProvider, //
+			final BlockingQueue<DatagramPacket> pkts, final BlockingQueue<DatagramPacket> pktsout,//
+			final ExecutorService srvExecutor, final Set<MessageDispatcher<?>> expecters, //
+			final Set<MessageDispatcher<?>> nonConsumableExpecters //
+
+	) {
 
 		this.kadScheme = kadScheme;
 		this.serializer = serializer;
@@ -64,20 +59,7 @@ public class KadServer implements Communicator {
 		this.srvExecutor = srvExecutor;
 		this.expecters = expecters;
 		this.nonConsumableExpecters = nonConsumableExpecters;
-
-		this.nrOutgoingPings = nrOutgoingPings;
-		this.nrIncomingMessages = nrIncomingMessages;
-		this.nrBytesSent = nrBytesSent;
-		this.nrBytesRecved = nrBytesRecved;
 	}
-
-	// /**
-	// * Binds the socket
-	// */
-	// @Override
-	// public void bind() {
-	// this.sockProvider.get();
-	// }
 
 	/**
 	 * 发送消息
@@ -94,8 +76,8 @@ public class KadServer implements Communicator {
 		// System.out.println("KadServer: send: " + msg + " to: " +
 		// to.getKey());
 
-		if (msg instanceof PingRequest)
-			this.nrOutgoingPings.incrementAndGet();
+//		if (msg instanceof PingRequest)
+//			this.nrOutgoingPings.incrementAndGet();
 
 		ByteArrayOutputStream bout = null;
 
@@ -104,7 +86,7 @@ public class KadServer implements Communicator {
 			this.serializer.write(msg, bout);
 			// here is the memory allocated.
 			final byte[] bytes = bout.toByteArray();
-			this.nrBytesSent.addAndGet(bytes.length);
+//			this.nrBytesSent.addAndGet(bytes.length);
 
 			final DatagramPacket pkt = new DatagramPacket(bytes, 0, bytes.length);
 
@@ -151,8 +133,8 @@ public class KadServer implements Communicator {
 
 	// 收到信息后处理
 	private void handleIncomingPacket(final DatagramPacket pkt) {
-		this.nrIncomingMessages.incrementAndGet();// i++
-		this.nrBytesRecved.addAndGet(pkt.getLength());// 收到的数据大小，自动累加
+//		this.nrIncomingMessages.incrementAndGet();// i++
+//		this.nrBytesRecved.addAndGet(pkt.getLength());// 收到的数据大小，自动累加
 		this.srvExecutor.execute(new Runnable() {// 交给线程池处理
 
 					@Override
@@ -194,7 +176,11 @@ public class KadServer implements Communicator {
 	}
 
 	/**
-	 * The server loop: 1. accept a message from socket 2. parse message 3. handle the message in a thread pool 这个线程用来接受信息
+	 * The server loop:
+	 * 
+	 * @category accept a message from socket
+	 * @category parse message
+	 * @category handle the message in a thread pool 这个线程用来接受信息
 	 */
 	@Override
 	public void run() {
@@ -221,7 +207,7 @@ public class KadServer implements Communicator {
 	}
 
 	/**
-	 * Shutdown the server and closes the socket
+	 * Shutdown the server and closes the socket 关闭服务
 	 * 
 	 * @param kadServerThread
 	 */

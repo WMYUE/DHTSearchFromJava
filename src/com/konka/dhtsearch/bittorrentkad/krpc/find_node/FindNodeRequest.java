@@ -1,7 +1,8 @@
-package com.konka.dhtsearch.bittorrentkad.msg;
+package com.konka.dhtsearch.bittorrentkad.krpc.find_node;
 
 import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.Node;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadRequest;
 
 /**
  * A findNode request as defined in the kademlia protocol

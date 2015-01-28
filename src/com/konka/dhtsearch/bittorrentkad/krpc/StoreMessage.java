@@ -1,4 +1,4 @@
-package com.konka.dhtsearch.bittorrentkad.msg;
+package com.konka.dhtsearch.bittorrentkad.krpc;
 
 import java.util.List;
 
@@ -7,9 +7,7 @@ import com.konka.dhtsearch.Node;
 
 /**
  * A store results message to be inserted to the destination node's cache
- * 
- * @author eyal.kibbar@gmail.com
- *
+ * 一个存储结果信息被插入到目标节点的缓存
  */
 public class StoreMessage extends KadMessage {
 

@@ -6,9 +6,9 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.konka.dhtsearch.Node;
-import com.konka.dhtsearch.bittorrentkad.msg.KadMessage;
-import com.konka.dhtsearch.bittorrentkad.msg.PingRequest;
-import com.konka.dhtsearch.bittorrentkad.msg.PingResponse;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingRequest;
+import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingResponse;
 import com.konka.dhtsearch.bittorrentkad.net.Communicator;
 import com.konka.dhtsearch.bittorrentkad.net.MessageDispatcher;
 import com.konka.dhtsearch.bittorrentkad.net.filter.MessageFilter;

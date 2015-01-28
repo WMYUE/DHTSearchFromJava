@@ -14,9 +14,9 @@ import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.KadNode;
 import com.konka.dhtsearch.bittorrentkad.bucket.KBuckets;
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
-import com.konka.dhtsearch.bittorrentkad.msg.KadMessage;
-import com.konka.dhtsearch.bittorrentkad.msg.PingRequest;
-import com.konka.dhtsearch.bittorrentkad.msg.PingResponse;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingRequest;
+import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingResponse;
 import com.konka.dhtsearch.bittorrentkad.net.MessageDispatcher;
 import com.konka.dhtsearch.bittorrentkad.net.filter.IdMessageFilter;
 import com.konka.dhtsearch.bittorrentkad.net.filter.TypeMessageFilter;
@@ -54,7 +54,7 @@ public class JoinOperation {
 		this.zeroKey = zeroKey;
 		this.kadScheme = kadScheme;
 		this.localNode = localNode;
-	}   
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -91,7 +91,7 @@ public class JoinOperation {
 		CompletionHandler<KadMessage, Void> callback = new CompletionHandler<KadMessage, Void>() {
 
 			@Override
-			public void completed(KadMessage msg, Void nothing) {
+			public void completed(KadMessage msg, Void nothing) {//成功
 				try {
 					kBuckets.insert(kadNodeProvider.setNode(msg.getSrc()).setNodeWasContacted());
 				} finally {
@@ -100,14 +100,17 @@ public class JoinOperation {
 			}
 
 			@Override
-			public void failed(Throwable exc, Void nothing) {
+			public void failed(Throwable exc, Void nothing) {//失败
 				latch.countDown();
 			}
 		};
 
 		for (Node n : bootstrap) {
 			PingRequest pingRequest = pingRequestProvider;
-			msgDispatcherProvider.addFilter(new IdMessageFilter(pingRequest.getId())).addFilter(new TypeMessageFilter(PingResponse.class)).setConsumable(true).setCallback(null, callback).send(n, pingRequest);
+			msgDispatcherProvider.addFilter(new IdMessageFilter(pingRequest.getId()))//
+					.addFilter(new TypeMessageFilter(PingResponse.class))//
+					.setConsumable(true).setCallback(null, callback)//
+					.send(n, pingRequest);
 		}
 
 		// waiting for responses

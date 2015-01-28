@@ -14,8 +14,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
 import com.konka.dhtsearch.bittorrentkad.concurrent.FutureCallback;
-import com.konka.dhtsearch.bittorrentkad.msg.KadMessage;
-import com.konka.dhtsearch.bittorrentkad.msg.KadRequest;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadRequest;
 import com.konka.dhtsearch.bittorrentkad.net.filter.MessageFilter;
 
 /**

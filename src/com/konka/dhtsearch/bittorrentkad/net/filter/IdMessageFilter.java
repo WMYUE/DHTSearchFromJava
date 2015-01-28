@@ -1,17 +1,15 @@
 package com.konka.dhtsearch.bittorrentkad.net.filter;
 
-import com.konka.dhtsearch.bittorrentkad.msg.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 
 /**
- * Rejects all messages with id different from the given ID
+ * id过滤器，可以屏蔽自己
  * 
- * @author eyal.kibbar@gmail.com
- *
  */
 public class IdMessageFilter implements MessageFilter {
-	
+
 	private final long id;
-	
+
 	public IdMessageFilter(long id) {
 		this.id = id;
 	}

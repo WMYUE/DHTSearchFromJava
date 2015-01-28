@@ -16,12 +16,10 @@ import com.konka.dhtsearch.KeyFactory;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.KadNode;
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
-import com.konka.dhtsearch.bittorrentkad.msg.FindNodeResponse;
-import com.konka.dhtsearch.bittorrentkad.msg.ForwardMessage;
-import com.konka.dhtsearch.bittorrentkad.msg.ForwardRequest;
-import com.konka.dhtsearch.bittorrentkad.msg.ForwardResponse;
-import com.konka.dhtsearch.bittorrentkad.msg.KadMessage;
-import com.konka.dhtsearch.bittorrentkad.msg.PingResponse;
+import com.konka.dhtsearch.bittorrentkad.krpc.ForwardResponse;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeResponse;
+import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingResponse;
 import com.konka.dhtsearch.bittorrentkad.net.MessageDispatcher;
 import com.konka.dhtsearch.bittorrentkad.net.filter.SrcExcluderMessageFilter;
 import com.konka.dhtsearch.bittorrentkad.net.filter.TypeExcluderMessageFilter;
@@ -80,8 +78,9 @@ public class KadBuckets implements KBuckets {
 	public synchronized void registerIncomingMessageHandler() {
 		msgDispatcherProvider.setConsumable(false)
 		// do not add PingResponse since it might create a loop
-				.addFilter(new TypeExcluderMessageFilter(PingResponse.class)).addFilter(new SrcExcluderMessageFilter(localNode))
-
+		
+				.addFilter(new TypeExcluderMessageFilter(PingResponse.class))//
+				.addFilter(new SrcExcluderMessageFilter(localNode))//
 				.setCallback(null, new CompletionHandler<KadMessage, Object>() {
 
 					@Override
@@ -101,10 +100,10 @@ public class KadBuckets implements KBuckets {
 							nodes = ((FindNodeResponse) msg).getNodes();
 						} else if (msg instanceof ForwardResponse) {
 							nodes = ((ForwardResponse) msg).getNodes();
-						} else if (msg instanceof ForwardMessage) {
-							nodes = ((ForwardMessage) msg).getNodes();
-						} else if (msg instanceof ForwardRequest) {
-							nodes = ((ForwardRequest) msg).getBootstrap();
+//						} else if (msg instanceof ForwardMessage) {
+//							nodes = ((ForwardMessage) msg).getNodes();
+//						} else if (msg instanceof ForwardRequest) {
+//							nodes = ((ForwardRequest) msg).getBootstrap();
 						}
 
 						if (nodes != null) {
@@ -256,7 +255,7 @@ public class KadBuckets implements KBuckets {
 		List<Node> $ = getClosestNodes(k, n, getKBucketIndex(k), kbuckets);
 		if ($.isEmpty())
 			return $;
-//		$ = sort($, on(Node.class).getKey(), new KeyColorComparator(k, nrColors));
+		// $ = sort($, on(Node.class).getKey(), new KeyColorComparator(k, nrColors));
 		if ($.size() > n)
 			$.subList(n, $.size()).clear();
 		return $;

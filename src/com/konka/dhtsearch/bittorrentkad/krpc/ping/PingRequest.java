@@ -1,6 +1,7 @@
-package com.konka.dhtsearch.bittorrentkad.msg;
+package com.konka.dhtsearch.bittorrentkad.krpc.ping;
 
 import com.konka.dhtsearch.Node;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadRequest;
 
 /**
  * A ping request as defined in the kademlia protocol
