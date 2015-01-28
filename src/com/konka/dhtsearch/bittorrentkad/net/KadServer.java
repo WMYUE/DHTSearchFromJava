@@ -62,7 +62,7 @@ public class KadServer implements Communicator {
 	}
 
 	/**
-	 * 发送消息
+	 * 真正发送网络数据报消息
 	 * 
 	 * @param to
 	 *            the destination node

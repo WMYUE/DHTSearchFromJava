@@ -21,9 +21,8 @@ import com.konka.dhtsearch.bittorrentkad.net.filter.MessageFilter;
 /**
  * Handle all the messages different states. A request state: init -> sent -> response received -> callback invoked
  * 
- * A message state: init -> expecting -> message received -> callback invoked -> back to expecting or end
+ * @处理所有信息的不同状态 A message state: init -> expecting -> message received -> callback invoked -> back to expecting or end
  * 
- * @author eyal.kibbar@gmail.com
  *
  * @param <A>
  */
@@ -45,7 +44,9 @@ public class MessageDispatcher<A> {
 	private final Timer timer;
 	private final Communicator communicator;
 
-	public MessageDispatcher(BlockingQueue<MessageDispatcher<?>> outstandingRequests, Set<MessageDispatcher<?>> expecters, Set<MessageDispatcher<?>> nonConsumableexpecters, Timer timer, long timeout, Communicator communicator) {
+	public MessageDispatcher(BlockingQueue<MessageDispatcher<?>> outstandingRequests, //
+			Set<MessageDispatcher<?>> expecters, Set<MessageDispatcher<?>> nonConsumableexpecters, //
+			Timer timer, long timeout, Communicator communicator) {
 
 		this.outstandingRequests = outstandingRequests;
 		this.expecters = expecters;

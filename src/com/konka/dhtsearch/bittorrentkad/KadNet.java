@@ -22,7 +22,6 @@ import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
 import com.konka.dhtsearch.bittorrentkad.concurrent.FutureTransformer;
 import com.konka.dhtsearch.bittorrentkad.handlers.FindNodeHandler;
 import com.konka.dhtsearch.bittorrentkad.handlers.PingHandler;
-import com.konka.dhtsearch.bittorrentkad.handlers.StoreHandler;
 import com.konka.dhtsearch.bittorrentkad.krpc.ContentMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.get_peers.GetPeersRequest;
@@ -46,7 +45,7 @@ public class KadNet implements KeybasedRouting {
 	private final FindValueOperation findValueOperation;
 	private final FindNodeHandler findNodeHandler;
 	private final PingHandler pingHandler;
-	private final StoreHandler storeHandler;
+	// private final StoreHandler storeHandler;
 	// private final ForwardHandler forwardHandlerProvider;
 
 	private final Node localNode;
@@ -68,7 +67,7 @@ public class KadNet implements KeybasedRouting {
 	protected KadNet(MessageDispatcher<Object> msgDispatcherProvider, JoinOperation joinOperationProvider, //
 			GetPeersRequest contentRequestProvider, ContentMessage contentMessageProvider, //
 			IncomingContentHandler<Object> incomingContentHandlerProvider, FindValueOperation findValueOperationProvider, //
-			FindNodeHandler findNodeHandlerProvider, PingHandler pingHandler, StoreHandler storeHandlerProvider,//
+			FindNodeHandler findNodeHandlerProvider, PingHandler pingHandler, //
 			Node localNode, Communicator kadServer, NodeStorage nodeStorage, //
 			KeyFactory keyFactory, ExecutorService clientExecutor, int bucketSize, TimerTask refreshTask,//
 			BootstrapNodesSaver bootstrapNodesSaver,// testing
@@ -82,7 +81,7 @@ public class KadNet implements KeybasedRouting {
 		this.findValueOperation = findValueOperationProvider;
 		this.findNodeHandler = findNodeHandlerProvider;
 		this.pingHandler = pingHandler;
-		this.storeHandler = storeHandlerProvider;
+		// this.storeHandler = storeHandlerProvider;
 		// this.forwardHandlerProvider = forwardHandlerProvider;
 
 		this.localNode = localNode;
@@ -104,7 +103,7 @@ public class KadNet implements KeybasedRouting {
 		// kadServer.bind();
 		pingHandler.register();
 		findNodeHandler.register();
-		storeHandler.register();
+		// storeHandler.register();
 		// forwardHandlerProvider.register();
 
 		nodeStorage.registerIncomingMessageHandler();
@@ -196,23 +195,25 @@ public class KadNet implements KeybasedRouting {
 	public <A> void sendRequest(Node to, String tag, Serializable msg, final A attachment, final CompletionHandler<Serializable, A> handler) {
 		GetPeersRequest contentRequest = contentRequestProvider.setTag(tag).setContent(msg);
 
-		msgDispatcher.setConsumable(true).addFilter(new TypeMessageFilter(GetPeersResponse.class)).addFilter(new IdMessageFilter(contentRequest.getId())).setCallback(null, new CompletionHandler<KadMessage, Object>() {
-			@Override
-			public void completed(KadMessage msg, Object nothing) {
-				final GetPeersResponse contentResponse = (GetPeersResponse) msg;
-				clientExecutor.execute(new Runnable() {
+		msgDispatcher.setConsumable(true).addFilter(new TypeMessageFilter(GetPeersResponse.class))//
+				.addFilter(new IdMessageFilter(contentRequest.getId()))//
+				.setCallback(null, new CompletionHandler<KadMessage, Object>() {
 					@Override
-					public void run() {
-						handler.completed(contentResponse.getContent(), attachment);
+					public void completed(KadMessage msg, Object nothing) {
+						final GetPeersResponse contentResponse = (GetPeersResponse) msg;
+						clientExecutor.execute(new Runnable() {
+							@Override
+							public void run() {
+								handler.completed(contentResponse.getContent(), attachment);
+							}
+						});
 					}
-				});
-			}
 
-			@Override
-			public void failed(Throwable exc, Object nothing) {
-				handler.failed(exc, attachment);
-			}
-		}).send(to, contentRequest);
+					@Override
+					public void failed(Throwable exc, Object nothing) {
+						handler.failed(exc, attachment);
+					}
+				}).send(to, contentRequest);
 	}
 
 	public static void main(String[] args) throws Exception {

@@ -16,6 +16,7 @@ import com.konka.dhtsearch.bittorrentkad.net.filter.TypeMessageFilter;
 
 /**
  * Handles ping requests by sending back a ping response
+ * 
  * @author eyal.kibbar@gmail.com
  *
  */
@@ -24,12 +25,9 @@ public class PingHandler extends AbstractHandler {
 	private final Communicator kadServer;
 	private final Node localNode;
 	private final AtomicInteger nrIncomingPings;
-	
-	PingHandler(
-			 MessageDispatcher<Void>  msgDispatcherProvider,
-			Communicator kadServer,
-			  Node localNode,
-			  AtomicInteger nrIncomingPings) {
+
+	PingHandler(MessageDispatcher<Void> msgDispatcherProvider, Communicator kadServer, Node localNode,//
+			AtomicInteger nrIncomingPings) {
 		super(msgDispatcherProvider);
 		this.kadServer = kadServer;
 		this.localNode = localNode;
@@ -39,8 +37,8 @@ public class PingHandler extends AbstractHandler {
 	@Override
 	public void completed(KadMessage msg, Void attachment) {
 		nrIncomingPings.incrementAndGet();
-		PingResponse pingResponse = ((PingRequest)msg).generateResponse(localNode);
-		
+		PingResponse pingResponse = ((PingRequest) msg).generateResponse(localNode);
+
 		try {
 			kadServer.send(msg.getSrc(), pingResponse);
 		} catch (IOException e) {
@@ -56,9 +54,7 @@ public class PingHandler extends AbstractHandler {
 
 	@Override
 	protected Collection<MessageFilter> getFilters() {
-		return Arrays.asList(new MessageFilter[] {
-				new TypeMessageFilter(PingRequest.class)
-		});
+		return Arrays.asList(new MessageFilter[] { new TypeMessageFilter(PingRequest.class) });
 	}
 
 }

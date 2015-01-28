@@ -19,8 +19,7 @@ import com.konka.dhtsearch.bittorrentkad.net.filter.MessageFilter;
 import com.konka.dhtsearch.bittorrentkad.net.filter.TypeMessageFilter;
 
 /**
- * Handle find node requests by giving the known closest nodes to the requested
- * key from the KBuckets data structure
+ * 处理器 查找已知的节点相近的数据 Handle find node requests by giving the known closest nodes to the requested key from the KBuckets data structure
  * 
  */
 public class KademliaFindNodeHandler extends AbstractHandler implements FindNodeHandler {
@@ -30,25 +29,15 @@ public class KademliaFindNodeHandler extends AbstractHandler implements FindNode
 	private final KBuckets kBuckets;
 	private final int kBucketSize;
 
-	private final AtomicInteger nrFindnodeHits;
-	private final AtomicInteger nrFindnodeMiss;
-
-	KademliaFindNodeHandler(final  MessageDispatcher<Void>  msgDispatcherProvider, final Communicator kadServer,
-			 final Node localNode, final KadCache cache, final KBuckets kBuckets,
-			  final int kBucketSize,
-
-			 final AtomicInteger nrFindnodeHits,
-			  final AtomicInteger nrFindnodeMiss) {
-
+	KademliaFindNodeHandler(final MessageDispatcher<Void> msgDispatcherProvider, final Communicator kadServer,//
+			final Node localNode, final KadCache cache, final KBuckets kBuckets, final int kBucketSize) {
 		super(msgDispatcherProvider);
+
 		this.kadServer = kadServer;
 		this.localNode = localNode;
 		this.cache = cache;
 		this.kBuckets = kBuckets;
 		this.kBucketSize = kBucketSize;
-
-		this.nrFindnodeHits = nrFindnodeHits;
-		this.nrFindnodeMiss = nrFindnodeMiss;
 	}
 
 	@Override
@@ -66,10 +55,8 @@ public class KademliaFindNodeHandler extends AbstractHandler implements FindNode
 			cachedResults = this.cache.search(findNodeRequest.getKey());
 
 			if (cachedResults == null) {
-				this.nrFindnodeMiss.incrementAndGet();
 				findNodeResponse.setNodes(this.kBuckets.getClosestNodesByKey(findNodeRequest.getKey(), this.kBucketSize));
 			} else {
-				this.nrFindnodeHits.incrementAndGet();
 				findNodeResponse.setNodes(new ArrayList<Node>(cachedResults)).setCachedResults(true);
 
 			}
@@ -93,6 +80,6 @@ public class KademliaFindNodeHandler extends AbstractHandler implements FindNode
 	@Override
 	protected Collection<MessageFilter> getFilters() {
 		// only accept FindNodeRequests messages
-		return Arrays.asList(new MessageFilter[]{new TypeMessageFilter(FindNodeRequest.class)});
+		return Arrays.asList(new MessageFilter[] { new TypeMessageFilter(FindNodeRequest.class) });
 	}
 }

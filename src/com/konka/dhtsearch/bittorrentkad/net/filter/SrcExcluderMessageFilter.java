@@ -4,7 +4,6 @@ import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 
 /**
- * Rejects all messages from src other than the given src
  * 只接受指定节点的消息
  */
 public class SrcExcluderMessageFilter implements MessageFilter {

@@ -5,8 +5,7 @@ import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.get_peers.GetPeersRequest;
 
 /**
- * Reject all message with different tag than the given tag
- * @author eyal.kibbar@gmail.com
+ * 消息过滤器
  *
  */
 public class TagMessageFilter implements MessageFilter {

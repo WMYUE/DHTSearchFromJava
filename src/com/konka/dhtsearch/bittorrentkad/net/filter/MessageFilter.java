@@ -3,7 +3,7 @@ package com.konka.dhtsearch.bittorrentkad.net.filter;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 
 /**
- * Interface for all message filters
+ * 过滤器接口
  * @author eyal.kibbar@gmail.com
  *
  */

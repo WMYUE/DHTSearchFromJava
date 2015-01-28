@@ -4,6 +4,7 @@ import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 
 /**
  * Reject all messages not in the given class
+ * 类型过滤器
  * @author eyal.kibbar@gmail.com
  *
  */
