@@ -30,7 +30,7 @@ import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 public class KadServer implements Communicator {
 
 	// dependencies
-	private final KadSerializer serializer;
+//	private final KadSerializer serializer;
 	private final DatagramSocket sockProvider;
 	private final BlockingQueue<DatagramPacket> pkts;
 	private final ExecutorService srvExecutor;
@@ -44,7 +44,7 @@ public class KadServer implements Communicator {
 
 	// private final BlockingQueue<DatagramPacket> pktsout;
 
-	KadServer(final KadSerializer serializer, final String kadScheme, final DatagramSocket sockProvider, //
+	KadServer( final String kadScheme, final DatagramSocket sockProvider, //
 			final BlockingQueue<DatagramPacket> pkts, final BlockingQueue<DatagramPacket> pktsout,//
 			final ExecutorService srvExecutor, final Set<MessageDispatcher<?>> expecters, //
 			final Set<MessageDispatcher<?>> nonConsumableExpecters //
@@ -52,7 +52,7 @@ public class KadServer implements Communicator {
 	) {
 
 		this.kadScheme = kadScheme;
-		this.serializer = serializer;
+//		this.serializer = serializer;
 		this.sockProvider = sockProvider;
 		this.pkts = pkts;
 		// this.pktsout = pktsout;
@@ -83,7 +83,7 @@ public class KadServer implements Communicator {
 
 		try {
 			bout = new ByteArrayOutputStream();
-			this.serializer.write(msg, bout);
+//			this.serializer.write(msg, bout);
 			// here is the memory allocated.
 			final byte[] bytes = bout.toByteArray();
 //			this.nrBytesSent.addAndGet(bytes.length);
@@ -143,7 +143,7 @@ public class KadServer implements Communicator {
 						KadMessage msg = null;
 						try {// 这里处理消息的方法需要重写
 							bin = new ByteArrayInputStream(pkt.getData(), pkt.getOffset(), pkt.getLength());
-							msg = KadServer.this.serializer.read(bin);// 这里应该是解码
+//							msg = KadServer.this.serializer.read(bin);// 这里应该是解码
 
 							// System.out.println("KadServer: handleIncomingPacket: " +
 							// msg + " from: " + msg.getSrc().getKey());
@@ -160,7 +160,7 @@ public class KadServer implements Communicator {
 							}
 							KadServer.this.pkts.offer(pkt);// 如果可以，将ptk加入到队列
 						}
-
+						//问题，这里我怎么知道msg是什么消息呢？？？
 						// call all the expecters
 						final List<MessageDispatcher<?>> shouldHandle = extractShouldHandle(msg);
 

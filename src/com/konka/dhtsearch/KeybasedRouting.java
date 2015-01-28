@@ -46,7 +46,7 @@ public interface KeybasedRouting {
 	 * Note that joining another singleton network will merge the 2 singleton
 	 * into one new network with 2 nodes in it.
 	 * 
-	 * URI format must be: openkad.udp://[ip of known node]:[port of that node]/
+	 * URI format must be: konka.udp://[ip of known node]:[port of that node]/
 	 * 
 	 * @param bootstraps all the known nodes in the other network
 	 * 
@@ -77,7 +77,7 @@ public interface KeybasedRouting {
 	 * @param tag the sent messages tag
 	 * @param handler the handler used for the incoming message.
 	 */
-	public void register(String tag, MessageHandler handler);
+//	public void register(String tag, MessageHandler handler);
 	
 	/**
 	 * Sends any serializable object to the destination node.
@@ -115,7 +115,7 @@ public interface KeybasedRouting {
 	 * @param msg any arbitrary object
 	 * @return a future with the response as return by the destination node's {@link MessageHandler.onIncomingRequest} method
 	 */
-	public Future<Serializable> sendRequest(Node to, String tag, Serializable msg);
+//	public Future<Serializable> sendRequest(Node to, String tag, Serializable msg);
 	
 	/**
 	 * Sends a message to the destination node and expects a response. The response is whatever

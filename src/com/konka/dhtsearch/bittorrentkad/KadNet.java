@@ -38,46 +38,38 @@ public class KadNet implements KeybasedRouting {
 
 	// dependencies
 	private final MessageDispatcher<Object> msgDispatcher;
-	private final JoinOperation joinOperation;
+	private final JoinOperation joinOperation;// 加入指定的节点
 	private final GetPeersRequest contentRequestProvider;
 	private final ContentMessage contentMessage;
-	private final IncomingContentHandler<Object> incomingContentHandler;
-	private final FindValueOperation findValueOperation;
+	private final FindValueOperation findValueOperation;//查找相识节点用
 	private final FindNodeHandler findNodeHandler;
 	private final PingHandler pingHandler;
-	// private final StoreHandler storeHandler;
-	// private final ForwardHandler forwardHandlerProvider;
 
-	private final Node localNode;
-	private final Communicator kadServer;
-	private final NodeStorage nodeStorage;
-	private final KeyFactory keyFactory;
-	private final ExecutorService clientExecutor;
-	private final int bucketSize;
-	private final TimerTask refreshTask;
-	private final BootstrapNodesSaver bootstrapNodesSaver;
-
-	// testing
-	private final List<Integer> findNodeHopsHistogram;
+	private final Node localNode;// 本地节点
+	private final Communicator kadServer;// Runnable 主要是TODO KadServer
+	private final NodeStorage nodeStorage;// 路由表
+	private final KeyFactory keyFactory;// key生成器
+	private final ExecutorService clientExecutor;// 线程池
+	private final int bucketSize;// 一个k桶大小
+	private final TimerTask refreshTask;// 定时器
+	private final BootstrapNodesSaver bootstrapNodesSaver;// 关机后保存到本地，启动时候从本地文件中加载
 
 	// state
-	private final Map<String, MessageDispatcher<?>> dispatcherFromTag = new HashMap<String, MessageDispatcher<?>>();
+//	private final Map<String, MessageDispatcher<?>> dispatcherFromTag = new HashMap<String, MessageDispatcher<?>>();
 	private Thread kadServerThread = null;
 
-	protected KadNet(MessageDispatcher<Object> msgDispatcherProvider, JoinOperation joinOperationProvider, //
+	public KadNet(MessageDispatcher<Object> msgDispatcherProvider, JoinOperation joinOperationProvider, //
 			GetPeersRequest contentRequestProvider, ContentMessage contentMessageProvider, //
-			IncomingContentHandler<Object> incomingContentHandlerProvider, FindValueOperation findValueOperationProvider, //
+			  FindValueOperation findValueOperationProvider, //
 			FindNodeHandler findNodeHandlerProvider, PingHandler pingHandler, //
 			Node localNode, Communicator kadServer, NodeStorage nodeStorage, //
 			KeyFactory keyFactory, ExecutorService clientExecutor, int bucketSize, TimerTask refreshTask,//
-			BootstrapNodesSaver bootstrapNodesSaver,// testing
-			List<Integer> findNodeHopsHistogram) {
+			BootstrapNodesSaver bootstrapNodesSaver) {
 
 		this.msgDispatcher = msgDispatcherProvider;
 		this.joinOperation = joinOperationProvider;
 		this.contentRequestProvider = contentRequestProvider;
 		this.contentMessage = contentMessageProvider;
-		this.incomingContentHandler = incomingContentHandlerProvider;
 		this.findValueOperation = findValueOperationProvider;
 		this.findNodeHandler = findNodeHandlerProvider;
 		this.pingHandler = pingHandler;
@@ -93,8 +85,6 @@ public class KadNet implements KeybasedRouting {
 		this.refreshTask = refreshTask;
 		this.bootstrapNodesSaver = bootstrapNodesSaver;
 
-		// testing
-		this.findNodeHopsHistogram = findNodeHopsHistogram;
 	}
 
 	@Override
@@ -120,11 +110,11 @@ public class KadNet implements KeybasedRouting {
 	}
 
 	@Override
-	public List<Node> findNode(Key k) {
+	public List<Node> findNode(Key k) {//根据k返回相似节点
 		FindValueOperation op = findValueOperation.setKey(k);
 
 		List<Node> result = op.doFindValue();
-		findNodeHopsHistogram.add(op.getNrQueried());
+		// findNodeHopsHistogram.add(op.getNrQueried());
 
 		List<Node> $ = new ArrayList<Node>(result);
 
@@ -156,17 +146,6 @@ public class KadNet implements KeybasedRouting {
 		return localNode.toString() + "\n" + nodeStorage.toString();
 	}
 
-	@Override
-	public synchronized void register(String tag, MessageHandler handler) {
-		MessageDispatcher<?> dispatcher = dispatcherFromTag.get(tag);
-		if (dispatcher != null)
-			dispatcher.cancel(new CancellationException());
-
-		dispatcher = msgDispatcher.addFilter(new TagMessageFilter(tag)).setConsumable(false)//
-				.setCallback(null, incomingContentHandler.setHandler(handler).setTag(tag)).register();
-
-		dispatcherFromTag.put(tag, dispatcher);
-	}
 
 	@Override
 	public void sendMessage(Node to, String tag, Serializable msg) throws IOException {
@@ -174,25 +153,8 @@ public class KadNet implements KeybasedRouting {
 	}
 
 	@Override
-	public Future<Serializable> sendRequest(Node to, String tag, Serializable msg) {
-
-		GetPeersRequest contentRequest = contentRequestProvider.setTag(tag).setContent(msg);
-
-		Future<KadMessage> futureSend = msgDispatcher.setConsumable(true)//
-				.addFilter(new TypeMessageFilter(GetPeersResponse.class))//
-				.addFilter(new IdMessageFilter(contentRequest.getId()))//
-				.futureSend(to, contentRequest);
-
-		return new FutureTransformer<KadMessage, Serializable>(futureSend) {
-			@Override
-			protected Serializable transform(KadMessage msg) throws Throwable {
-				return ((GetPeersResponse) msg).getContent();
-			}
-		};
-	}
-
-	@Override
-	public <A> void sendRequest(Node to, String tag, Serializable msg, final A attachment, final CompletionHandler<Serializable, A> handler) {
+	public <A> void sendRequest(Node to, String tag, Serializable msg, final A attachment,//
+			final CompletionHandler<Serializable, A> handler) {
 		GetPeersRequest contentRequest = contentRequestProvider.setTag(tag).setContent(msg);
 
 		msgDispatcher.setConsumable(true).addFilter(new TypeMessageFilter(GetPeersResponse.class))//
@@ -214,12 +176,6 @@ public class KadNet implements KeybasedRouting {
 						handler.failed(exc, attachment);
 					}
 				}).send(to, contentRequest);
-	}
-
-	public static void main(String[] args) throws Exception {
-		// Injector injector = Guice.createInjector(new KadNetModule().setProperty("openkad.net.udp.port", "5555"));
-		// KeybasedRouting kbr = injector.getInstance(KeybasedRouting.class);
-		// kbr.create();
 	}
 
 	@Override
