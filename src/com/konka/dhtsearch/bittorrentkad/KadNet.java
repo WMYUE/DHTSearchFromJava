@@ -24,9 +24,9 @@ import com.konka.dhtsearch.bittorrentkad.handlers.FindNodeHandler;
 import com.konka.dhtsearch.bittorrentkad.handlers.PingHandler;
 import com.konka.dhtsearch.bittorrentkad.handlers.StoreHandler;
 import com.konka.dhtsearch.bittorrentkad.krpc.ContentMessage;
-import com.konka.dhtsearch.bittorrentkad.krpc.ContentRequest;
-import com.konka.dhtsearch.bittorrentkad.krpc.ContentResponse;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.get_peers.GetPeersRequest;
+import com.konka.dhtsearch.bittorrentkad.krpc.get_peers.GetPeersResponse;
 import com.konka.dhtsearch.bittorrentkad.net.Communicator;
 import com.konka.dhtsearch.bittorrentkad.net.MessageDispatcher;
 import com.konka.dhtsearch.bittorrentkad.net.filter.IdMessageFilter;
@@ -40,7 +40,7 @@ public class KadNet implements KeybasedRouting {
 	// dependencies
 	private final MessageDispatcher<Object> msgDispatcher;
 	private final JoinOperation joinOperation;
-	private final ContentRequest contentRequestProvider;
+	private final GetPeersRequest contentRequestProvider;
 	private final ContentMessage contentMessage;
 	private final IncomingContentHandler<Object> incomingContentHandler;
 	private final FindValueOperation findValueOperation;
@@ -66,7 +66,7 @@ public class KadNet implements KeybasedRouting {
 	private Thread kadServerThread = null;
 
 	protected KadNet(MessageDispatcher<Object> msgDispatcherProvider, JoinOperation joinOperationProvider, //
-			ContentRequest contentRequestProvider, ContentMessage contentMessageProvider, //
+			GetPeersRequest contentRequestProvider, ContentMessage contentMessageProvider, //
 			IncomingContentHandler<Object> incomingContentHandlerProvider, FindValueOperation findValueOperationProvider, //
 			FindNodeHandler findNodeHandlerProvider, PingHandler pingHandler, StoreHandler storeHandlerProvider,//
 			Node localNode, Communicator kadServer, NodeStorage nodeStorage, //
@@ -177,29 +177,29 @@ public class KadNet implements KeybasedRouting {
 	@Override
 	public Future<Serializable> sendRequest(Node to, String tag, Serializable msg) {
 
-		ContentRequest contentRequest = contentRequestProvider.setTag(tag).setContent(msg);
+		GetPeersRequest contentRequest = contentRequestProvider.setTag(tag).setContent(msg);
 
 		Future<KadMessage> futureSend = msgDispatcher.setConsumable(true)//
-				.addFilter(new TypeMessageFilter(ContentResponse.class))//
+				.addFilter(new TypeMessageFilter(GetPeersResponse.class))//
 				.addFilter(new IdMessageFilter(contentRequest.getId()))//
 				.futureSend(to, contentRequest);
 
 		return new FutureTransformer<KadMessage, Serializable>(futureSend) {
 			@Override
 			protected Serializable transform(KadMessage msg) throws Throwable {
-				return ((ContentResponse) msg).getContent();
+				return ((GetPeersResponse) msg).getContent();
 			}
 		};
 	}
 
 	@Override
 	public <A> void sendRequest(Node to, String tag, Serializable msg, final A attachment, final CompletionHandler<Serializable, A> handler) {
-		ContentRequest contentRequest = contentRequestProvider.setTag(tag).setContent(msg);
+		GetPeersRequest contentRequest = contentRequestProvider.setTag(tag).setContent(msg);
 
-		msgDispatcher.setConsumable(true).addFilter(new TypeMessageFilter(ContentResponse.class)).addFilter(new IdMessageFilter(contentRequest.getId())).setCallback(null, new CompletionHandler<KadMessage, Object>() {
+		msgDispatcher.setConsumable(true).addFilter(new TypeMessageFilter(GetPeersResponse.class)).addFilter(new IdMessageFilter(contentRequest.getId())).setCallback(null, new CompletionHandler<KadMessage, Object>() {
 			@Override
 			public void completed(KadMessage msg, Object nothing) {
-				final ContentResponse contentResponse = (ContentResponse) msg;
+				final GetPeersResponse contentResponse = (GetPeersResponse) msg;
 				clientExecutor.execute(new Runnable() {
 					@Override
 					public void run() {

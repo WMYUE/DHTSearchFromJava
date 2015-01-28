@@ -15,7 +15,7 @@ public abstract class KadMessage implements Serializable {
 	private final long id;
 	private final Node src;
 
-	KadMessage(long id, Node src) {
+	protected KadMessage(long id, Node src) {
 		this.id = id;
 		this.src = src;
 	}

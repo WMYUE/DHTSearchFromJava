@@ -1,9 +1,10 @@
-package com.konka.dhtsearch.bittorrentkad.krpc;
+package com.konka.dhtsearch.bittorrentkad.krpc.announce_peer;
 
 import java.util.List;
 
 import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.Node;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 
 /**
  * A store results message to be inserted to the destination node's cache
@@ -16,7 +17,7 @@ public class StoreMessage extends KadMessage {
 	private Key key;
 	private List<Node> nodes;
 
-	StoreMessage(long id, Node src) {
+	protected StoreMessage(long id, Node src) {
 		super(id, src);
 	}
 

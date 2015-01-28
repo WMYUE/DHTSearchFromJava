@@ -7,7 +7,6 @@ import com.konka.dhtsearch.Node;
 /**
  * A message containing arbitrary data to be used by the KeybasedRouting.sendMessage method
  * 
- * @author eyal.kibbar@gmail.com
  *
  */
 public class ContentMessage extends KadMessage {

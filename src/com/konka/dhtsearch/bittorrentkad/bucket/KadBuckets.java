@@ -16,7 +16,6 @@ import com.konka.dhtsearch.KeyFactory;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.KadNode;
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
-import com.konka.dhtsearch.bittorrentkad.krpc.ForwardResponse;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeResponse;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingResponse;
@@ -98,8 +97,8 @@ public class KadBuckets implements KBuckets {
 						List<Node> nodes = null;
 						if (msg instanceof FindNodeResponse) {
 							nodes = ((FindNodeResponse) msg).getNodes();
-						} else if (msg instanceof ForwardResponse) {
-							nodes = ((ForwardResponse) msg).getNodes();
+//						} else if (msg instanceof ForwardResponse) {
+//							nodes = ((ForwardResponse) msg).getNodes();
 //						} else if (msg instanceof ForwardMessage) {
 //							nodes = ((ForwardMessage) msg).getNodes();
 //						} else if (msg instanceof ForwardRequest) {

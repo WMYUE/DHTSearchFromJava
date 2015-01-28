@@ -1,8 +1,8 @@
 package com.konka.dhtsearch.bittorrentkad.net.filter;
 
 import com.konka.dhtsearch.bittorrentkad.krpc.ContentMessage;
-import com.konka.dhtsearch.bittorrentkad.krpc.ContentRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.get_peers.GetPeersRequest;
 
 /**
  * Reject all message with different tag than the given tag
@@ -21,8 +21,8 @@ public class TagMessageFilter implements MessageFilter {
 	@Override
 	public boolean shouldHandle(KadMessage m) {
 		String tag = null;
-		if (m instanceof ContentRequest)
-			tag = ((ContentRequest)m).getTag();
+		if (m instanceof GetPeersRequest)
+			tag = ((GetPeersRequest)m).getTag();
 		else if (m instanceof ContentMessage)
 			tag = ((ContentMessage)m).getTag();
 		else

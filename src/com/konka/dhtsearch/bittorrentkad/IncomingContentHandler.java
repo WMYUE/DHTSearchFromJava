@@ -8,8 +8,8 @@ import com.konka.dhtsearch.MessageHandler;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
 import com.konka.dhtsearch.bittorrentkad.krpc.ContentMessage;
-import com.konka.dhtsearch.bittorrentkad.krpc.ContentRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.get_peers.GetPeersRequest;
 import com.konka.dhtsearch.bittorrentkad.net.Communicator;
 
 /**
@@ -69,7 +69,7 @@ public class IncomingContentHandler<A> implements CompletionHandler<KadMessage, 
 		return this;
 	}
 
-	private void handleRequest(final ContentRequest req) {
+	private void handleRequest(final GetPeersRequest req) {
 		// execute the user's handler and send back the result
 		clientExecutor.execute(new Runnable() {
 			@Override
@@ -100,8 +100,8 @@ public class IncomingContentHandler<A> implements CompletionHandler<KadMessage, 
 	 */
 	@Override
 	public void completed(final KadMessage msg, A attachment) {
-		if (msg instanceof ContentRequest) {
-			handleRequest((ContentRequest) msg);
+		if (msg instanceof GetPeersRequest) {
+			handleRequest((GetPeersRequest) msg);
 		} else if (msg instanceof ContentMessage) {
 			handleMessage((ContentMessage) msg);
 		}
