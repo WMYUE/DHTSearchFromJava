@@ -17,7 +17,7 @@ public class ContentMessage extends KadMessage {
 	private String tag;
 	private Serializable content;
 
-	ContentMessage(long id, Node src) {
+	ContentMessage(long id, Node src) {   
 		super(id, src);
 	}
 
