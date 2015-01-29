@@ -136,7 +136,7 @@ public interface KeybasedRouting {
 	 * @param attachment the argument to be given to the handler when invoked
 	 * @param handler the handler to be invoked upon completion
 	 */
-	public <A> void sendRequest(Node to, String tag, Serializable msg, A attachment, CompletionHandler<Serializable, A> handler);
+//	public <A> void sendRequest(Node to, String tag, Serializable msg, A attachment, CompletionHandler<Serializable, A> handler);
 	
 	/**
 	 * @return the keyFactory used for this Keybased Routing

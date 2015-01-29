@@ -13,11 +13,11 @@ import com.konka.dhtsearch.bittorrentkad.net.filter.MessageFilter;
  * @author eyal.kibbar@gmail.com
  *
  */
-public abstract class AbstractHandler implements CompletionHandler<KadMessage, Void> {
+public abstract class AbstractHandler implements CompletionHandler<KadMessage, String> {
 
-	private final MessageDispatcher<Void> msgDispatcherProvider;
+	private final MessageDispatcher  msgDispatcherProvider;
 
-	protected AbstractHandler(MessageDispatcher<Void> msgDispatcherProvider) {
+	protected AbstractHandler(MessageDispatcher  msgDispatcherProvider) {
 		this.msgDispatcherProvider = msgDispatcherProvider;
 	}
 
@@ -30,7 +30,7 @@ public abstract class AbstractHandler implements CompletionHandler<KadMessage, V
 	 * Register this handler for start receiving messages
 	 */
 	public void register() {
-		MessageDispatcher<Void> dispatcher = msgDispatcherProvider;
+		MessageDispatcher  dispatcher = msgDispatcherProvider;
 
 		for (MessageFilter filter : getFilters()) {
 			dispatcher.addFilter(filter);

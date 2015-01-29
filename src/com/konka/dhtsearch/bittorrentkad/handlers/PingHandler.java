@@ -26,7 +26,7 @@ public class PingHandler extends AbstractHandler {
 	private final Node localNode;
 	private final AtomicInteger nrIncomingPings;
 
-	PingHandler(MessageDispatcher<Void> msgDispatcherProvider, KadServer kadServer, Node localNode,//
+	PingHandler(MessageDispatcher  msgDispatcherProvider, KadServer kadServer, Node localNode,//
 			AtomicInteger nrIncomingPings) {
 		super(msgDispatcherProvider);
 		this.kadServer = kadServer;
@@ -35,7 +35,7 @@ public class PingHandler extends AbstractHandler {
 	}
 
 	@Override
-	public void completed(KadMessage msg, Void attachment) {
+	public void completed(KadMessage msg, String attachment) {
 		nrIncomingPings.incrementAndGet();
 		PingResponse pingResponse = ((PingRequest) msg).generateResponse(localNode);
 
@@ -48,7 +48,7 @@ public class PingHandler extends AbstractHandler {
 	}
 
 	@Override
-	public void failed(Throwable exc, Void attachment) {
+	public void failed(Throwable exc, String attachment) {
 		// should never b here
 	}
 

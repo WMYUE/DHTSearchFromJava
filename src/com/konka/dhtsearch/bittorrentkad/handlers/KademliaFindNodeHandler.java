@@ -28,7 +28,7 @@ public class KademliaFindNodeHandler extends AbstractHandler implements FindNode
 	private final KBuckets kBuckets;
 	private final int kBucketSize;
 
-	KademliaFindNodeHandler(final MessageDispatcher<Void> msgDispatcherProvider, final KadServer kadServer,//
+	KademliaFindNodeHandler(final MessageDispatcher  msgDispatcherProvider, final KadServer kadServer,//
 			final Node localNode, final KadCache cache, final KBuckets kBuckets, final int kBucketSize) {
 		super(msgDispatcherProvider);
 
@@ -40,7 +40,7 @@ public class KademliaFindNodeHandler extends AbstractHandler implements FindNode
 	}
 
 	@Override
-	public void completed(final KadMessage msg, final Void attachment) {
+	public void completed(final KadMessage msg, final String attachment) {
 
 		final FindNodeRequest findNodeRequest = ((FindNodeRequest) msg);
 		final FindNodeResponse findNodeResponse = findNodeRequest.generateResponse(this.localNode).setCachedResults(false);
@@ -71,7 +71,7 @@ public class KademliaFindNodeHandler extends AbstractHandler implements FindNode
 	}
 
 	@Override
-	public void failed(final Throwable exc, final Void attachment) {
+	public void failed(final Throwable exc, final String attachment) {
 		// should never b here
 		exc.printStackTrace();
 	}

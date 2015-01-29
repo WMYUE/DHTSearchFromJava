@@ -15,13 +15,6 @@ import com.konka.dhtsearch.KeyComparator;
 import com.konka.dhtsearch.KeyFactory;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.KadNode;
-import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
-import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
-import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeResponse;
-import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingResponse;
-import com.konka.dhtsearch.bittorrentkad.net.MessageDispatcher;
-import com.konka.dhtsearch.bittorrentkad.net.filter.SrcExcluderMessageFilter;
-import com.konka.dhtsearch.bittorrentkad.net.filter.TypeExcluderMessageFilter;
 
 /**
  * This is a data structures that holds all the known nodes It sorts them into buckets according to their keys common prefix with the local node's key.
@@ -34,20 +27,15 @@ import com.konka.dhtsearch.bittorrentkad.net.filter.TypeExcluderMessageFilter;
 // 这个相当是路由表
 public class KadBuckets implements KBuckets {
 
-	private final MessageDispatcher<Object> msgDispatcherProvider;
-	private final KadNode kadNodeProvider;
+	// private final MessageDispatcher<Object> msgDispatcherProvider;
 	private final Bucket[] kbuckets;// 默认160
 	protected final Node localNode;
 	private final KeyFactory keyFactory;
-	private final int nrColors;
 
-	protected KadBuckets(KeyFactory keyFactory, KadNode kadNodeProvider, MessageDispatcher<Object> msgDispatcherProvider,//
-			Bucket kBucketProvider, Node localNode, int nrColors) {
+	protected KadBuckets(KeyFactory keyFactory, Bucket kBucketProvider, Node localNode) {
 		this.keyFactory = keyFactory;
-		this.msgDispatcherProvider = msgDispatcherProvider;
-		this.kadNodeProvider = kadNodeProvider;
+		// this.msgDispatcherProvider = msgDispatcherProvider;
 		this.localNode = localNode;
-		this.nrColors = nrColors;
 
 		kbuckets = new Bucket[keyFactory.getBitLength()];
 		for (int i = 0; i < kbuckets.length; ++i) {
@@ -75,43 +63,45 @@ public class KadBuckets implements KBuckets {
 	 */
 	@Override
 	public synchronized void registerIncomingMessageHandler() {
-		msgDispatcherProvider.setConsumable(false)
-		// do not add PingResponse since it might create a loop
-		
-				.addFilter(new TypeExcluderMessageFilter(PingResponse.class))//
-				.addFilter(new SrcExcluderMessageFilter(localNode))//
-				.setCallback(null, new CompletionHandler<KadMessage, Object>() {
-
-					@Override
-					public void failed(Throwable exc, Object attachment) {
-						// should never be here
-						exc.printStackTrace();
-					}
-
-					@Override
-					public void completed(KadMessage msg, Object attachment) {
-						KadBuckets.this.insert(kadNodeProvider.setNode(msg.getSrc()).setNodeWasContacted());
-
-						// try to sniff the message for more information, such as
-						// nodes in its content
-						List<Node> nodes = null;
-						if (msg instanceof FindNodeResponse) {
-							nodes = ((FindNodeResponse) msg).getNodes();
-//						} else if (msg instanceof ForwardResponse) {
-//							nodes = ((ForwardResponse) msg).getNodes();
-//						} else if (msg instanceof ForwardMessage) {
-//							nodes = ((ForwardMessage) msg).getNodes();
-//						} else if (msg instanceof ForwardRequest) {
-//							nodes = ((ForwardRequest) msg).getBootstrap();
-						}
-
-						if (nodes != null) {
-							for (int i = 0; i < nodes.size(); i++) {
-								KadBuckets.this.insert(kadNodeProvider.setNode(nodes.get(i)));
-							}
-						}
-					}
-				}).register();
+		// msgDispatcherProvider.setConsumable(false)
+		// // do not add PingResponse since it might create a loop
+		//
+		// .addFilter(new TypeExcluderMessageFilter(PingResponse.class))//过滤ping的响应
+		// .addFilter(new SrcExcluderMessageFilter(localNode))//过滤本地节点
+		// .setCallback(null, new CompletionHandler<KadMessage, Object>() {
+		//
+		// @Override
+		// public void failed(Throwable exc, Object attachment) {
+		// // should never be here
+		// exc.printStackTrace();
+		// }
+		//
+		// @Override
+		// public void completed(KadMessage msg, Object attachment) {
+		// //路由表收到节点后插入到路由表中(主要是更新时间操作)
+		// KadNode kadNode=new KadNode();
+		// kadNode.setNode(msg.getSrc()).setNodeWasContacted();
+		// KadBuckets.this.insert(kadNode);
+		//
+		// //有可能返回的信息中有nodes,必须从里面提取，然后插入到路由表中
+		// List<Node> nodes = null;
+		// if (msg instanceof FindNodeResponse) {//bittorrent 协议中定义
+		// nodes = ((FindNodeResponse) msg).getNodes();
+		// // } else if (msg instanceof ForwardResponse) {
+		// // nodes = ((ForwardResponse) msg).getNodes();
+		// // } else if (msg instanceof ForwardMessage) {
+		// // nodes = ((ForwardMessage) msg).getNodes();
+		// // } else if (msg instanceof ForwardRequest) {
+		// // nodes = ((ForwardRequest) msg).getBootstrap();
+		// }
+		//
+		// if (nodes != null) {//
+		// for (int i = 0; i < nodes.size(); i++) {
+		// KadBuckets.this.insert(kadNode.setNode(nodes.get(i)));
+		// }
+		// }
+		// }
+		// }).register();
 	}
 
 	private int getKBucketIndex(Key key) {
@@ -235,29 +225,6 @@ public class KadBuckets implements KBuckets {
 		if ($.size() > n)
 			$.subList(n, $.size()).clear();// 裁剪多余的部分，然后清空他们
 		return $;//
-	}
-
-	/**
-	 * Gets all nodes with keys closest to the given k. The size of the list will be MIN(n, total number of nodes in the data structure)
-	 * 
-	 * @param k
-	 *            the key which the result's nodes are close to
-	 * @param n
-	 *            the maximum number of nodes expected
-	 * @return a list of nodes sorted by proximity to the given key's color
-	 */
-	/**
-	 * 这个和上面一样，只是比较器不一样
-	 */
-	@Override
-	public List<Node> getClosestNodesByColor(Key k, int n) {
-		List<Node> $ = getClosestNodes(k, n, getKBucketIndex(k), kbuckets);
-		if ($.isEmpty())
-			return $;
-		// $ = sort($, on(Node.class).getKey(), new KeyColorComparator(k, nrColors));
-		if ($.size() > n)
-			$.subList(n, $.size()).clear();
-		return $;
 	}
 
 	@Override

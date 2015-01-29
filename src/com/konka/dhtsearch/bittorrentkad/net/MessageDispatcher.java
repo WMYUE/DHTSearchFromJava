@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -24,51 +23,35 @@ import com.konka.dhtsearch.bittorrentkad.net.filter.MessageFilter;
  * @处理所有信息的不同状态 A message state: init -> expecting -> message received -> callback invoked -> back to expecting or end
  * 
  *
- * @param <A>
+ * @param
  */
-public class MessageDispatcher<A> {
+public class MessageDispatcher {
 
 	// state
-	private A attachment;
-	private CompletionHandler<KadMessage, A> callback;
-	private boolean isConsumbale = true;
-	private long timeout;
+	private String tag;// 返回消息的标识，t
+
+	public String getTag() {
+		return tag;
+	}
+
+	public void setTag(String tag) {
+		this.tag = tag;
+	}
+
+	private CompletionHandler<KadMessage, String> callback;
+	private boolean isConsumbale = true;// 一个开关，在没有收到信息前可以取消
+	private long timeout = 5 * 60 * 1000;//15分钟超时
 	private final Set<MessageFilter> filters = new HashSet<MessageFilter>();
 	private TimerTask timeoutTimerTask = null;
 	private final AtomicBoolean isDone;
-	// dependencies
-	private final BlockingQueue<MessageDispatcher<?>> outstandingRequests;
-	private final Set<MessageDispatcher<?>> expecters; // must be sync'ed set
-	private final Set<MessageDispatcher<?>> nonConsumableexpecters; // must be sync'ed set
-
 	private final Timer timer;
-	private final KadServer communicator;
+	private final KadServer mKadServer;
 
-	public MessageDispatcher(BlockingQueue<MessageDispatcher<?>> outstandingRequests, //
-			Set<MessageDispatcher<?>> expecters, Set<MessageDispatcher<?>> nonConsumableexpecters, //
-			Timer timer, long timeout, KadServer communicator) {
+	public MessageDispatcher(Timer timer, KadServer kadServer) {
 
-		this.outstandingRequests = outstandingRequests;
-		this.expecters = expecters;
-		this.nonConsumableexpecters = nonConsumableexpecters;
 		this.timer = timer;
-		this.timeout = timeout;
-		this.communicator = communicator;
+		this.mKadServer = kadServer;
 		this.isDone = new AtomicBoolean(false);
-	}
-
-	private void expect() {
-		if (isConsumbale)
-			expecters.add(this);
-		else
-			nonConsumableexpecters.add(this);
-	}
-
-	private void cancelExpect() {
-		if (isConsumbale)
-			expecters.remove(this);
-		else
-			nonConsumableexpecters.remove(this);
 	}
 
 	public void cancel(Throwable exc) {
@@ -78,11 +61,8 @@ public class MessageDispatcher<A> {
 		if (timeoutTimerTask != null)
 			timeoutTimerTask.cancel();
 
-		outstandingRequests.remove(this);
-		cancelExpect();
-
 		if (callback != null)
-			callback.failed(exc, attachment);
+			callback.failed(exc, tag);
 	}
 
 	// returns true if should be handled
@@ -95,55 +75,53 @@ public class MessageDispatcher<A> {
 	}
 
 	public void handle(KadMessage msg) {
-		assert (shouldHandleMessage(msg));
+		assert (shouldHandleMessage(msg));// 过滤
 
-		if (isDone.get())
+		if (isDone.get())// 是否done了
 			return;
 
-		if (timeoutTimerTask != null)
+		if (timeoutTimerTask != null)// timeoutTimerTask如果被实例化了，要取消掉
 			timeoutTimerTask.cancel();
 
-		outstandingRequests.remove(this);
 		if (isConsumbale) {
-			expecters.remove(this);
-			if (!isDone.compareAndSet(false, true))
+			if (!isDone.compareAndSet(false, true))// 如果是正在运行的，
 				return;
 		}
 
 		if (callback != null)
-			callback.completed(msg, attachment);
+			callback.completed(msg, tag);
 	}
 
-	public MessageDispatcher<A> addFilter(MessageFilter filter) {
+	public MessageDispatcher addFilter(MessageFilter filter) {
 		filters.add(filter);
 		return this;
 	}
 
-	public MessageDispatcher<A> setCallback(A attachment, CompletionHandler<KadMessage, A> callback) {
+	public MessageDispatcher setCallback(String attachment, CompletionHandler<KadMessage, String> callback) {
 		this.callback = callback;
-		this.attachment = attachment;
+		this.tag = attachment;
 		return this;
 	}
 
-	public MessageDispatcher<A> setTimeout(long t, TimeUnit unit) {
+	public MessageDispatcher setTimeout(long t, TimeUnit unit) {
 		timeout = unit.toMillis(t);
 		return this;
 	}
 
-	public MessageDispatcher<A> setConsumable(boolean consume) {
+	public MessageDispatcher setConsumable(boolean consume) {
 		isConsumbale = consume;
 		return this;
 	}
 
-	public MessageDispatcher<A> register() {
-		expecters.add(this);
+	public MessageDispatcher register() {
+		// expecters.add(this);
 		setupTimeout();
 		return this;
 	}
 
 	public Future<KadMessage> futureRegister() {
 
-		FutureCallback<KadMessage, A> f = new FutureCallback<KadMessage, A>() {
+		FutureCallback<KadMessage, String> f = new FutureCallback<KadMessage, String>() {
 			@Override
 			public synchronized boolean cancel(boolean mayInterruptIfRunning) {
 				MessageDispatcher.this.cancel(new CancellationException());
@@ -152,7 +130,6 @@ public class MessageDispatcher<A> {
 		};
 
 		setCallback(null, f);
-		expect();
 		setupTimeout();
 
 		return f;
@@ -172,35 +149,20 @@ public class MessageDispatcher<A> {
 		timer.schedule(timeoutTimerTask, timeout);
 	}
 
-	public boolean trySend(Node to, KadRequest req) {
-		setConsumable(true);
-		try {
-			if (!outstandingRequests.offer(this))
-				return false;
-			else {
-				// outstandingRequests.put(this);
-				expect();
-				communicator.send(to, req);
-				setupTimeout();
-				return true;
-			}
-
-		} catch (Exception e) {
-			cancel(e);
-			// if something bad happened - feel free to try again.
-			return true;
-		}
-	}
-
+	/**
+	 * 如果要收到返回的消息，请使用此处的send（也可以直接使用方法体）
+	 * 
+	 * @param to
+	 * @param req
+	 */
 	public void send(Node to, KadRequest req) {
 		setConsumable(true);
 		try {
 			/*
 			 * if (!outstandingRequests.offer(this, timeout, TimeUnit.MILLISECONDS)) throw new RejectedExecutionException();
 			 */
-			outstandingRequests.put(this);
-			expect();
-			communicator.send(to, req);
+			// outstandingRequests.put(this);
+			mKadServer.send(to, req);
 
 			setupTimeout();
 
@@ -211,7 +173,7 @@ public class MessageDispatcher<A> {
 
 	public Future<KadMessage> futureSend(Node to, KadRequest req) {
 
-		FutureCallback<KadMessage, A> f = new FutureCallback<KadMessage, A>();
+		FutureCallback<KadMessage, String> f = new FutureCallback<KadMessage, String>();
 		setCallback(null, f);
 
 		send(to, req);

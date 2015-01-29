@@ -52,7 +52,7 @@ public interface KBuckets extends NodeStorage {
 	 * @param n the maximum number of nodes expected
 	 * @return a list of nodes sorted by proximity to the given key's color
 	 */
-	public abstract List<Node> getClosestNodesByColor(Key k, int n);
+//	public abstract List<Node> getClosestNodesByColor(Key k, int n);
 
 	@Override
 	public abstract String toString();

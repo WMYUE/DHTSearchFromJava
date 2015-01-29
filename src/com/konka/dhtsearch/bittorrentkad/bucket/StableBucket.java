@@ -3,6 +3,7 @@ package com.konka.dhtsearch.bittorrentkad.bucket;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 
 import com.konka.dhtsearch.Node;
@@ -30,10 +31,10 @@ public class StableBucket implements Bucket {
 	private final int maxSize;
 	private final long validTimespan;
 	private final  PingRequest  pingRequestProvider;
-	private final  MessageDispatcher<Void > msgDispatcherProvider;
+	private final  MessageDispatcher  msgDispatcherProvider;
 	private final ExecutorService pingExecutor;
 
-	public StableBucket(int maxSize,  long validTimespan, ExecutorService pingExecutor, PingRequest  pingRequestProvider,  MessageDispatcher<Void> msgDispatcherProvider) {
+	public StableBucket(int maxSize,  long validTimespan, ExecutorService pingExecutor, PingRequest  pingRequestProvider,  MessageDispatcher msgDispatcherProvider) {
 
 		this.maxSize = maxSize;
 		this.bucket = new LinkedList<KadNode>();
@@ -100,13 +101,14 @@ public class StableBucket implements Bucket {
 	private void sendPing(final KadNode inBucket, final KadNode replaceIfFailed) {
 
 		final PingRequest pingRequest = pingRequestProvider;
-
-		final MessageDispatcher<Void> dispatcher = msgDispatcherProvider.setConsumable(true)//
+		Timer timer=new Timer();
+		MessageDispatcher  dispatcher=new MessageDispatcher(timer, kadServer);
+		final MessageDispatcher  dispatcher = msgDispatcherProvider.setConsumable(true)//
 				.addFilter(new IdMessageFilter(pingRequest.getId()))//
 				.addFilter(new TypeMessageFilter(PingResponse.class))//
-				.setCallback(null, new CompletionHandler<KadMessage, Void>() {
+				.setCallback(null, new CompletionHandler<KadMessage, String>() {
 					@Override
-					public void completed(KadMessage msg, Void nothing) {
+					public void completed(KadMessage msg, String nothing) {
 						// ping was recved
 						inBucket.setNodeWasContacted();
 						inBucket.releasePingLock();
@@ -118,7 +120,7 @@ public class StableBucket implements Bucket {
 					}
 
 					@Override
-					public void failed(Throwable exc, Void nothing) {
+					public void failed(Throwable exc, String nothing) {
 						// ping was not recved
 						synchronized (StableBucket.this) {
 							// try to remove the already in bucket and
