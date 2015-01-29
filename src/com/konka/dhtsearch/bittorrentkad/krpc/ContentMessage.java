@@ -1,7 +1,5 @@
 package com.konka.dhtsearch.bittorrentkad.krpc;
 
-import java.io.Serializable;
-
 import com.konka.dhtsearch.Node;
 
 /**
@@ -10,14 +8,14 @@ import com.konka.dhtsearch.Node;
  *
  */
 public class ContentMessage extends KadMessage {
-
+	// "t" with a string value representing a transaction ID
+	
 	private static final long serialVersionUID = -57547778613163861L;
 
 	private String tag;
-	private Serializable content;
 
-	ContentMessage(long id, Node src) {   
-		super(id, src);
+	public ContentMessage(String transaction, Node src) {
+		super(transaction, src);
 	}
 
 	/**
@@ -29,19 +27,6 @@ public class ContentMessage extends KadMessage {
 		return tag;
 	}
 
-	/**
-	 * Any arbitrary data
-	 * 
-	 * @return the data
-	 */
-	public Serializable getContent() {
-		return content;
-	}
-
-	public ContentMessage setContent(Serializable content) {
-		this.content = content;
-		return this;
-	}
 
 	public ContentMessage setTag(String tag) {
 		this.tag = tag;

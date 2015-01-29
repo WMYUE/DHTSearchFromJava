@@ -18,9 +18,9 @@ public class GetPeersRequest extends KadRequest {
 	private String tag;
 	private Serializable content;
 
-	GetPeersRequest(long id, Node src) {
+	GetPeersRequest(String transaction, Node src) {
 
-		super(id, src);
+		super(transaction, src);
 	}
 
 	public String getTag() {
@@ -43,7 +43,7 @@ public class GetPeersRequest extends KadRequest {
 
 	@Override
 	public GetPeersResponse generateResponse(Node localNode) {
-		return new GetPeersResponse(getId(), localNode);
+		return new GetPeersResponse(getTransaction(), localNode);
 	}
 
 }

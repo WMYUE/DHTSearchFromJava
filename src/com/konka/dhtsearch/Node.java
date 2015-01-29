@@ -19,7 +19,6 @@ import javax.sound.sampled.Port;
  * This class is serializable and can be sent/saved for other/later use by
  * any KeybasedRouting local or remote.
  * 
- * @author eyal.kibbar@gmail.com
  *
  */
 public class Node implements Serializable,Comparable<Node> {

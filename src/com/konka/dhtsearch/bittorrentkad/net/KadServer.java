@@ -1,10 +1,9 @@
 package com.konka.dhtsearch.bittorrentkad.net;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -12,11 +11,13 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.yaircc.torrent.bencoding.BEncodedInputStream;
+import org.yaircc.torrent.bencoding.BEncodedOutputStream;
 import org.yaircc.torrent.bencoding.BMap;
 
 import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeResponse;
 
 /**
  * 守护线程，负责接受和发送消息
@@ -28,7 +29,6 @@ public class KadServer implements Runnable {
 	private final BlockingQueue<DatagramPacket> pkts = new LinkedBlockingDeque<DatagramPacket>();;
 	private final ExecutorService srvExecutor = new ScheduledThreadPoolExecutor(10);
 	private final AtomicBoolean isActive = new AtomicBoolean(false);
-//	private AppManager appManager = new AppManager();
 
 	public KadServer(DatagramSocket socket) {
 		this.socket = socket;
@@ -47,81 +47,81 @@ public class KadServer implements Runnable {
 	// @Override
 	public void send(final Node to, final KadMessage msg) throws IOException {
 		// System.out.println("KadServer: send: " + msg + " to: " +
-		// to.getKey());
-
-		// if (msg instanceof PingRequest)
-		// this.nrOutgoingPings.incrementAndGet();
-
-		ByteArrayOutputStream bout = null;
-
 		try {
-			bout = new ByteArrayOutputStream();
-			// this.serializer.write(msg, bout);
-			// here is the memory allocated.
-			final byte[] bytes = bout.toByteArray();
-			// this.nrBytesSent.addAndGet(bytes.length);
-
-			final DatagramPacket pkt = new DatagramPacket(bytes, 0, bytes.length);
+			byte[] buf = BEncodedOutputStream.bencode(msg.getbMap());
+			final DatagramPacket pkt = new DatagramPacket(buf, 0, buf.length);
 
 			pkt.setSocketAddress(to.getSocketAddress());
 			this.socket.send(pkt);
 
-		} finally {
-			try {
-
-				bout.close();
-				bout = null;
-
-			} catch (final Exception e) {
-			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
 	// 收到信息后处理
 	private void handleIncomingPacket(final DatagramPacket pkt) {
-		// this.nrIncomingMessages.incrementAndGet();// i++
-		// this.nrBytesRecved.addAndGet(pkt.getLength());// 收到的数据大小，自动累加
 		this.srvExecutor.execute(new Runnable() {// 交给线程池处理
-
 					@Override
 					public void run() {
-						ByteArrayInputStream bin = null;
 						KadMessage msg = null;
 						try {// 这里处理消息的方法需要重写
-							bin = new ByteArrayInputStream(pkt.getData(), pkt.getOffset(), pkt.getLength());
-							// msg = KadServer.this.serializer.read(bin);// 这里应该是解码
-
-							// System.out.println("KadServer: handleIncomingPacket: " +
-							// msg + " from: " + msg.getSrc().getKey());
-
-							// fix incoming src address
-
 							BMap bMap = (BMap) BEncodedInputStream.bdecode(pkt.getData());
 							if (bMap.containsKey("y")) {
 								String y = bMap.getString("y");
-								String tag = bMap.getString("t");
-								msg.getSrc().setInetAddress(pkt.getAddress());// InetAddress
+								String transaction = bMap.getString("t");
+
 								if ("q".equals(y)) {// 对方请求
 
-								} else if ("r".equals(y)) {// 对方的响应
-									// bMap.containsKey(key);
+									if (bMap.containsKey("q")) {
+										String q = bMap.getString("q");// find_node or getpeers===
 
-									MessageDispatcher messageDispatcher = AppManager.getMessageDispatcherManager().findMessageDispatcherByTag(tag);
+										switch (q) {
+											case "find_node":
+
+												break;
+											case "get_peers":
+
+												break;
+											case "ping"://
+
+												break;
+
+											default:
+												break;
+										}
+
+									} else {
+										return;
+									}
+								} else if ("r".equals(y)) {// 对方的响应
+									// TODO 响应的操作应该根据请求的id t判断是哪个响应，t清楚一次必须改变
+									if (bMap.containsKey("r")) {
+										BMap bMap_r = bMap.getMap("r");
+										if (bMap_r.containsKey("token")) {// 只有getpeers响应中是toten
+											// TODO 解析getpeers响应
+										} else if (bMap_r.containsKey("nodes")) {// 除了 getpeers 就只有findnode有nodes了，所有这里是findnode响应
+											List<Node> nodes = passNodes(bMap_r.getString("nodes"));
+											Node src = new Node();
+											src.setInetAddress(pkt.getAddress());// InetAddress
+
+											FindNodeResponse msg1 = new FindNodeResponse(transaction, src);
+											msg1.setNodes(nodes);
+										}
+									}
+
+									MessageDispatcher messageDispatcher = AppManager.getMessageDispatcherManager().findMessageDispatcherByTag(transaction);
 									if (messageDispatcher != null) {
 										messageDispatcher.handle(msg);
 									}
 								}
 
 							}
-							
+
 						} catch (final Exception e) {
 							e.printStackTrace();
 							return;
 						} finally {
-							try {
-								bin.close();
-							} catch (final Exception e) {
-							}
 							KadServer.this.pkts.offer(pkt);// 如果可以，将ptk加入到队列
 						}
 
@@ -145,7 +145,18 @@ public class KadServer implements Runnable {
 						// e.printStackTrace();
 						// }
 					}
+
 				});
+	}
+
+	/**
+	 * 解析出nodes
+	 * 
+	 * @param string
+	 *            nodes集合的字符串
+	 */
+	private List<Node> passNodes(String string) {
+		return null;
 	}
 
 	/**
@@ -158,14 +169,18 @@ public class KadServer implements Runnable {
 	@Override
 	public void run() {
 		this.isActive.set(true);
+
 		while (this.isActive.get()) {
 			DatagramPacket pkt = null;
 			try {
+				System.out.println("等待数据");
 				pkt = this.pkts.poll();
+
 				if (pkt == null)
 					pkt = new DatagramPacket(new byte[1024 * 64], 1024 * 64);
 
 				this.socket.receive(pkt);// 堵塞
+				System.out.println("已经拿到数据可");
 				handleIncomingPacket(pkt);// 收到信息后处理
 
 			} catch (final Exception e) {

@@ -13,13 +13,13 @@ public class PingRequest extends KadRequest {
 
 	private static final long serialVersionUID = 4646089493549742900L;
 
-	public PingRequest(long id, Node src) {
-		super(id, src);
+	public PingRequest(String transaction, Node src) {
+		super(transaction, src);
 	}
 
 	@Override
 	public PingResponse generateResponse(Node localNode) {
-		return new PingResponse(getId(), localNode);
+		return new PingResponse(getTransaction(), localNode);
 	}
 
 }

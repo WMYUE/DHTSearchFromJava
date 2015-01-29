@@ -21,14 +21,14 @@ import com.konka.dhtsearch.bittorrentkad.net.filter.TypeMessageFilter;
  * 处理器 查找已知的节点相近的数据 Handle find node requests by giving the known closest nodes to the requested key from the KBuckets data structure
  * 
  */
-public class KademliaFindNodeHandler extends AbstractHandler implements FindNodeHandler {
+public class KademliaFindNodeHandler extends AbstractHandler {
 	private final KadServer kadServer;
 	private final Node localNode;
 	private final KadCache cache;
 	private final KBuckets kBuckets;
 	private final int kBucketSize;
 
-	KademliaFindNodeHandler(final MessageDispatcher  msgDispatcherProvider, final KadServer kadServer,//
+	KademliaFindNodeHandler(final MessageDispatcher msgDispatcherProvider, final KadServer kadServer,//
 			final Node localNode, final KadCache cache, final KBuckets kBuckets, final int kBucketSize) {
 		super(msgDispatcherProvider);
 

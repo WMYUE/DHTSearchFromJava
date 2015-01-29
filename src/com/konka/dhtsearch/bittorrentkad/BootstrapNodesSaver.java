@@ -20,13 +20,11 @@ import com.konka.dhtsearch.bittorrentkad.bucket.KadBuckets;
 public class BootstrapNodesSaver {
 
 	private final KadBuckets kBuckets;
-	private final KadNode kadNodeProvider;
 	private final File nodesFile;
 
-	BootstrapNodesSaver(KadBuckets kBuckets, KadNode kadNodeProvider, File nodesFile) {
+	public BootstrapNodesSaver(KadBuckets kBuckets, File nodesFile) {
 
 		this.kBuckets = kBuckets;
-		this.kadNodeProvider = kadNodeProvider;
 		this.nodesFile = nodesFile;
 	}
 
@@ -84,7 +82,7 @@ public class BootstrapNodesSaver {
 		}
 
 		for (Node n : nodes) {
-			kBuckets.insert(kadNodeProvider .setNode(n));
+			kBuckets.insert(new KadNode().setNode(n));
 		}
 	}
 

@@ -16,8 +16,8 @@ public class FindNodeRequest extends KadRequest {
 	private Key key;
 	private boolean searchCache;
 
-	public FindNodeRequest(long id, Node src) {
-		super(id, src);
+	public FindNodeRequest(String transaction, Node src) {
+		super(transaction, src);
 	}
 
 	/**
@@ -35,7 +35,7 @@ public class FindNodeRequest extends KadRequest {
 
 	@Override
 	public FindNodeResponse generateResponse(Node localNode) {
-		return new FindNodeResponse(getId(), localNode);
+		return new FindNodeResponse(getTransaction(), localNode);
 	}
 
 	public FindNodeRequest setSearchCache(boolean searchCache) {

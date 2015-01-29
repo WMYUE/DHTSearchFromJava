@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.KeyComparator;
 import com.konka.dhtsearch.KeyFactory;
@@ -29,17 +30,17 @@ public class KadBuckets implements KBuckets {
 
 	// private final MessageDispatcher<Object> msgDispatcherProvider;
 	private final Bucket[] kbuckets;// 默认160
-	protected final Node localNode;
+//	protected final Node localNode;
 	private final KeyFactory keyFactory;
 
-	protected KadBuckets(KeyFactory keyFactory, Bucket kBucketProvider, Node localNode) {
+	public KadBuckets(KeyFactory keyFactory, Bucket kBucket ) {
 		this.keyFactory = keyFactory;
 		// this.msgDispatcherProvider = msgDispatcherProvider;
-		this.localNode = localNode;
+		 
 
 		kbuckets = new Bucket[keyFactory.getBitLength()];
 		for (int i = 0; i < kbuckets.length; ++i) {
-			kbuckets[i] = kBucketProvider;
+			kbuckets[i] = kBucket;
 		}
 	}
 
@@ -52,7 +53,7 @@ public class KadBuckets implements KBuckets {
 	public List<Key> randomKeysForAllBuckets() {
 		List<Key> $ = new ArrayList<Key>();
 		for (int i = 0; i < kbuckets.length; ++i) {
-			Key key = keyFactory.generate(i).xor(localNode.getKey());
+			Key key = keyFactory.generate(i).xor(AppManager.getLocalNode().getKey());
 			$.add(key);
 		}
 		return $;
@@ -105,7 +106,7 @@ public class KadBuckets implements KBuckets {
 	}
 
 	private int getKBucketIndex(Key key) {
-		return key.xor(localNode.getKey()).getFirstSetBitIndex();
+		return key.xor(AppManager.getLocalNode().getKey()).getFirstSetBitIndex();
 	}
 
 	private List<Node> getClosestNodes(Key k, int n, int index, Bucket[] buckets) {

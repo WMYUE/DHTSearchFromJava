@@ -18,8 +18,8 @@ public class FindNodeResponse extends KadResponse {
 	// not in openKad - for vision.
 	private boolean needed;
 
-	public FindNodeResponse(long id, Node src) {
-		super(id, src);
+	public FindNodeResponse(String transaction, Node src) {
+		super(transaction, src);
 	}
 
 	public FindNodeResponse setNodes(List<Node> nodes) {

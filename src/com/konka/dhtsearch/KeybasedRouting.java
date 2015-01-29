@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Future;
 
+import org.yaircc.torrent.bencoding.BMap;
+
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
 
 /**
@@ -94,7 +96,7 @@ public interface KeybasedRouting {
 	 * @param msg any arbitrary object
 	 * @throws IOException failed to send due to some socket error
 	 */
-	public void sendMessage(Node to, String tag, Serializable msg) throws IOException;
+	public void sendMessage(Node to, String tag, BMap msg) throws IOException;
 	
 	/**
 	 * Sends a message to the destination node and expects a response. The response is whatever
@@ -141,7 +143,7 @@ public interface KeybasedRouting {
 	/**
 	 * @return the keyFactory used for this Keybased Routing
 	 */
-	public KeyFactory getKeyFactory();
+//	public KeyFactory getKeyFactory();
 	
 	/**
 	 * A list of all known nodes. Changing the returned list will have no affect on the Key Based Routing

@@ -16,8 +16,8 @@ public class GetPeersResponse extends KadResponse {
 
 	private Serializable content;
 	
-	GetPeersResponse(long id, Node src) {
-		super(id, src);
+	GetPeersResponse(String transaction, Node src) {
+		super(transaction, src);
 	}
 
 	public Serializable getContent() {

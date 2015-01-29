@@ -12,8 +12,8 @@ public abstract class KadResponse extends KadMessage {
 
 	private static final long serialVersionUID = 5247239397467830857L;
 
-	protected KadResponse(long id, Node src) {
-		super(id, src);
+	protected KadResponse(String transaction, Node src) {
+		super(transaction, src);
 	}
 
 }

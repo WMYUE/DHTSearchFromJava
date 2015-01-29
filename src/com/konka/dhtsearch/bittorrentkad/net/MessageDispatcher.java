@@ -29,6 +29,7 @@ public class MessageDispatcher {
 
 	// state
 	private String tag;// 返回消息的标识，t
+	private KadRequest kadRequest;
 
 	public String getTag() {
 		return tag;
@@ -40,7 +41,7 @@ public class MessageDispatcher {
 
 	private CompletionHandler<KadMessage, String> callback;
 	private boolean isConsumbale = true;// 一个开关，在没有收到信息前可以取消
-	private long timeout = 5 * 60 * 1000;//15分钟超时
+	private long timeout = 5 * 60 * 1000;// 15分钟超时
 	private final Set<MessageFilter> filters = new HashSet<MessageFilter>();
 	private TimerTask timeoutTimerTask = null;
 	private final AtomicBoolean isDone;
@@ -138,15 +139,17 @@ public class MessageDispatcher {
 	private void setupTimeout() {
 		if (!isConsumbale)
 			return;
-
 		timeoutTimerTask = new TimerTask() {
-
 			@Override
 			public void run() {
 				MessageDispatcher.this.cancel(new TimeoutException());
 			}
 		};
 		timer.schedule(timeoutTimerTask, timeout);
+	}
+
+	public KadRequest getKadRequest() {
+		return kadRequest;
 	}
 
 	/**
@@ -163,21 +166,17 @@ public class MessageDispatcher {
 			 */
 			// outstandingRequests.put(this);
 			mKadServer.send(to, req);
-
+			kadRequest = req;
 			setupTimeout();
-
 		} catch (Exception e) {
 			cancel(e);
 		}
 	}
 
 	public Future<KadMessage> futureSend(Node to, KadRequest req) {
-
 		FutureCallback<KadMessage, String> f = new FutureCallback<KadMessage, String>();
 		setCallback(null, f);
-
 		send(to, req);
-
 		return f;
 	}
 }

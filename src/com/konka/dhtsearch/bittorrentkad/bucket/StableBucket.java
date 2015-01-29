@@ -20,9 +20,12 @@ import com.konka.dhtsearch.bittorrentkad.net.filter.IdMessageFilter;
 import com.konka.dhtsearch.bittorrentkad.net.filter.TypeMessageFilter;
 
 /**
- * A bucket with the following policy:具有下列政策斗： when inserting a node do the following:当插入一个节点做如下： 1. if the node is already in the bucket, move it to be the last 1。如果该节点已经在斗，移动它是最后一次 2. if the node is not in the bucket and the bucket is not full, move it to be the last in the bucket 2。如果节点不在铲斗、斗是不充分的，将其移动到桶上 3. if the node is not in the bucket and the bucket is full, ping the first node in the bucket: 3。如果节点不在桶和桶是满的，平中的第一个节点的桶： a. if it returned a ping, move it to be the last in bucket and don't insert the given node 如果它返回一个平，把它在桶上，不要插入节点 b. if it did not returned a ping, remove it from the bucket and insert the given node as last 如果它没有返回平，把它从桶中插入给定的节点上
- * 
- * @author eyal.kibbar@gmail.com
+ * @see 具有下列政策斗：
+ * @see 当插入一个节点做如下：
+ * @see 如果该节点已经在斗，移动它是最后一次
+ * @see 如果节点不在铲斗、斗是不充分的，将其移动到桶上
+ * @see 如果节点不在桶和桶是满的，平中的第一个节点的桶
+ * @see 如果它没有返回平，把它从桶中插入给定的节点上
  *
  */
 public class StableBucket implements Bucket {
@@ -92,7 +95,7 @@ public class StableBucket implements Bucket {
 	 */
 	private void sendPing(final KadNode inBucket, final KadNode replaceIfFailed) {
 		// 这里需要生成一个id 也就是t
-		final PingRequest pingRequest = new PingRequest(1, inBucket.getNode());// 这里要注意
+		final PingRequest pingRequest = new PingRequest("ttt", inBucket.getNode());// 这里要注意
 		Timer timer = new Timer();
 		KadServer kadServer = AppManager.getKadServer();
 		// final MessageDispatcher dispatcher=AppManager.getMessageDispatcherManager()
@@ -100,7 +103,7 @@ public class StableBucket implements Bucket {
 		final MessageDispatcher dispatcher = AppManager.getMessageDispatcherManager()//
 				.createMessageDispatcher(timer, kadServer);
 		dispatcher.setConsumable(true)//
-				.addFilter(new IdMessageFilter(pingRequest.getId()))//
+				.addFilter(new IdMessageFilter(pingRequest.getTransaction()))//
 				.addFilter(new TypeMessageFilter(PingResponse.class))//
 				.setCallback(null, new CompletionHandler<KadMessage, String>() {
 					@Override

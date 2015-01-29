@@ -10,32 +10,53 @@ import com.konka.dhtsearch.bittorrentkad.net.KadServer;
 public class AppManager {
 	private static MessageDispatcherManager messageDispatcherManager;
 	private static KadServer kadServer;
+	private static AppManager appManager;
+	private static final Node localNode = new Node();
 
-	public AppManager() {
+	public static Node getLocalNode() {
+		return localNode;
+	}
+
+	public static AppManager getInstance() {
+		if (appManager == null) {
+			init();
+		}
+		return appManager;
+	}
+
+	private AppManager() {
 		super();
-		init();
-	}
-
-	public static KadServer getKadServer() {
-		return kadServer;
-	}
-
-	private void init() {
-		messageDispatcherManager = new MessageDispatcherManager();
-		DatagramSocket socket;
 		try {
-			socket = new DatagramSocket(5555, InetAddress.getByName("0.0.0.0"));
-			kadServer = new KadServer(socket);
-		} catch (SocketException e) {
-			e.printStackTrace();
+			localNode.setInetAddress(InetAddress.getByName("0.0.0.0"));
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
+		localNode.setPoint(5555);
+	}
+
+	public static void init() {
+		appManager = new AppManager();
+		messageDispatcherManager = new MessageDispatcherManager();
+		DatagramSocket socket;
+		try {
+			socket = new DatagramSocket(localNode.getSocketAddress());
+			kadServer = new KadServer(socket);
+		} catch (SocketException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public static KadServer getKadServer() {
+		if (kadServer == null) {
+			throw new IllegalArgumentException("必须先调用init方法进行初始化");
+		}
+		return kadServer;
 	}
 
 	public static MessageDispatcherManager getMessageDispatcherManager() {
 		if (messageDispatcherManager == null) {
-			throw new IllegalArgumentException("必须先初始化");
+			throw new IllegalArgumentException("必须先调用init方法进行初始化");
 		}
 		return messageDispatcherManager;
 	}

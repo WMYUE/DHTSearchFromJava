@@ -8,14 +8,14 @@ import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
  */
 public class IdMessageFilter implements MessageFilter {
 
-	private final long id;
+	private final String transaction;
 
-	public IdMessageFilter(long id) {
-		this.id = id;
+	public IdMessageFilter(String transaction) {
+		this.transaction = transaction;
 	}
 
 	@Override
 	public boolean shouldHandle(KadMessage m) {
-		return m.getId() == id;
+		return m.getTransaction() .equals(transaction);
 	}
 }
