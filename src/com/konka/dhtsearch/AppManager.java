@@ -13,7 +13,7 @@ public class AppManager {
 
 	public AppManager() {
 		super();
-		 init();
+		init();
 	}
 
 	public static KadServer getKadServer() {
@@ -33,9 +33,9 @@ public class AppManager {
 		}
 	}
 
-	public static MessageDispatcherManager getMessageDispatcherManager() throws Exception {
+	public static MessageDispatcherManager getMessageDispatcherManager() {
 		if (messageDispatcherManager == null) {
-			throw new Exception("必须先初始化");
+			throw new IllegalArgumentException("必须先初始化");
 		}
 		return messageDispatcherManager;
 	}

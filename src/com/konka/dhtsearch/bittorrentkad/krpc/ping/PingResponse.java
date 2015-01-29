@@ -13,7 +13,7 @@ public class PingResponse extends KadResponse {
 
 	private static final long serialVersionUID = -5054944878934710372L;
 
-	PingResponse(long id, Node src) {
+	public PingResponse(long id, Node src) {
 		super(id, src);
 	}
 

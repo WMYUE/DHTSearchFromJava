@@ -5,13 +5,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.KadNode;
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingResponse;
+import com.konka.dhtsearch.bittorrentkad.net.KadServer;
 import com.konka.dhtsearch.bittorrentkad.net.MessageDispatcher;
 import com.konka.dhtsearch.bittorrentkad.net.filter.IdMessageFilter;
 import com.konka.dhtsearch.bittorrentkad.net.filter.TypeMessageFilter;
@@ -24,24 +27,13 @@ import com.konka.dhtsearch.bittorrentkad.net.filter.TypeMessageFilter;
  */
 public class StableBucket implements Bucket {
 
-	// state
 	private final List<KadNode> bucket;
+	private final int maxSize = 8;
+	private final long validTimespan = 15 * 60 * 1000;
+	private final ExecutorService pingExecutor = new ScheduledThreadPoolExecutor(3);
 
-	// dependencies
-	private final int maxSize;
-	private final long validTimespan;
-	private final  PingRequest  pingRequestProvider;
-	private final  MessageDispatcher  msgDispatcherProvider;
-	private final ExecutorService pingExecutor;
-
-	public StableBucket(int maxSize,  long validTimespan, ExecutorService pingExecutor, PingRequest  pingRequestProvider,  MessageDispatcher msgDispatcherProvider) {
-
-		this.maxSize = maxSize;
+	public StableBucket() {
 		this.bucket = new LinkedList<KadNode>();
-		this.validTimespan = validTimespan;
-		this.pingExecutor = pingExecutor;
-		this.pingRequestProvider = pingRequestProvider;
-		this.msgDispatcherProvider = msgDispatcherProvider;
 	}
 
 	@Override
@@ -99,11 +91,15 @@ public class StableBucket implements Bucket {
 	 * @param replaceIfFailed
 	 */
 	private void sendPing(final KadNode inBucket, final KadNode replaceIfFailed) {
+		// 这里需要生成一个id 也就是t
+		final PingRequest pingRequest = new PingRequest(1, inBucket.getNode());// 这里要注意
+		Timer timer = new Timer();
+		KadServer kadServer = AppManager.getKadServer();
+		// final MessageDispatcher dispatcher=AppManager.getMessageDispatcherManager()
 
-		final PingRequest pingRequest = pingRequestProvider;
-		Timer timer=new Timer();
-		MessageDispatcher  dispatcher=new MessageDispatcher(timer, kadServer);
-		final MessageDispatcher  dispatcher = msgDispatcherProvider.setConsumable(true)//
+		final MessageDispatcher dispatcher = AppManager.getMessageDispatcherManager()//
+				.createMessageDispatcher(timer, kadServer);
+		dispatcher.setConsumable(true)//
 				.addFilter(new IdMessageFilter(pingRequest.getId()))//
 				.addFilter(new TypeMessageFilter(PingResponse.class))//
 				.setCallback(null, new CompletionHandler<KadMessage, String>() {
@@ -143,10 +139,8 @@ public class StableBucket implements Bucket {
 						inBucket.releasePingLock();
 					}
 				});
-
 		try {
 			pingExecutor.execute(new Runnable() {
-
 				@Override
 				public void run() {
 					dispatcher.send(inBucket.getNode(), pingRequest);

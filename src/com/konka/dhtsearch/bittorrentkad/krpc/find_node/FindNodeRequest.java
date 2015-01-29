@@ -16,7 +16,7 @@ public class FindNodeRequest extends KadRequest {
 	private Key key;
 	private boolean searchCache;
 
-	FindNodeRequest(long id, Node src) {
+	public FindNodeRequest(long id, Node src) {
 		super(id, src);
 	}
 

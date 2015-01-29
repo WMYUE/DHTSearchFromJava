@@ -18,7 +18,7 @@ public class FindNodeResponse extends KadResponse {
 	// not in openKad - for vision.
 	private boolean needed;
 
-	protected FindNodeResponse(long id, Node src) {
+	public FindNodeResponse(long id, Node src) {
 		super(id, src);
 	}
 
