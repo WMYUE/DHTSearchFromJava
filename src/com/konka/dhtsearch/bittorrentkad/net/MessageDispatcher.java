@@ -47,9 +47,37 @@ public class MessageDispatcher {
 	private final AtomicBoolean isDone;
 	private final Timer timer;
 	private final KadServer mKadServer;
+	private final static Set<MessageDispatcher> messageDispatchers = new HashSet<MessageDispatcher>();
+
+	public Set<MessageDispatcher> getMessageDispatchers() {
+		return messageDispatchers;
+	}
+
+	private void expect() {
+		messageDispatchers.add(this);
+	}
+
+	/**
+	 * 根据tag transaction 查找对于的请求
+	 * 
+	 * @param tag
+	 * @return
+	 */
+	public static MessageDispatcher findMessageDispatcherByTag(String tag) {
+		for (MessageDispatcher messageDispatcher : messageDispatchers) {
+			if (messageDispatcher.getTag() != null && messageDispatcher.getTag().equals(tag)) {
+				return messageDispatcher;
+			}
+		}
+		return null;
+	}
+
+	private void cancelExpect() {
+		messageDispatchers.remove(this);
+	}
 
 	public MessageDispatcher(Timer timer, KadServer kadServer) {
-
+		expect();
 		this.timer = timer;
 		this.mKadServer = kadServer;
 		this.isDone = new AtomicBoolean(false);
@@ -61,7 +89,7 @@ public class MessageDispatcher {
 
 		if (timeoutTimerTask != null)
 			timeoutTimerTask.cancel();
-
+		cancelExpect();
 		if (callback != null)
 			callback.failed(exc, tag);
 	}
@@ -165,6 +193,7 @@ public class MessageDispatcher {
 			 * if (!outstandingRequests.offer(this, timeout, TimeUnit.MILLISECONDS)) throw new RejectedExecutionException();
 			 */
 			// outstandingRequests.put(this);
+			expect();
 			mKadServer.send(to, req);
 			kadRequest = req;
 			setupTimeout();
@@ -176,6 +205,7 @@ public class MessageDispatcher {
 	public Future<KadMessage> futureSend(Node to, KadRequest req) {
 		FutureCallback<KadMessage, String> f = new FutureCallback<KadMessage, String>();
 		setCallback(null, f);
+		expect();
 		send(to, req);
 		return f;
 	}

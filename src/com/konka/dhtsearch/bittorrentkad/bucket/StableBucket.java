@@ -100,8 +100,7 @@ public class StableBucket implements Bucket {
 		KadServer kadServer = AppManager.getKadServer();
 		// final MessageDispatcher dispatcher=AppManager.getMessageDispatcherManager()
 
-		final MessageDispatcher dispatcher = AppManager.getMessageDispatcherManager()//
-				.createMessageDispatcher(timer, kadServer);
+		final MessageDispatcher dispatcher = new MessageDispatcher(timer, kadServer);
 		dispatcher.setConsumable(true)//
 				.addFilter(new IdMessageFilter(pingRequest.getTransaction()))//
 				.addFilter(new TypeMessageFilter(PingResponse.class))//

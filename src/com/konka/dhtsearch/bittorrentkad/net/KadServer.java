@@ -14,10 +14,13 @@ import org.yaircc.torrent.bencoding.BEncodedInputStream;
 import org.yaircc.torrent.bencoding.BEncodedOutputStream;
 import org.yaircc.torrent.bencoding.BMap;
 
-import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadRequest;
+import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeResponse;
+import com.konka.dhtsearch.bittorrentkad.krpc.get_peers.GetPeersRequest;
+import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingRequest;
 
 /**
  * 守护线程，负责接受和发送消息
@@ -94,24 +97,43 @@ public class KadServer implements Runnable {
 									} else {
 										return;
 									}
-								} else if ("r".equals(y)) {// 对方的响应
-									// TODO 响应的操作应该根据请求的id t判断是哪个响应，t清楚一次必须改变
-									if (bMap.containsKey("r")) {
-										BMap bMap_r = bMap.getMap("r");
-										if (bMap_r.containsKey("token")) {// 只有getpeers响应中是toten
-											// TODO 解析getpeers响应
-										} else if (bMap_r.containsKey("nodes")) {// 除了 getpeers 就只有findnode有nodes了，所有这里是findnode响应
-											List<Node> nodes = passNodes(bMap_r.getString("nodes"));
-											Node src = new Node();
-											src.setInetAddress(pkt.getAddress());// InetAddress
-
-											FindNodeResponse msg1 = new FindNodeResponse(transaction, src);
-											msg1.setNodes(nodes);
-										}
-									}
-
-									MessageDispatcher messageDispatcher = AppManager.getMessageDispatcherManager().findMessageDispatcherByTag(transaction);
+								} else if ("r".equals(y)) {// 对方的响应（由于值爬数据，不用处理太复杂）
+									// = new MessageDispatcher(timer, kadServer);
+									MessageDispatcher messageDispatcher = MessageDispatcher.findMessageDispatcherByTag(transaction);
 									if (messageDispatcher != null) {
+										KadRequest kadRequest = messageDispatcher.getKadRequest();
+										if (kadRequest.getClass() == FindNodeRequest.class) {
+											BMap bMap_r = bMap.getMap("r");
+											if (bMap_r.containsKey("nodes")) {
+												List<Node> nodes = passNodes(bMap_r.getString("nodes"));
+												Node src = new Node();
+												src.setInetAddress(pkt.getAddress());// InetAddress
+												FindNodeResponse msg1 = new FindNodeResponse(transaction, src);
+												msg1.setNodes(nodes);
+											} else {
+												return;
+											}
+										} else if (kadRequest.getClass() == PingRequest.class) {
+											// TODO 服务不接受
+										} else if (kadRequest.getClass() == GetPeersRequest.class) {
+
+										} else {
+											// TODO 响应的操作应该根据请求的id t判断是哪个响应，t清楚一次必须改变
+											if (bMap.containsKey("r")) {
+												BMap bMap_r = bMap.getMap("r");
+												if (bMap_r.containsKey("token")) {// 只有getpeers响应中是toten
+													// TODO 解析getpeers响应
+												} else if (bMap_r.containsKey("nodes")) {// 除了 getpeers 就只有findnode有nodes了，所有这里是findnode响应
+													List<Node> nodes = passNodes(bMap_r.getString("nodes"));
+													Node src = new Node();
+													src.setInetAddress(pkt.getAddress());// InetAddress
+
+													FindNodeResponse msg1 = new FindNodeResponse(transaction, src);
+													msg1.setNodes(nodes);
+												}
+											}
+										}
+
 										messageDispatcher.handle(msg);
 									}
 								}

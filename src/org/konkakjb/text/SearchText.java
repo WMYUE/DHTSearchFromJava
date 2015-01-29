@@ -43,7 +43,7 @@ public class SearchText {
 		MessageDispatcherManager messageDispatcherManager=AppManager.getMessageDispatcherManager();
 		MessageDispatcher messageDispatcher=new MessageDispatcher(new Timer(), AppManager.getKadServer());
 //		messageDispatcher.send(to, req);
-		messageDispatcherManager.addMessageDispatcher(messageDispatcher);
+//		messageDispatcherManager.addMessageDispatcher(messageDispatcher);
 //		kadNet.sendMessage(to, tag, msg);
 	}
 }
