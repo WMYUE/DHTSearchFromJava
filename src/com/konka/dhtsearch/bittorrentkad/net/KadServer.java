@@ -114,7 +114,7 @@ public class KadServer implements Runnable {
 												return;
 											}
 										} else if (kadRequest.getClass() == PingRequest.class) {
-											// TODO 服务不接受
+											// TODO  
 										} else if (kadRequest.getClass() == GetPeersRequest.class) {
 
 										} else {
@@ -130,6 +130,7 @@ public class KadServer implements Runnable {
 
 													FindNodeResponse msg1 = new FindNodeResponse(transaction, src);
 													msg1.setNodes(nodes);
+													msg=msg1;
 												}
 											}
 										}
