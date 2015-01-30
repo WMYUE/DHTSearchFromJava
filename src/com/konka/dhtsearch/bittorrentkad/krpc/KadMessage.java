@@ -2,7 +2,9 @@ package com.konka.dhtsearch.bittorrentkad.krpc;
 
 import java.io.Serializable;
 
+import org.yaircc.torrent.bencoding.BEncodedOutputStream;
 import org.yaircc.torrent.bencoding.BMap;
+import org.yaircc.torrent.bencoding.HashBMap;
 
 import com.konka.dhtsearch.Node;
 
@@ -13,19 +15,19 @@ import com.konka.dhtsearch.Node;
  */
 public abstract class KadMessage implements Serializable {
 	public static final String TRANSACTION = "t";
-	private static final long serialVersionUID = -6975403100655787398L;
-	private final String transaction;
-	private final Node src;
-	private BMap bMap;
+	protected static final long serialVersionUID = -6975403100655787398L;
+	protected final String transaction;
+	protected final Node src;
+//	private BMap bMap;
 
-	public BMap getbMap() {
-		return bMap;
-	}
+//	public BMap getbMap() {
+//		return bMap;
+//	}
 
-	public KadMessage setbMap(BMap bMap) {
-		this.bMap = bMap;
-		return this;
-	}
+//	public KadMessage setbMap(BMap bMap) {
+//		this.bMap = bMap;
+//		return this;
+//	}
 
 	protected KadMessage(String transaction, Node src) {
 		this.transaction = transaction;
@@ -39,5 +41,7 @@ public abstract class KadMessage implements Serializable {
 	public String getTransaction() {
 		return transaction;
 	}
+
+	public abstract byte[] getBencodeData(Node to);// 对方的节点
 
 }

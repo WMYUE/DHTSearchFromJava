@@ -18,4 +18,5 @@ public abstract class KadRequest extends KadMessage {
 
 	public abstract KadResponse generateResponse(Node localNode);
 
+	
 }

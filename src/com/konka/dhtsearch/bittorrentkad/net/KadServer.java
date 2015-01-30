@@ -11,8 +11,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.yaircc.torrent.bencoding.BEncodedInputStream;
-import org.yaircc.torrent.bencoding.BEncodedOutputStream;
 import org.yaircc.torrent.bencoding.BMap;
+import org.yaircc.torrent.bencoding.BTypeException;
 
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
@@ -49,9 +49,8 @@ public class KadServer implements Runnable {
 	 */
 	// @Override
 	public void send(final Node to, final KadMessage msg) throws IOException {
-		// System.out.println("KadServer: send: " + msg + " to: " +
 		try {
-			byte[] buf = BEncodedOutputStream.bencode(msg.getbMap());
+			byte[] buf =msg.getBencodeData(to) ;
 			final DatagramPacket pkt = new DatagramPacket(buf, 0, buf.length);
 
 			pkt.setSocketAddress(to.getSocketAddress());
@@ -70,72 +69,49 @@ public class KadServer implements Runnable {
 						KadMessage msg = null;
 						try {// 这里处理消息的方法需要重写
 							BMap bMap = (BMap) BEncodedInputStream.bdecode(pkt.getData());
+							Node src = new Node().setInetAddress(pkt.getAddress());// InetAddress;//对方的node信息
+							String transaction = bMap.getString("t");//交互用的识别id
+							
 							if (bMap.containsKey("y")) {
 								String y = bMap.getString("y");
-								String transaction = bMap.getString("t");
-
+								
 								if ("q".equals(y)) {// 对方请求
-
 									if (bMap.containsKey("q")) {
 										String q = bMap.getString("q");// find_node or getpeers===
-
 										switch (q) {
 											case "find_node":
-
+												handleFind_NodeRequest(bMap);
 												break;
 											case "get_peers":
-
+												handleGet_PeersRequest(bMap);
 												break;
 											case "ping"://
-
+												hanldePingRequest(bMap);
 												break;
-
 											default:
 												break;
 										}
-
 									} else {
 										return;
 									}
 								} else if ("r".equals(y)) {// 对方的响应（由于值爬数据，不用处理太复杂）
-									// = new MessageDispatcher(timer, kadServer);
-									MessageDispatcher messageDispatcher = MessageDispatcher.findMessageDispatcherByTag(transaction);
-									if (messageDispatcher != null) {
+									MessageDispatcher messageDispatcher = MessageDispatcher.findMessageDispatcherByTag(transaction);//取出之前的请求对象
+									if (messageDispatcher != null) {//有记录
 										KadRequest kadRequest = messageDispatcher.getKadRequest();
-										if (kadRequest.getClass() == FindNodeRequest.class) {
-											BMap bMap_r = bMap.getMap("r");
-											if (bMap_r.containsKey("nodes")) {
-												List<Node> nodes = passNodes(bMap_r.getString("nodes"));
-												Node src = new Node();
-												src.setInetAddress(pkt.getAddress());// InetAddress
-												FindNodeResponse msg1 = new FindNodeResponse(transaction, src);
-												msg1.setNodes(nodes);
-											} else {
-												return;
-											}
+										if (kadRequest.getClass() == FindNodeRequest.class) {//如果我之前的请求是findnode,那么这个应该是请求的回复
+											FindNodeResponse findNodeResponse=receiveFind_Node(transaction,bMap,src);
+											messageDispatcher.handle(findNodeResponse);
 										} else if (kadRequest.getClass() == PingRequest.class) {
-											// TODO  
+											// TODO
 										} else if (kadRequest.getClass() == GetPeersRequest.class) {
 
 										} else {
 											// TODO 响应的操作应该根据请求的id t判断是哪个响应，t清楚一次必须改变
-											if (bMap.containsKey("r")) {
-												BMap bMap_r = bMap.getMap("r");
-												if (bMap_r.containsKey("token")) {// 只有getpeers响应中是toten
-													// TODO 解析getpeers响应
-												} else if (bMap_r.containsKey("nodes")) {// 除了 getpeers 就只有findnode有nodes了，所有这里是findnode响应
-													List<Node> nodes = passNodes(bMap_r.getString("nodes"));
-													Node src = new Node();
-													src.setInetAddress(pkt.getAddress());// InetAddress
-
-													FindNodeResponse msg1 = new FindNodeResponse(transaction, src);
-													msg1.setNodes(nodes);
-													msg=msg1;
-												}
-											}
 										}
-
 										messageDispatcher.handle(msg);
+									}else{//没有记录就按照大众处理
+//										FindNodeResponse findNodeResponse=receiveFind_Node(transaction,bMap,src);
+//										messageDispatcher.handle(findNodeResponse);
 									}
 								}
 
@@ -147,31 +123,54 @@ public class KadServer implements Runnable {
 						} finally {
 							KadServer.this.pkts.offer(pkt);// 如果可以，将ptk加入到队列
 						}
-
-						// appManager.getMessageDispatcherManager().findMessageDispatcherByTag(tag);
-						// y=q q=r 请求--- y=r r= ---响应，可以判断是否是别人请求还是响应
-
-						// t="aa"，可以根据t的值判断是哪个请求的返回信息
-
-						// MessageDispatcher 中的att可以作为一个标识
-
-						// msg.getSrc().g
-						// 问题，这里我怎么知道msg是什么消息呢？？？
-						// call all the expecters
-						// final List<MessageDispatcher<?>> shouldHandle = extractShouldHandle(msg);
-						//
-						// for (final MessageDispatcher<?> m : shouldHandle)
-						// try {
-						// m.handle(msg);
-						// } catch (final Exception e) {
-						// // handle fail should not interrupt other handlers
-						// e.printStackTrace();
-						// }
 					}
 
 				});
 	}
+	/**
+	 * 回复Ping请求
+	 * @param bMap
+	 */
+	protected void hanldePingRequest(BMap bMap) {
+		
+	}
 
+	/**
+	 * 回复Get_Peers请求
+	 * @param bMap
+	 */
+	protected void handleGet_PeersRequest(BMap bMap) {
+		
+	}
+
+	/**
+	 * 回复find_node请求
+	 * @param bMap
+	 */
+	private void handleFind_NodeRequest(BMap bMap) {
+
+	}
+	/**
+	 * 
+	 * @param bMap
+	 * @param src 对方node 主要是地址和端口
+	 * @throws BTypeException 
+	 */
+	private FindNodeResponse  receiveFind_Node(String transaction,BMap bMap,Node src) throws BTypeException{
+			BMap bMap_r = bMap.getMap("r");
+			if (bMap_r.containsKey("nodes")) {
+				List<Node> nodes = passNodes(bMap_r.getString("nodes"));
+				FindNodeResponse msg1 = new FindNodeResponse(transaction, src);
+				msg1.setNodes(nodes);
+				// 对方的node t 还有nodes
+				FindNodeResponse findNodeResponse = new FindNodeResponse(transaction, src);
+				return findNodeResponse.setNodes(nodes);
+			// 这里收到nodes后要将nodes插入到自己的路由表中
+			} else {
+				return null;
+			}
+//		}
+	}
 	/**
 	 * 解析出nodes
 	 * 

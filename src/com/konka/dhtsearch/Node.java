@@ -113,8 +113,9 @@ public class Node implements Serializable,Comparable<Node> {
 	 * Sets the IP address of this node
 	 * @param addr
 	 */
-	public void setInetAddress(InetAddress addr) {
+	public Node setInetAddress(InetAddress addr) {
 		this.addr = addr;
+		return this;
 	}
 	
 	/**

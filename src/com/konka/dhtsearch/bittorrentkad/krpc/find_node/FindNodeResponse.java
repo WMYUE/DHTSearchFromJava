@@ -2,6 +2,8 @@ package com.konka.dhtsearch.bittorrentkad.krpc.find_node;
 
 import java.util.List;
 
+import org.yaircc.torrent.bencoding.BMap;
+
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadResponse;
 
@@ -27,11 +29,6 @@ public class FindNodeResponse extends KadResponse {
 		return this;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see il.technion.ewolf.kbr.openkad.msg.FindNodeResponse#getNodes()
-	 */
 	public List<Node> getNodes() {
 		return nodes;
 	}
@@ -41,31 +38,21 @@ public class FindNodeResponse extends KadResponse {
 		return this;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see il.technion.ewolf.kbr.openkad.msg.FindNodeResponse#isCachedResults()
-	 */
 	public boolean isCachedResults() {
 		return cachedResults;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see il.technion.ewolf.kbr.openkad.msg.FindNodeResponse#isNeeeded()
-	 */
 	public boolean isNeeeded() {
 		return needed;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see il.technion.ewolf.kbr.openkad.msg.FindNodeResponse#setNeeeded(boolean)
-	 */
 	public void setNeeeded(boolean neeeded) {
 		this.needed = neeeded;
 	}
 
+	@Override
+	public byte[] getBencodeData(Node to) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

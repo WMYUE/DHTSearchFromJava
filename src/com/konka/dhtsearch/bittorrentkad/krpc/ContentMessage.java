@@ -33,4 +33,10 @@ public class ContentMessage extends KadMessage {
 		return this;
 	}
 
+	@Override
+	public byte[] getBencodeData(Node to) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

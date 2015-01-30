@@ -46,4 +46,9 @@ public class GetPeersRequest extends KadRequest {
 		return new GetPeersResponse(getTransaction(), localNode);
 	}
 
+	@Override
+	public byte[] getBencodeData(Node to) {
+		return null;
+	}
+
 }

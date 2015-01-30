@@ -1,20 +1,17 @@
 package com.konka.dhtsearch.bittorrentkad;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import org.yaircc.torrent.bencoding.BMap;
 
 import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.KeybasedRouting;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.bucket.KadBuckets;
-import com.konka.dhtsearch.bittorrentkad.krpc.ContentMessage;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.net.KadServer;
 
 public class KadNet implements KeybasedRouting {
@@ -91,9 +88,10 @@ public class KadNet implements KeybasedRouting {
 	}
 
 	@Override
-	public void sendMessage(Node to, String tag, BMap msg) throws IOException {
-		ContentMessage contentMessage = new ContentMessage("", getLocalNode());//这里要生成translation
-		kadServer.send(to, contentMessage.setTag(tag).setbMap(msg));
+	public void sendMessage(Node to, String tag, KadMessage msg) throws IOException {
+//		ContentMessage contentMessage = new ContentMessage("", getLocalNode());//这里要生成translation
+//		msg.
+		kadServer.send(to, msg);
 	}
 
 	@Override

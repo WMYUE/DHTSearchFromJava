@@ -28,6 +28,7 @@ import java.util.concurrent.Future;
 import org.yaircc.torrent.bencoding.BMap;
 
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
+import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 
 /**
  * This is the main class of openkad
@@ -96,7 +97,7 @@ public interface KeybasedRouting {
 	 * @param msg any arbitrary object
 	 * @throws IOException failed to send due to some socket error
 	 */
-	public void sendMessage(Node to, String tag, BMap msg) throws IOException;
+	public void sendMessage(Node to, String tag, KadMessage msg) throws IOException;
 	
 	/**
 	 * Sends a message to the destination node and expects a response. The response is whatever
