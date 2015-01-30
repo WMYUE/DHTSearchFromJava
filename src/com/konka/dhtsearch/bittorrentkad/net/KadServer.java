@@ -94,7 +94,7 @@ public class KadServer implements Runnable {
 	 * @param bMap
 	 */
 	protected void hanldePingRequest(BMap bMap) {
-
+		System.out.println("PingRequest---=" + bMap);
 	}
 
 	/**
@@ -103,7 +103,7 @@ public class KadServer implements Runnable {
 	 * @param bMap
 	 */
 	protected void handleGet_PeersRequest(BMap bMap) {
-
+		System.out.println("Get_PeersRequest---=" + bMap);
 	}
 
 	/**
@@ -117,7 +117,7 @@ public class KadServer implements Runnable {
 	 */
 	private void handleResponseMsg(BMap bMap, Node src, String transaction) throws BTypeException {
 		MessageDispatcher messageDispatcher = MessageDispatcher.findMessageDispatcherByTag(transaction);// 取出之前的请求对象
-
+		System.out.println("收到响应=="+bMap);
 		if (messageDispatcher != null) {// 有记录
 			KadRequest kadRequest = messageDispatcher.getKadRequest();
 			if (kadRequest.getClass() == FindNodeRequest.class) {// 如果我之前的请求是findnode,那么这个应该是请求的回复
@@ -144,14 +144,13 @@ public class KadServer implements Runnable {
 	 */
 	private void handleFind_NodeRequest(BMap bMap) {
 		try {
-			System.out.println("bMap="+bMap);
-//			String transaction;
-//			transaction = bMap.getString("t");
-//			MessageDispatcher messageDispatcher = MessageDispatcher.findMessageDispatcherByTag(transaction);// 取出之前的请求对象
-//			messageDispatcher.handle(new FindNodeResponse("ddddddddddd", AppManager.getLocalNode()));
-		
-		
-		} catch ( Exception e) {
+			System.out.println("bMap=" + bMap);
+			// String transaction;
+			// transaction = bMap.getString("t");
+			// MessageDispatcher messageDispatcher = MessageDispatcher.findMessageDispatcherByTag(transaction);// 取出之前的请求对象
+			// messageDispatcher.handle(new FindNodeResponse("ddddddddddd", AppManager.getLocalNode()));
+
+		} catch (Exception e) {
 			e.printStackTrace();
 		}// 交互用的识别id
 
@@ -232,14 +231,14 @@ public class KadServer implements Runnable {
 		while (this.isActive.get()) {
 			DatagramPacket pkt = null;
 			try {
-//				System.out.println("等待数据");
+				// System.out.println("等待数据");
 				pkt = this.pkts.poll();
 
 				if (pkt == null)
 					pkt = new DatagramPacket(new byte[1024 * 64], 1024 * 64);
 
 				this.socket.receive(pkt);// 堵塞
-//				System.out.println("已经拿到数据可");
+				// System.out.println("已经拿到数据可");
 				handleIncomingPacket(pkt);// 收到信息后处理
 
 			} catch (final Exception e) {

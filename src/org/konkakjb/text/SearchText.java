@@ -43,9 +43,9 @@ public class SearchText {
 	public static void doth() throws Exception {
 		InetAddress[] inetAddresss = { //
 		InetAddress.getByName("router.bittorrent.com"), //
-//				InetAddress.getByName("dht.transmissionbt.com"), //
-//				InetAddress.getByName("router.utorrent.com"), //
-//				Inet4Address.getByName("127.0.0.1") //
+				InetAddress.getByName("dht.transmissionbt.com"), //
+				InetAddress.getByName("router.utorrent.com"), //
+				Inet4Address.getByName("127.0.0.1") //
 		};
 		try {
 			for (InetAddress inetAddress : inetAddresss) {
@@ -64,11 +64,11 @@ public class SearchText {
 	private static void sendFindNode(final Node localNode, final FindNodeRequest findNodeResponse) {
 		Timer timer = new Timer();
 		KadServer kadServer = AppManager.getKadServer();
-		try {
-			kadServer.send(localNode, findNodeResponse);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+//		try {
+//			kadServer.send(localNode, findNodeResponse);
+//		} catch (IOException e1) {
+//			e1.printStackTrace();
+//		}
 		final MessageDispatcher dispatcher = new MessageDispatcher(timer, kadServer, findNodeResponse.getTransaction());
 		dispatcher.setConsumable(true)//
 				// .addFilter(new IdMessageFilter(findNodeResponse.getTransaction()))// 只接受的类型
@@ -85,12 +85,12 @@ public class SearchText {
 					}
 				});
 		try {
-//			executor.execute(new Runnable() {
-//				@Override
-//				public void run() {
-//					dispatcher.send(localNode, findNodeResponse);
-//				}
-//			});
+			executor.execute(new Runnable() {
+				@Override
+				public void run() {
+					dispatcher.send(localNode, findNodeResponse);
+				}
+			});
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
