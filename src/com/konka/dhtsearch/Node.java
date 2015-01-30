@@ -4,15 +4,6 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.sound.sampled.Port;
 
 /**
  * Represents contact information about a node in the network.
@@ -27,7 +18,7 @@ public class Node implements Serializable,Comparable<Node> {
 	
 	private final Key key;
 	private InetAddress addr = null;
-	private Integer point=0;
+	private Integer point;
 //	private Map<String, Integer> portFromScheme = new HashMap<String, Integer>();
 	
 	// dummy node

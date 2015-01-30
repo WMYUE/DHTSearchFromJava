@@ -2,10 +2,6 @@ package com.konka.dhtsearch.bittorrentkad.krpc;
 
 import java.io.Serializable;
 
-import org.yaircc.torrent.bencoding.BEncodedOutputStream;
-import org.yaircc.torrent.bencoding.BMap;
-import org.yaircc.torrent.bencoding.HashBMap;
-
 import com.konka.dhtsearch.Node;
 
 /**

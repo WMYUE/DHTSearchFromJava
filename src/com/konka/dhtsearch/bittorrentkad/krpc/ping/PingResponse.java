@@ -1,7 +1,5 @@
 package com.konka.dhtsearch.bittorrentkad.krpc.ping;
 
-import org.yaircc.torrent.bencoding.BMap;
-
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadResponse;
 

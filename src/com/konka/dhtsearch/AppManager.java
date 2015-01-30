@@ -37,8 +37,8 @@ public class AppManager {
 			KeyFactory keyFactory=new RandomKeyFactory(20, new Random(), "SHA-1");
 			Key key = keyFactory.generate();
 			localNode = new Node(key);
-			localNode.setInetAddress(InetAddress.getByName("127.0.0.1"));//这里注意InetAddress.getLocalHost();为空
-			localNode.setPoint(5555);
+			localNode.setInetAddress(InetAddress.getByName("0.0.0.0"));//这里注意InetAddress.getLocalHost();为空
+			localNode.setPoint(9500);
 			
 			kadBuckets=new KadBuckets(keyFactory,  new StableBucket());
 		} catch (Exception e) {

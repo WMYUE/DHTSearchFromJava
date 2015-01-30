@@ -45,9 +45,10 @@ public class KadNet implements KeybasedRouting {
 		kadBuckets.registerIncomingMessageHandler();
 		kadServerThread = new Thread(kadServer);
 		kadServerThread.start();
-
-		bootstrapNodesSaver.load();
-		bootstrapNodesSaver.start();
+		if (bootstrapNodesSaver != null) {
+			bootstrapNodesSaver.load();
+			bootstrapNodesSaver.start();
+		}
 	}
 
 	/**
@@ -94,7 +95,9 @@ public class KadNet implements KeybasedRouting {
 	@Override
 	public void shutdown() {
 		try {
-			bootstrapNodesSaver.saveNow();
+			if(bootstrapNodesSaver!=null){
+				bootstrapNodesSaver.saveNow();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

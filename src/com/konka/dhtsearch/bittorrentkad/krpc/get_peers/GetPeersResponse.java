@@ -2,8 +2,6 @@ package com.konka.dhtsearch.bittorrentkad.krpc.get_peers;
 
 import java.io.Serializable;
 
-import org.yaircc.torrent.bencoding.BMap;
-
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadResponse;
 

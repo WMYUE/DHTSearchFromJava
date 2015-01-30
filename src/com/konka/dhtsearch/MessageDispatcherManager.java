@@ -1,12 +1,5 @@
 package com.konka.dhtsearch;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Timer;
-
-import com.konka.dhtsearch.bittorrentkad.net.KadServer;
-import com.konka.dhtsearch.bittorrentkad.net.MessageDispatcher;
-
 public class MessageDispatcherManager {
 //	Set<MessageDispatcher> messageDispatchers = new HashSet<MessageDispatcher>();
 

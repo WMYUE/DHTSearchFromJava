@@ -1,9 +1,6 @@
 package com.konka.dhtsearch.bittorrentkad.krpc;
 
-import org.yaircc.torrent.bencoding.BMap;
-
 import com.konka.dhtsearch.Node;
-import com.konka.dhtsearch.bittorrentkad.krpc.pojo.Find_NodeInfo;
 
 /**
  * Base class for all responses

@@ -19,15 +19,9 @@ along with openkad.  If not, see <http://www.gnu.org/licenses/>.
 package com.konka.dhtsearch;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Future;
-
-import org.yaircc.torrent.bencoding.BMap;
-
-import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 
 /**
