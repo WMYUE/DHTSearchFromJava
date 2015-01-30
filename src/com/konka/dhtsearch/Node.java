@@ -97,8 +97,9 @@ public class Node implements Serializable,Comparable<Node> {
 //	public void addEndpoint(String scheme, int port) {
 //		portFromScheme.put(scheme, port);
 //	}
-	public void setPoint(Integer point) {
+	public Node setPoint(Integer point) {
 		this.point = point;
+		return this;
 	}
 	/**
 	 * 

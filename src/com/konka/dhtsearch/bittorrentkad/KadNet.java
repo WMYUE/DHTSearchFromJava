@@ -17,8 +17,8 @@ import com.konka.dhtsearch.bittorrentkad.net.KadServer;
 public class KadNet implements KeybasedRouting {
 	// private final KadBuckets findValueOperation;// 查找相识节点用
 
-	private final KadServer kadServer;// Runnable 主要是TODO KadServer
-	private final KadBuckets kadBuckets;// 路由表
+	private final KadServer kadServer = AppManager.getKadServer();// Runnable 主要是TODO KadServer
+	private final KadBuckets kadBuckets = AppManager.getKadBuckets();// 路由表
 	private final int bucketSize = 8;// 一个k桶大小
 	private final BootstrapNodesSaver bootstrapNodesSaver;// 关机后保存到本地，启动时候从本地文件中加载
 
@@ -34,9 +34,7 @@ public class KadNet implements KeybasedRouting {
 	 * @param bootstrapNodesSaver
 	 *            保存数据用
 	 */
-	public KadNet(KadServer kadServer, KadBuckets kadBuckets, BootstrapNodesSaver bootstrapNodesSaver) {
-		this.kadServer = kadServer;
-		this.kadBuckets = kadBuckets;
+	public KadNet(BootstrapNodesSaver bootstrapNodesSaver) {
 		this.bootstrapNodesSaver = bootstrapNodesSaver;
 
 	}
@@ -88,9 +86,8 @@ public class KadNet implements KeybasedRouting {
 	}
 
 	@Override
-	public void sendMessage(Node to, String tag, KadMessage msg) throws IOException {
-//		ContentMessage contentMessage = new ContentMessage("", getLocalNode());//这里要生成translation
-//		msg.
+	public void sendMessage(Node to, KadMessage msg) throws IOException {
+
 		kadServer.send(to, msg);
 	}
 

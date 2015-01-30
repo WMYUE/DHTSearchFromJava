@@ -18,6 +18,8 @@ public class TypeMessageFilter implements MessageFilter {
 	
 	@Override
 	public boolean shouldHandle(KadMessage m) {
+//		System.out.println(clazz);
+//		System.out.println(m.getClass());
 		return m.getClass().equals(clazz);
 	}
 

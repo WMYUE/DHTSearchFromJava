@@ -97,7 +97,7 @@ public interface KeybasedRouting {
 	 * @param msg any arbitrary object
 	 * @throws IOException failed to send due to some socket error
 	 */
-	public void sendMessage(Node to, String tag, KadMessage msg) throws IOException;
+	public void sendMessage(Node to,  KadMessage msg) throws IOException;
 	
 	/**
 	 * Sends a message to the destination node and expects a response. The response is whatever

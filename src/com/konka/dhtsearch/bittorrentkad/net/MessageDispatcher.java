@@ -28,15 +28,15 @@ import com.konka.dhtsearch.bittorrentkad.net.filter.MessageFilter;
 public class MessageDispatcher {
 
 	// state
-	private String tag;// 返回消息的标识，t
+	private final String transactionID;// 返回消息的标识，t
 	private KadRequest kadRequest;
 
-	public String getTag() {
-		return tag;
-	}
+ 
 
-	public void setTag(String tag) {
-		this.tag = tag;
+ 
+
+	public String getTransactionID() {
+		return transactionID;
 	}
 
 	private CompletionHandler<KadMessage, String> callback;
@@ -49,7 +49,7 @@ public class MessageDispatcher {
 	private final KadServer mKadServer;
 	private final static Set<MessageDispatcher> messageDispatchers = new HashSet<MessageDispatcher>();
 
-	public Set<MessageDispatcher> getMessageDispatchers() {
+	public static Set<MessageDispatcher>  getMessageDispatchers() {
 		return messageDispatchers;
 	}
 
@@ -65,7 +65,9 @@ public class MessageDispatcher {
 	 */
 	public static MessageDispatcher findMessageDispatcherByTag(String tag) {
 		for (MessageDispatcher messageDispatcher : messageDispatchers) {
-			if (messageDispatcher.getTag() != null && messageDispatcher.getTag().equals(tag)) {
+//			System.out.println("messageDispatcher.getTag()="+messageDispatcher.getTransactionID());
+//			System.out.println("tag="+tag);
+			if (messageDispatcher.getTransactionID() != null && messageDispatcher.getTransactionID().equals(tag)) {
 				return messageDispatcher;
 			}
 		}
@@ -76,11 +78,12 @@ public class MessageDispatcher {
 		messageDispatchers.remove(this);
 	}
 
-	public MessageDispatcher(Timer timer, KadServer kadServer) {
+	public MessageDispatcher(Timer timer, KadServer kadServer,String transaction) {
 		expect();
 		this.timer = timer;
 		this.mKadServer = kadServer;
 		this.isDone = new AtomicBoolean(false);
+		this.transactionID = transaction;
 	}
 
 	public void cancel(Throwable exc) {
@@ -91,20 +94,25 @@ public class MessageDispatcher {
 			timeoutTimerTask.cancel();
 		cancelExpect();
 		if (callback != null)
-			callback.failed(exc, tag);
+			callback.failed(exc, transactionID);
 	}
 
 	// returns true if should be handled
 	boolean shouldHandleMessage(KadMessage m) {
+//		System.out.println("循环");
 		for (MessageFilter filter : filters) {
-			if (!filter.shouldHandle(m))
+			if (!filter.shouldHandle(m)){
 				return false;
+			}
 		}
 		return true;
 	}
 
 	public void handle(KadMessage msg) {
-		assert (shouldHandleMessage(msg));// 过滤
+		if(!shouldHandleMessage(msg)){ // 过滤
+			return;
+		}
+		 
 
 		if (isDone.get())// 是否done了
 			return;
@@ -118,7 +126,7 @@ public class MessageDispatcher {
 		}
 
 		if (callback != null)
-			callback.completed(msg, tag);
+			callback.completed(msg, transactionID);
 	}
 
 	public MessageDispatcher addFilter(MessageFilter filter) {
@@ -128,7 +136,7 @@ public class MessageDispatcher {
 
 	public MessageDispatcher setCallback(String attachment, CompletionHandler<KadMessage, String> callback) {
 		this.callback = callback;
-		this.tag = attachment;
+//		this.transactionID = attachment;
 		return this;
 	}
 

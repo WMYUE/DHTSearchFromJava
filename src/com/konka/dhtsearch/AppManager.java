@@ -3,15 +3,22 @@ package com.konka.dhtsearch;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.util.Random;
 
+import com.konka.dhtsearch.bittorrentkad.bucket.KadBuckets;
+import com.konka.dhtsearch.bittorrentkad.bucket.StableBucket;
 import com.konka.dhtsearch.bittorrentkad.net.KadServer;
 
 public class AppManager {
 	private static MessageDispatcherManager messageDispatcherManager;
 	private static KadServer kadServer;
 	private static AppManager appManager;
-	private static final Node localNode = new Node();
+	private static Node localNode;
+	private static KadBuckets kadBuckets;//路由
+
+	public static KadBuckets getKadBuckets() {
+		return kadBuckets;
+	}
 
 	public static Node getLocalNode() {
 		return localNode;
@@ -27,11 +34,17 @@ public class AppManager {
 	private AppManager() {
 		super();
 		try {
-			localNode.setInetAddress(InetAddress.getByName("0.0.0.0"));
-		} catch (UnknownHostException e) {
+			KeyFactory keyFactory=new RandomKeyFactory(20, new Random(), "SHA-1");
+			Key key = keyFactory.generate();
+			localNode = new Node(key);
+			localNode.setInetAddress(InetAddress.getByName("127.0.0.1"));//这里注意InetAddress.getLocalHost();为空
+			localNode.setPoint(5555);
+			
+			kadBuckets=new KadBuckets(keyFactory,  new StableBucket());
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		localNode.setPoint(5555);
+
 	}
 
 	public static void init() {

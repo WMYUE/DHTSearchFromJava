@@ -16,6 +16,7 @@ public class IdMessageFilter implements MessageFilter {
 
 	@Override
 	public boolean shouldHandle(KadMessage m) {
+//		System.out.println(m.getTransaction()+"----");
 		return m.getTransaction() .equals(transaction);
 	}
 }
