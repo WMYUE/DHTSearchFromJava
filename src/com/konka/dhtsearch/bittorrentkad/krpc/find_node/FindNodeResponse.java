@@ -13,7 +13,6 @@ import com.konka.dhtsearch.bittorrentkad.krpc.KadResponse;
 /**
  * A findNode response as defined in the kademlia protocol
  * 
- * @author eyal.kibbar@gmail.com we extend the find node response in order for nodes to be able to indicate if they are interested in the value for their cache.
  */
 public class FindNodeResponse extends KadResponse {
 
@@ -66,6 +65,5 @@ public class FindNodeResponse extends KadResponse {
 		bMap.put("r", a);
 		// ----------------------------------
 		return BEncodedOutputStream.bencode(bMap);
-		
 	}
 }

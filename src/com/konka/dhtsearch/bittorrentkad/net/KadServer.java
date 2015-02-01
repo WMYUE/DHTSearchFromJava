@@ -120,7 +120,7 @@ public class KadServer implements Runnable {
 		MessageDispatcher messageDispatcher = MessageDispatcher.findMessageDispatcherByTag(transaction);// 取出之前的请求对象
 		if (messageDispatcher != null) {// 有记录
 			KadRequest kadRequest = messageDispatcher.getKadRequest();
-			if (kadRequest.getClass() == FindNodeRequest.class) {// 如果我之前的请求是findnode,那么这个应该是请求的回复
+			if (kadRequest.getClass() == FindNodeRequest.class) {
 				FindNodeResponse findNodeResponse = receiveFind_Node(transaction, bMap, src);
 				messageDispatcher.handle(findNodeResponse);
 			} else if (kadRequest.getClass() == PingRequest.class) {
