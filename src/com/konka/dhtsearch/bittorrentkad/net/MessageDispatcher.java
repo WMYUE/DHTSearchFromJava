@@ -4,15 +4,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
-import com.konka.dhtsearch.bittorrentkad.concurrent.FutureCallback;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadRequest;
 import com.konka.dhtsearch.bittorrentkad.net.filter.MessageFilter;
@@ -30,15 +27,9 @@ public class MessageDispatcher {
 	// state
 	private final String transactionID;// 返回消息的标识，t
 	private KadRequest kadRequest;
-
- 
-
- 
-
 	public String getTransactionID() {
 		return transactionID;
 	}
-
 	private CompletionHandler<KadMessage, String> callback;
 	private boolean isConsumbale = true;// 一个开关，在没有收到信息前可以取消
 	private long timeout = 5 * 60 * 1000;// 15分钟超时
@@ -156,21 +147,7 @@ public class MessageDispatcher {
 		return this;
 	}
 
-	public Future<KadMessage> futureRegister() {
-
-		FutureCallback<KadMessage, String> f = new FutureCallback<KadMessage, String>() {
-			@Override
-			public synchronized boolean cancel(boolean mayInterruptIfRunning) {
-				MessageDispatcher.this.cancel(new CancellationException());
-				return super.cancel(mayInterruptIfRunning);
-			};
-		};
-
-		setCallback(null, f);
-		setupTimeout();
-
-		return f;
-	}
+ 
 
 	private void setupTimeout() {
 		if (!isConsumbale)
@@ -210,11 +187,4 @@ public class MessageDispatcher {
 		}
 	}
 
-	public Future<KadMessage> futureSend(Node to, KadRequest req) {
-		FutureCallback<KadMessage, String> f = new FutureCallback<KadMessage, String>();
-		setCallback(null, f);
-		expect();
-		send(to, req);
-		return f;
-	}
 }

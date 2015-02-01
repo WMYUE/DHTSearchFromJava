@@ -1,10 +1,10 @@
 package org.konkakjb.text;
 
-import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.util.Random;
 import java.util.Timer;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import com.konka.dhtsearch.AppManager;
@@ -91,6 +91,10 @@ public class SearchText {
 					dispatcher.send(localNode, findNodeResponse);
 				}
 			});
+//			dispatcher.f
+//			ExecutorCompletionService d;
+//			d.
+//			executor.submit(task);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

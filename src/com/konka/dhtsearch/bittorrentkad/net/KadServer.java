@@ -14,6 +14,7 @@ import org.yaircc.torrent.bencoding.BEncodedInputStream;
 import org.yaircc.torrent.bencoding.BMap;
 import org.yaircc.torrent.bencoding.BTypeException;
 
+import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadRequest;
@@ -117,7 +118,6 @@ public class KadServer implements Runnable {
 	 */
 	private void handleResponseMsg(BMap bMap, Node src, String transaction) throws BTypeException {
 		MessageDispatcher messageDispatcher = MessageDispatcher.findMessageDispatcherByTag(transaction);// 取出之前的请求对象
-		System.out.println("收到响应=="+bMap);
 		if (messageDispatcher != null) {// 有记录
 			KadRequest kadRequest = messageDispatcher.getKadRequest();
 			if (kadRequest.getClass() == FindNodeRequest.class) {// 如果我之前的请求是findnode,那么这个应该是请求的回复
@@ -145,10 +145,10 @@ public class KadServer implements Runnable {
 	private void handleFind_NodeRequest(BMap bMap) {
 		try {
 			System.out.println("bMap=" + bMap);
-			// String transaction;
-			// transaction = bMap.getString("t");
-			// MessageDispatcher messageDispatcher = MessageDispatcher.findMessageDispatcherByTag(transaction);// 取出之前的请求对象
-			// messageDispatcher.handle(new FindNodeResponse("ddddddddddd", AppManager.getLocalNode()));
+			 String transaction;
+			 transaction = bMap.getString("t");
+			 MessageDispatcher messageDispatcher = MessageDispatcher.findMessageDispatcherByTag(transaction);// 取出之前的请求对象
+			 messageDispatcher.handle(new FindNodeResponse("ddddddddddd", AppManager.getLocalNode()));
 
 		} catch (Exception e) {
 			e.printStackTrace();

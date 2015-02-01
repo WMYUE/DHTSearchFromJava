@@ -4,8 +4,6 @@ package com.konka.dhtsearch.bittorrentkad.concurrent;
 /**
  * A generic async task callback
  * 
- * @author eyal.kibbar@gmail.com
- *
  * @param <R> the task's result
  * @param <A> an arbitrary attachment
  */
