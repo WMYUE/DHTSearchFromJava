@@ -4,19 +4,32 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import com.konka.dhtsearch.util.Util;
+
 /**
- * Identifier for nodes. Use {@link KeyFactory} to generate instances of this
- * class.
+ * Identifier for nodes. Use {@link KeyFactory} to generate instances of this class.
  * 
  */
 public class Key implements Serializable, Comparable<Key> {
 
 	private static final long serialVersionUID = 4137662182397711129L;
 	private final byte[] bytes;
+	private   String keyid="ddd";
 
-	public Key(final byte[] bytes) {
+	public Key(final byte[] bytes, String keyid) {
 		this.bytes = bytes;
-	}  
+		this.keyid = keyid;
+	}
+	public Key(final byte[] bytes ) {
+		this.bytes = bytes;
+	}
+
+	public String getKeyid() {
+		return keyid;
+	}
+	public void setKeyid(String keyid) {
+		this.keyid = keyid;
+	}
 	/**
 	 * Check if a key is 0 key
 	 * 
@@ -42,6 +55,9 @@ public class Key implements Serializable, Comparable<Key> {
 	 * @return length of key in bytes
 	 */
 	public int getByteLength() {
+		if(getBytes()==null){
+			return 160;
+		}
 		return getBytes().length;
 	}
 
@@ -59,12 +75,9 @@ public class Key implements Serializable, Comparable<Key> {
 			b[i] = (byte) (getBytes()[i] ^ k.getBytes()[i]);
 		return new Key(b);
 	}
+
 	/**
-	 * @return key的位置，key的头（二进制）的位置（1）
-	 * 	//0000 0100
-		//0000 0010+
-	 * 4050515253545556574849505152535455565748   结果157  
-	 * 最大是159
+	 * @return key的位置，key的头（二进制）的位置（1） //0000 0100 //0000 0010+ 4050515253545556574849505152535455565748 结果157 最大是159
 	 */
 	public int getFirstSetBitIndex() {
 		for (int i = 0; i < getByteLength(); ++i) {
@@ -72,7 +85,8 @@ public class Key implements Serializable, Comparable<Key> {
 				continue;
 
 			int j;
-			for (j = 7; (getBytes()[i] & (1 << j)) == 0; --j);
+			for (j = 7; (getBytes()[i] & (1 << j)) == 0; --j)
+				;
 			return (getByteLength() - i - 1) * 8 + j;
 		}
 		return -1;
@@ -105,21 +119,11 @@ public class Key implements Serializable, Comparable<Key> {
 		return Arrays.hashCode(getBytes());
 	}
 
-	/**
-	 * 
-	 * @return the key encode in Base64
-	 */
-	public String toBase64() {
-//		return Base64.encodeBase64String(this.bytes);
-		return "这里是key-toBase64";
-	}
 
 	@Override
 	public String toString() {
-//		return Base64.encodeBase64URLSafeString(this.bytes);
-		return "这里是key-tostring";
+		return Util.hex(getBytes());
 	}
-
 	/**
 	 * 
 	 * @return the key encoded in binary string
@@ -135,22 +139,22 @@ public class Key implements Serializable, Comparable<Key> {
 			// fix insufficient leading 0s
 			final String str = Integer.toBinaryString(b);
 			switch (str.length()) {
-				case 1 :
+				case 1:
 					$ += "000000";
 					break;
-				case 2 :
+				case 2:
 					$ += "00000";
 					break;
-				case 3 :
+				case 3:
 					$ += "0000";
 					break;
-				case 4 :
+				case 4:
 					$ += "000";
 					break;
-				case 5 :
+				case 5:
 					$ += "00";
 					break;
-				case 6 :
+				case 6:
 					$ += "0";
 					break;
 			}

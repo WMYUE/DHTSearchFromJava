@@ -3,6 +3,10 @@ package com.konka.dhtsearch.bittorrentkad.net;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -10,18 +14,23 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.yaircc.torrent.bencoding.BDecodingException;
 import org.yaircc.torrent.bencoding.BEncodedInputStream;
 import org.yaircc.torrent.bencoding.BMap;
 import org.yaircc.torrent.bencoding.BTypeException;
 
 import com.konka.dhtsearch.AppManager;
+import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.Node;
+import com.konka.dhtsearch.bittorrentkad.krpc.ErrorKadResponse;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeResponse;
+import com.konka.dhtsearch.bittorrentkad.krpc.find_node.ReceiveFindNodeResponse;
 import com.konka.dhtsearch.bittorrentkad.krpc.get_peers.GetPeersRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingRequest;
+import com.konka.dhtsearch.util.Util;
 
 /**
  * 守护线程，负责接受和发送消息
@@ -31,6 +40,7 @@ public class KadServer implements Runnable {
 
 	private final DatagramSocket socket;
 	private final BlockingQueue<DatagramPacket> pkts = new LinkedBlockingDeque<DatagramPacket>();;
+	private final BlockingQueue<Node> nodes = new LinkedBlockingDeque<Node>();;
 	private final ExecutorService srvExecutor = new ScheduledThreadPoolExecutor(10);
 	private final AtomicBoolean isActive = new AtomicBoolean(false);
 
@@ -56,6 +66,7 @@ public class KadServer implements Runnable {
 
 			pkt.setSocketAddress(to.getSocketAddress());
 			this.socket.send(pkt);
+			// System.out.println("发送消息");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -73,8 +84,9 @@ public class KadServer implements Runnable {
 							if (bMap.containsKey("y")) {
 								String y = bMap.getString("y");
 								if ("q".equals(y)) {// 对方请求
-									handleRequestMsg(bMap);
+									handleRequestMsg(pkt, bMap, src, transaction);
 								} else if ("r".equals(y)) {// 对方的响应（由于值爬数据，不用处理太复杂）
+									// System.out.println(new String(pkt.getData()));
 									handleResponseMsg(bMap, src, transaction);
 								}
 							}
@@ -115,14 +127,43 @@ public class KadServer implements Runnable {
 	 * @param transaction
 	 * @param messageDispatcher
 	 * @throws BTypeException
+	 * @throws BDecodingException
+	 * @throws UnknownHostException
 	 */
-	private void handleResponseMsg(BMap bMap, Node src, String transaction) throws BTypeException {
+	private void handleResponseMsg(BMap bMap, Node src, String transaction) throws BTypeException, BDecodingException, UnknownHostException {
+
+		System.out.println("ip地址=" + src.getInetAddress());
+		// System.out.println(src.getPort());
+		System.out.println("收到响应t=" + bMap.getString("t"));
+		System.out.println("classnane=" + bMap.getMap("r").get("nodes"));
+		byte[] bb = (byte[]) bMap.getMap("r").get("nodes");
+		System.out.println(bb);
+		System.out.println(bb.length);
+
+		int count = bb.length / 26;
+		if (count != 0) {
+			return;
+		}
+		for (int i = 0; i < count; i++) {
+			byte[] nid = Arrays.copyOfRange(bb, i * 26, i * 26 + 20);
+			byte[] ip = Arrays.copyOfRange(bb, i * 26 + 20, i * 26 + 24);
+			byte[] p = Arrays.copyOfRange(bb, i * 26 + 24, i * 26 + 26);
+			
+			InetAddress inet4Address = InetAddress.getByAddress(ip);
+			Node node = new Node(new Key(nid));
+			node.setInetAddress(inet4Address).setPoint(Util.bytesToInt(p));
+			if (nodes.contains(node)) {
+				nodes.add(node);
+			}
+		}
+
 		MessageDispatcher messageDispatcher = MessageDispatcher.findMessageDispatcherByTag(transaction);// 取出之前的请求对象
 		if (messageDispatcher != null) {// 有记录
 			KadRequest kadRequest = messageDispatcher.getKadRequest();
 			if (kadRequest.getClass() == FindNodeRequest.class) {
-				FindNodeResponse findNodeResponse = receiveFind_Node(transaction, bMap, src);
-				messageDispatcher.handle(findNodeResponse);
+				// FindNodeResponse findNodeResponse = receiveFind_Node(transaction, bMap, src);
+				ReceiveFindNodeResponse receiveFindNodeResponse = new ReceiveFindNodeResponse(transaction, bMap, src);
+				messageDispatcher.handle(receiveFindNodeResponse);
 			} else if (kadRequest.getClass() == PingRequest.class) {
 				// TODO
 			} else if (kadRequest.getClass() == GetPeersRequest.class) {
@@ -145,10 +186,10 @@ public class KadServer implements Runnable {
 	private void handleFind_NodeRequest(BMap bMap) {
 		try {
 			System.out.println("bMap=" + bMap);
-			 String transaction;
-			 transaction = bMap.getString("t");
-			 MessageDispatcher messageDispatcher = MessageDispatcher.findMessageDispatcherByTag(transaction);// 取出之前的请求对象
-			 messageDispatcher.handle(new FindNodeResponse("ddddddddddd", AppManager.getLocalNode()));
+			// String transaction;
+			// transaction = bMap.getString("t");
+			// MessageDispatcher messageDispatcher = MessageDispatcher.findMessageDispatcherByTag(transaction);// 取出之前的请求对象
+			// messageDispatcher.handle(new FindNodeResponse("ddddddddddd", AppManager.getLocalNode()));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -161,9 +202,11 @@ public class KadServer implements Runnable {
 	 * 
 	 * @param bMap
 	 * @throws BTypeException
+	 * @throws NoSuchAlgorithmException
+	 * @throws IOException
 	 */
 
-	protected void handleRequestMsg(BMap bMap) throws BTypeException {
+	protected void handleRequestMsg(DatagramPacket pkt, BMap bMap, Node src, String transaction) throws BTypeException, NoSuchAlgorithmException, IOException {
 		if (bMap.containsKey("q")) {
 			String q = bMap.getString("q");// find_node or getpeers===
 			switch (q) {
@@ -179,6 +222,27 @@ public class KadServer implements Runnable {
 				default:
 					break;
 			}
+
+			final ErrorKadResponse errorKadResponse = new ErrorKadResponse(transaction, src);
+
+			String id = bMap.getMap("a").getString("id");
+			Key key = new Key(id.getBytes());
+			final Node to = new Node(key);
+			to.setInetAddress(pkt.getAddress());
+			to.setPoint(pkt.getPort());
+
+			final FindNodeRequest msg = new FindNodeRequest("dddddd", AppManager.getLocalNode());
+			srvExecutor.execute(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						send(to, errorKadResponse);
+						send(to, msg);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			});
 		} else {
 			return;
 		}

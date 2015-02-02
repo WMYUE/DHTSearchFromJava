@@ -50,6 +50,7 @@ public class SearchText {
 		try {
 			for (InetAddress inetAddress : inetAddresss) {
 				Key key = new RandomKeyFactory(20, new Random(), "SHA-1").getZeroKey();
+				key.setKeyid("dddd");
 				Node localNode = new Node(key).setInetAddress(inetAddress).setPoint(6881);
 				String t = Util.random_tranctionId();
 				System.out.println("ddd" + t);

@@ -1,10 +1,15 @@
 package com.konka.dhtsearch.bittorrentkad;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 
 import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Key;
@@ -17,10 +22,11 @@ import com.konka.dhtsearch.bittorrentkad.net.KadServer;
 public class KadNet implements KeybasedRouting {
 	// private final KadBuckets findValueOperation;// 查找相识节点用
 
-	private final KadServer kadServer = AppManager.getKadServer();// Runnable 主要是TODO KadServer
+	private final KadServer kadServer;// = AppManager.getKadServer();// Runnable 主要是TODO KadServer
 	private final KadBuckets kadBuckets = AppManager.getKadBuckets();// 路由表
 	private final int bucketSize = 8;// 一个k桶大小
 	private final BootstrapNodesSaver bootstrapNodesSaver;// 关机后保存到本地，启动时候从本地文件中加载
+	private final BlockingQueue<DatagramPacket> nodesqueue = new LinkedBlockingDeque<DatagramPacket>();
 
 	private Thread kadServerThread = null;
 
@@ -33,10 +39,13 @@ public class KadNet implements KeybasedRouting {
 	 *            路由表
 	 * @param bootstrapNodesSaver
 	 *            保存数据用
+	 * @throws SocketException 
 	 */
-	public KadNet(BootstrapNodesSaver bootstrapNodesSaver) {
+	public KadNet(BootstrapNodesSaver bootstrapNodesSaver) throws SocketException {
 		this.bootstrapNodesSaver = bootstrapNodesSaver;
-
+		DatagramSocket socket = null;
+		socket = new DatagramSocket(AppManager.getLocalNode().getSocketAddress());
+		this.kadServer = new KadServer(socket);
 	}
 
 	@Override
@@ -95,7 +104,7 @@ public class KadNet implements KeybasedRouting {
 	@Override
 	public void shutdown() {
 		try {
-			if(bootstrapNodesSaver!=null){
+			if (bootstrapNodesSaver != null) {
 				bootstrapNodesSaver.saveNow();
 			}
 		} catch (IOException e) {

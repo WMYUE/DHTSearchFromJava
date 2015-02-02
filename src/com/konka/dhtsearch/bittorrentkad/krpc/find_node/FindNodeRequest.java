@@ -8,11 +8,12 @@ import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadRequest;
+import com.konka.dhtsearch.util.Util;
 
 /**
  * A findNode request as defined in the kademlia protocol
  * 
- * 接收请求主要接受两个参数 1，transaction，2 src（其他参数 对方id）
+ * 接收请求主要接受两个参数 1，transaction，2 发送者的node（其他参数 对方id）
  */
 public class FindNodeRequest extends KadRequest {
 
@@ -22,6 +23,12 @@ public class FindNodeRequest extends KadRequest {
 
 	public FindNodeRequest(String transaction, Node src) {
 		super(transaction, src);
+	}
+
+	public static FindNodeRequest creatLocalFindNodeRequest(Node src) {
+
+		FindNodeRequest findNodeRequest = new FindNodeRequest(Util.random_tranctionId(), src);
+		return findNodeRequest;
 	}
 
 	/**
@@ -62,8 +69,8 @@ public class FindNodeRequest extends KadRequest {
 		bMap.put("q", "find_node");
 		// ----------------------------------
 		BMap a = new HashBMap();
-		a.put("id", AppManager.getLocalNode().getKey().toBinaryString());// 自己的节点id
-		a.put("target", to.getKey().toBinaryString());// 对方的节点id
+		a.put("id", AppManager.getLocalNode().getKey().getKeyid());// 自己的节点id
+		a.put("target", to.getKey().toString());// 对方的节点id
 		bMap.put("a", a);
 		// ----------------------------------
 		return BEncodedOutputStream.bencode(bMap);
