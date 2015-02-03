@@ -53,7 +53,7 @@ public class FindNodeResponse extends KadResponse {
 	}
 
 	@Override
-	public byte[] getBencodeData(Node to) {
+	public byte[] getBencodeData() {
 	 
 		BMap bMap = new HashBMap();
 		bMap.put(TRANSACTION, transaction);

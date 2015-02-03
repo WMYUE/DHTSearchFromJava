@@ -4,7 +4,6 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.util.Random;
 import java.util.Timer;
-import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import com.konka.dhtsearch.AppManager;
@@ -31,7 +30,7 @@ public class SearchText {
 			// kadNet = new KadNet(bootstrapNodesSaver);
 			kadNet = new KadNet(null);
 			kadNet.create();
-			doth();
+			doth(kadNet);
 		} catch (Exception e) {
 			e.printStackTrace();
 			if (kadNet != null) {
@@ -40,7 +39,7 @@ public class SearchText {
 		}
 	}
 
-	public static void doth() throws Exception {
+	public static void doth(KadNet kadNet) throws Exception {
 		InetAddress[] inetAddresss = { //
 		InetAddress.getByName("router.bittorrent.com"), //
 				InetAddress.getByName("dht.transmissionbt.com"), //
@@ -55,21 +54,21 @@ public class SearchText {
 				String t = Util.random_tranctionId();
 				System.out.println("ddd" + t);
 				FindNodeRequest findNodeResponse = new FindNodeRequest(t, localNode);
-				sendFindNode(localNode, findNodeResponse);
+				sendFindNode(localNode, findNodeResponse, kadNet);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	private static void sendFindNode(final Node localNode, final FindNodeRequest findNodeResponse) {
+	private static void sendFindNode(final Node localNode, final FindNodeRequest findNodeResponse, KadNet kadNet) {
 		Timer timer = new Timer();
-		KadServer kadServer = AppManager.getKadServer();
-//		try {
-//			kadServer.send(localNode, findNodeResponse);
-//		} catch (IOException e1) {
-//			e1.printStackTrace();
-//		}
+		KadServer kadServer = kadNet.getKadServer();
+		// try {
+		// kadServer.send(localNode, findNodeResponse);
+		// } catch (IOException e1) {
+		// e1.printStackTrace();
+		// }
 		final MessageDispatcher dispatcher = new MessageDispatcher(timer, kadServer, findNodeResponse.getTransaction());
 		dispatcher.setConsumable(true)//
 				// .addFilter(new IdMessageFilter(findNodeResponse.getTransaction()))// 只接受的类型
@@ -89,13 +88,13 @@ public class SearchText {
 			executor.execute(new Runnable() {
 				@Override
 				public void run() {
-					dispatcher.send(localNode, findNodeResponse);
+					dispatcher.send(findNodeResponse);
 				}
 			});
-//			dispatcher.f
-//			ExecutorCompletionService d;
-//			d.
-//			executor.submit(task);
+			// dispatcher.f
+			// ExecutorCompletionService d;
+			// d.
+			// executor.submit(task);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

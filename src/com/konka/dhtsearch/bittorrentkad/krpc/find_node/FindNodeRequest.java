@@ -20,6 +20,7 @@ public class FindNodeRequest extends KadRequest {
 	private static final long serialVersionUID = -7084922793331210968L;
 	private Key key;
 	private boolean searchCache;
+	
 
 	public FindNodeRequest(String transaction, Node src) {
 		super(transaction, src);
@@ -62,7 +63,7 @@ public class FindNodeRequest extends KadRequest {
 	 * 编码
 	 */
 	@Override
-	public byte[] getBencodeData(Node to) {
+	public byte[] getBencodeData() {
 		BMap bMap = new HashBMap();
 		bMap.put(TRANSACTION, transaction);
 		bMap.put("y", "q");
@@ -70,7 +71,7 @@ public class FindNodeRequest extends KadRequest {
 		// ----------------------------------
 		BMap a = new HashBMap();
 		a.put("id", AppManager.getLocalNode().getKey().getKeyid());// 自己的节点id
-		a.put("target", to.getKey().toString());// 对方的节点id
+		a.put("target", getSrc().getKey().toString());// 对方的节点id
 		bMap.put("a", a);
 		// ----------------------------------
 		return BEncodedOutputStream.bencode(bMap);

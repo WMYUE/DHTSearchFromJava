@@ -47,7 +47,7 @@ public class GetPeersRequest extends KadRequest {
 	}
 
 	@Override
-	public byte[] getBencodeData(Node to) {
+	public byte[] getBencodeData( ) {
 		return null;
 	}
 

@@ -28,7 +28,7 @@ public class PingRequest extends KadRequest {
 	}
 
 	@Override
-	public byte[] getBencodeData(Node to) {// ping 不需要对方的节点
+	public byte[] getBencodeData( ) {// ping 不需要对方的节点
 		BMap bMap = new HashBMap();
 		bMap.put(TRANSACTION, transaction);
 		bMap.put("y", "q");
@@ -40,9 +40,9 @@ public class PingRequest extends KadRequest {
 		// ----------------------------------
 		return BEncodedOutputStream.bencode(bMap);
 	}
-	public byte[] getBencodeData() {// ping 不需要对方的节点
-		return getBencodeData(null);
-	}
+//	public byte[] getBencodeData() {// ping 不需要对方的节点
+//		return getBencodeData(null);
+//	}
 	
 
 }

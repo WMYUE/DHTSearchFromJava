@@ -30,7 +30,7 @@ public class GetPeersResponse extends KadResponse {
 	}
 
 	@Override
-	public byte[] getBencodeData(Node to) {
+	public byte[] getBencodeData( ) {
 		// TODO Auto-generated method stub
 		return null;
 	}

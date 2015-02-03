@@ -13,17 +13,8 @@ public abstract class KadMessage implements Serializable {
 	public static final String TRANSACTION = "t";
 	protected static final long serialVersionUID = -6975403100655787398L;
 	protected final String transaction;
-	protected final Node src;
-//	private BMap bMap;
-
-//	public BMap getbMap() {
-//		return bMap;
-//	}
-
-//	public KadMessage setbMap(BMap bMap) {
-//		this.bMap = bMap;
-//		return this;
-//	}
+	protected final Node src;//目的地的节点信息
+ 
 
 	protected KadMessage(String transaction, Node src) {
 		this.transaction = transaction;
@@ -38,6 +29,6 @@ public abstract class KadMessage implements Serializable {
 		return transaction;
 	}
 
-	public abstract byte[] getBencodeData(Node to);// 对方的节点
+	public abstract byte[] getBencodeData();// 对方的节点
 
 }

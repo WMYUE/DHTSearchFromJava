@@ -27,9 +27,11 @@ public class MessageDispatcher {
 	// state
 	private final String transactionID;// 返回消息的标识，t
 	private KadRequest kadRequest;
+
 	public String getTransactionID() {
 		return transactionID;
 	}
+
 	private CompletionHandler<KadMessage, String> callback;
 	private boolean isConsumbale = true;// 一个开关，在没有收到信息前可以取消
 	private long timeout = 5 * 60 * 1000;// 15分钟超时
@@ -40,7 +42,7 @@ public class MessageDispatcher {
 	private final KadServer mKadServer;
 	private final static Set<MessageDispatcher> messageDispatchers = new HashSet<MessageDispatcher>();
 
-	public static Set<MessageDispatcher>  getMessageDispatchers() {
+	public static Set<MessageDispatcher> getMessageDispatchers() {
 		return messageDispatchers;
 	}
 
@@ -56,8 +58,8 @@ public class MessageDispatcher {
 	 */
 	public static MessageDispatcher findMessageDispatcherByTag(String tag) {
 		for (MessageDispatcher messageDispatcher : messageDispatchers) {
-//			System.out.println("messageDispatcher.getTag()="+messageDispatcher.getTransactionID());
-//			System.out.println("tag="+tag);
+			// System.out.println("messageDispatcher.getTag()="+messageDispatcher.getTransactionID());
+			// System.out.println("tag="+tag);
 			if (messageDispatcher.getTransactionID() != null && messageDispatcher.getTransactionID().equals(tag)) {
 				return messageDispatcher;
 			}
@@ -69,7 +71,7 @@ public class MessageDispatcher {
 		messageDispatchers.remove(this);
 	}
 
-	public MessageDispatcher(Timer timer, KadServer kadServer,String transaction) {
+	public MessageDispatcher(Timer timer, KadServer kadServer, String transaction) {
 		expect();
 		this.timer = timer;
 		this.mKadServer = kadServer;
@@ -90,9 +92,9 @@ public class MessageDispatcher {
 
 	// returns true if should be handled
 	boolean shouldHandleMessage(KadMessage m) {
-//		System.out.println("循环");
+		// System.out.println("循环");
 		for (MessageFilter filter : filters) {
-			if (!filter.shouldHandle(m)){
+			if (!filter.shouldHandle(m)) {
 				return false;
 			}
 		}
@@ -100,10 +102,9 @@ public class MessageDispatcher {
 	}
 
 	public void handle(KadMessage msg) {
-		if(!shouldHandleMessage(msg)){ // 过滤
+		if (!shouldHandleMessage(msg)) { // 过滤
 			return;
 		}
-		 
 
 		if (isDone.get())// 是否done了
 			return;
@@ -127,7 +128,7 @@ public class MessageDispatcher {
 
 	public MessageDispatcher setCallback(String attachment, CompletionHandler<KadMessage, String> callback) {
 		this.callback = callback;
-//		this.transactionID = attachment;
+		// this.transactionID = attachment;
 		return this;
 	}
 
@@ -146,8 +147,6 @@ public class MessageDispatcher {
 		setupTimeout();
 		return this;
 	}
-
- 
 
 	private void setupTimeout() {
 		if (!isConsumbale)
@@ -171,7 +170,7 @@ public class MessageDispatcher {
 	 * @param to
 	 * @param req
 	 */
-	public void send(Node to, KadRequest req) {
+	public void send( KadRequest req) {
 		setConsumable(true);
 		try {
 			/*
@@ -179,7 +178,7 @@ public class MessageDispatcher {
 			 */
 			// outstandingRequests.put(this);
 			expect();
-			mKadServer.send(to, req);
+			mKadServer.send(req);
 			kadRequest = req;
 			setupTimeout();
 		} catch (Exception e) {

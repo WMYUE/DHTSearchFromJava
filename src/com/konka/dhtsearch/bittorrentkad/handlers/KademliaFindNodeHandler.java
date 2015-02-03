@@ -62,7 +62,9 @@ public class KademliaFindNodeHandler extends AbstractHandler {
 		}
 
 		try {
-			this.kadServer.send(msg.getSrc(), findNodeResponse);
+//			findNodeResponse.set
+			this.kadServer.send( findNodeResponse);//这里要修改
+//			this.kadServer.send(msg.getSrc(), findNodeResponse);
 		} catch (final IOException e) {
 			// could not send back a response
 			// nothing to do

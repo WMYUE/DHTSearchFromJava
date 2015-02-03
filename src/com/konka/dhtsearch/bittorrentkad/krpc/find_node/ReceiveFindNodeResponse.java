@@ -19,7 +19,7 @@ public class ReceiveFindNodeResponse extends KadResponse {
 
 	private static final long serialVersionUID = 2103126060969733458L;
 	private List<Node> nodes;
-	private BMap bMap;
+//	private BMap bMap;
 
 	public ReceiveFindNodeResponse(String transaction, Node src) {
 		super(transaction, src);
@@ -28,7 +28,7 @@ public class ReceiveFindNodeResponse extends KadResponse {
 	// {"t":"aa", "y":"r", "r": {"id":"0123456789abcdefghij", "nodes": "def456..."}}
 	public ReceiveFindNodeResponse(String transaction, BMap bMap, Node src) throws BTypeException {
 		super(transaction, src);
-		this.bMap = bMap;
+//		this.bMap = bMap;
 		String y = bMap.getString("y");
 		if ("r".equals(y)) {
 			BMap r = bMap.getMap("r");
@@ -43,7 +43,7 @@ public class ReceiveFindNodeResponse extends KadResponse {
 	}
 
 	@Override
-	public byte[] getBencodeData(Node to) {
+	public byte[] getBencodeData() {
 
 		BMap bMap = new HashBMap();
 		bMap.put(TRANSACTION, transaction);

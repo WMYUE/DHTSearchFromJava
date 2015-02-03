@@ -20,12 +20,12 @@ import com.konka.dhtsearch.bittorrentkad.bucket.KadBuckets;
  */
 public class BootstrapNodesSaver {
 
-	private final KadBuckets kBuckets = AppManager.getKadBuckets();
+	private final KadBuckets kBuckets ;//= AppManager.getKadBuckets();
 	private final File nodesFile;
 
-	public BootstrapNodesSaver(File nodesFile) {
-
+	public BootstrapNodesSaver(File nodesFile,KadBuckets kBuckets) {
 		this.nodesFile = nodesFile;
+		this.kBuckets = kBuckets;
 	}
 
 	public void start() {

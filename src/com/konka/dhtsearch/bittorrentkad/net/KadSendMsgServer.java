@@ -18,28 +18,27 @@ public class KadSendMsgServer implements Runnable {
 	private final BlockingQueue<Node> nodes;
 	private final ExecutorService srvExecutor = new ScheduledThreadPoolExecutor(10);
 	private final AtomicBoolean isActive = new AtomicBoolean(false);
+	private final Thread startThread;// ;=new Thread();
 
 	public KadSendMsgServer(DatagramSocket socket, BlockingQueue<Node> nodes) {
 		this.nodes = nodes;
 		this.socket = socket;
+		startThread = new Thread(this);
 	}
 
 	/**
-	 * 真正发送网络数据报消息
+	 * 只发送findnode操作，其他请求请使用KadSendMsgServer
 	 * 
-	 * @param to
-	 *            目的地的节点
 	 * @param msg
 	 *            要发送的消息（一般是具体实现）
 	 * @throws IOException
 	 *             any socket exception
 	 */
-	// @Override
-	public void send(final Node to, final KadMessage msg) throws IOException {
+	public void send(final KadMessage msg) throws IOException {
 		try {
-			byte[] buf = msg.getBencodeData(to);
+			byte[] buf = msg.getBencodeData();
 			final DatagramPacket pkt = new DatagramPacket(buf, 0, buf.length);
-			pkt.setSocketAddress(to.getSocketAddress());
+			pkt.setSocketAddress(msg.getSrc().getSocketAddress());
 			this.socket.send(pkt);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -71,7 +70,7 @@ public class KadSendMsgServer implements Runnable {
 	private void send(Node to) {
 		FindNodeRequest msg = FindNodeRequest.creatLocalFindNodeRequest(to);
 		try {
-			send(to, msg);
+			send(msg);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -83,14 +82,17 @@ public class KadSendMsgServer implements Runnable {
 	 * @param kadServerThread
 	 */
 	// @Override
-	public void shutdown(final Thread kadSendMsgServer) {
+	public void shutdown() {
 		this.isActive.set(false);
 		this.socket.close();
-		kadSendMsgServer.interrupt();
+		startThread.interrupt();
 		try {
-			kadSendMsgServer.join();
+			startThread.join();
 		} catch (final InterruptedException e) {
 		}
 	}
 
+	public void start() {
+		startThread.start();
+	}
 }

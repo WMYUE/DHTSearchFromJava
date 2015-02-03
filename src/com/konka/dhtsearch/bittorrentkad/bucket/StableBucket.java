@@ -34,9 +34,11 @@ public class StableBucket implements Bucket {
 	private final int maxSize = 8;
 	private final long validTimespan = 15 * 60 * 1000;
 	private final ExecutorService pingExecutor = new ScheduledThreadPoolExecutor(3);
+	private final KadServer kadServer;
 
-	public StableBucket() {
+	public StableBucket(KadServer kadServer) {
 		this.bucket = new LinkedList<KadNode>();
+		this.kadServer = kadServer;
 	}
 
 	@Override
@@ -97,16 +99,16 @@ public class StableBucket implements Bucket {
 		// 这里需要生成一个id 也就是t
 		final PingRequest pingRequest = new PingRequest("ttt", inBucket.getNode());// 这里要注意
 		Timer timer = new Timer();
-		KadServer kadServer = AppManager.getKadServer();
+		// KadServer kadServer = AppManager.getKadServer();
 		// final MessageDispatcher dispatcher=AppManager.getMessageDispatcherManager()
 
-		final MessageDispatcher dispatcher = new MessageDispatcher(timer, kadServer,pingRequest.getTransaction());
+		final MessageDispatcher dispatcher = new MessageDispatcher(timer, kadServer, pingRequest.getTransaction());
 		dispatcher.setConsumable(true)//
 				.addFilter(new IdMessageFilter(pingRequest.getTransaction()))//
 				.addFilter(new TypeMessageFilter(PingResponse.class))//
 				.setCallback(null, new CompletionHandler<KadMessage, String>() {
 					@Override
-					public void completed(KadMessage msg, String nothing) {
+					public void completed(KadMessage msg1, String nothing1) {
 						// ping was recved
 						inBucket.setNodeWasContacted();
 						inBucket.releasePingLock();
@@ -116,7 +118,6 @@ public class StableBucket implements Bucket {
 							}
 						}
 					}
-
 					@Override
 					public void failed(Throwable exc, String nothing) {
 						// ping was not recved
@@ -145,8 +146,8 @@ public class StableBucket implements Bucket {
 			pingExecutor.execute(new Runnable() {
 				@Override
 				public void run() {
-					dispatcher.send(inBucket.getNode(), pingRequest);
-//					dispatcher.s
+					dispatcher.send(pingRequest);
+					// dispatcher.s
 				}
 			});
 		} catch (Exception e) {
