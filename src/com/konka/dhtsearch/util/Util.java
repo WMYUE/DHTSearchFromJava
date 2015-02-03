@@ -1,9 +1,11 @@
 package com.konka.dhtsearch.util;
 
 import java.io.UnsupportedEncodingException;
-import java.net.Inet4Address;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
+
+import com.konka.dhtsearch.Node;
 
 public class Util {
 	// md5加密
@@ -27,6 +29,22 @@ public class Util {
 
 	public static String random_tranctionId() {
 		return sha(rundom_id(20));
+	}
+
+	public static byte[] nodesToBytes(List<Node> nodes) {
+		int size = nodes.size();
+		byte[] nodesbyte = new byte[size * 26];
+		for (int i = 0; i < size; i++) {
+			Node node = nodes.get(i);
+			byte[] id = node.getKey().getBytes();
+			byte[] address = node.getInetAddress().getAddress();
+			byte[] port = Util.intTobytes(node.getPort());
+			// System.arraycopy(s,0,a,0,s.length);
+			System.arraycopy(id, 0, nodesbyte, 0 + i * 26, id.length);
+			System.arraycopy(address, 0, nodesbyte, 0 + i * 26 + id.length, address.length);
+			System.arraycopy(port, 0, nodesbyte, 0 + i * 26 + id.length + address.length, port.length);
+		}
+		return nodesbyte;
 	}
 
 	/**
@@ -62,6 +80,7 @@ public class Util {
 
 	// 返回十六进制字符串
 	public static String hex(byte[] arr) {
+		// System.out.println("t的长度=" + arr.length);
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < arr.length; ++i) {
 			sb.append(Integer.toHexString((arr[i] & 0xFF) | 0x100).substring(1, 3));
@@ -70,19 +89,51 @@ public class Util {
 	}
 
 	/**
-	 * byte数组中取int数值，本方法适用于(低位在前，高位在后)的顺序，和和intToBytes（）配套使用
-	 * 
-	 * @param src
-	 *            byte数组
-	 * @param offset
-	 *            从数组的第offset位开始
-	 * @return int数值
+	 * 将2byte 的端口转为int
 	 */
 	public static int bytesToInt(byte[] src) {
 		int value = 0;
 		value |= (src[0] & 0xFF) << 8;
 		value |= (src[1] & 0xFF) << 0;
 		return value;
+	}
+
+	private static int parse(char c) {
+		if (c >= 'a')
+			return (c - 'a' + 10) & 0x0f;
+		if (c >= 'A')
+			return (c - 'A' + 10) & 0x0f;
+		return (c - '0') & 0x0f;
+	}
+
+	public static byte[] HexString2Bytes(String hexstr) {
+		byte[] b = new byte[hexstr.length() / 2];
+		int j = 0;
+		for (int i = 0; i < b.length; i++) {
+			char c0 = hexstr.charAt(j++);
+			char c1 = hexstr.charAt(j++);
+			b[i] = (byte) ((parse(c0) << 4) | parse(c1));
+		}
+		return b;
+	}
+
+	// public static byte[] stringTobytes(String value) {
+	// byte[] src = new byte[value.length() / 2];
+	// int int16 = Integer.parseInt(value, 16);
+	// for (int i = 0; i < src.length; i++) {
+	// src[i] = (byte) ((int16 >> 0 + i * 8) & 0xFF);
+	// }
+	// return src;
+	// }
+
+	/**
+	 * 将int端口转为2 byte
+	 */
+	public static byte[] intTobytes(int value) {
+		byte[] src = new byte[2];
+		src[1] = (byte) ((value >> 8) & 0xFF);
+		src[0] = (byte) ((value >> 0) & 0xFF);
+		return src;
 	}
 
 	/**
@@ -98,8 +149,9 @@ public class Util {
 	}
 
 	public static void main(String[] args) {
-		byte[] bb = { 10, 10, 10, 10 };
-		int dd = bytesToInt2(bb, 0);
-		System.out.println(dd);
+		// byte[] bb = { 10, 10, 10, 10 };
+		// int dd = bytesToInt2(bb, 0);
+		// System.out.println(dd);
+		System.out.println(hex(HexString2Bytes("aaaa3222223d22")));
 	}
 }

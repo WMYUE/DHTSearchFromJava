@@ -39,7 +39,7 @@ public class MessageDispatcher {
 	private TimerTask timeoutTimerTask = null;
 	private final AtomicBoolean isDone;
 	private final Timer timer;
-	private final KadServer mKadServer;
+	private final KadSendMsgServer mKadServer;
 	private final static Set<MessageDispatcher> messageDispatchers = new HashSet<MessageDispatcher>();
 
 	public static Set<MessageDispatcher> getMessageDispatchers() {
@@ -71,7 +71,7 @@ public class MessageDispatcher {
 		messageDispatchers.remove(this);
 	}
 
-	public MessageDispatcher(Timer timer, KadServer kadServer, String transaction) {
+	public MessageDispatcher(Timer timer, KadSendMsgServer kadServer, String transaction) {
 		expect();
 		this.timer = timer;
 		this.mKadServer = kadServer;
@@ -181,6 +181,7 @@ public class MessageDispatcher {
 			mKadServer.send(req);
 			kadRequest = req;
 			setupTimeout();
+			System.out.println("发送成功");
 		} catch (Exception e) {
 			cancel(e);
 		}

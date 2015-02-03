@@ -14,12 +14,12 @@ import com.konka.dhtsearch.bittorrentkad.KadNet;
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeRequest;
-import com.konka.dhtsearch.bittorrentkad.net.KadServer;
+import com.konka.dhtsearch.bittorrentkad.net.KadSendMsgServer;
 import com.konka.dhtsearch.bittorrentkad.net.MessageDispatcher;
 import com.konka.dhtsearch.util.Util;
 
 public class SearchText {
-	public static ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+	public static ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(3);
 
 	public static void main(String[] args) {
 		KadNet kadNet = null;
@@ -63,7 +63,7 @@ public class SearchText {
 
 	private static void sendFindNode(final Node localNode, final FindNodeRequest findNodeResponse, KadNet kadNet) {
 		Timer timer = new Timer();
-		KadServer kadServer = kadNet.getKadServer();
+		KadSendMsgServer kadServer = kadNet.getKadSendMsgServer();
 		// try {
 		// kadServer.send(localNode, findNodeResponse);
 		// } catch (IOException e1) {
@@ -89,6 +89,7 @@ public class SearchText {
 				@Override
 				public void run() {
 					dispatcher.send(findNodeResponse);
+					
 				}
 			});
 			// dispatcher.f

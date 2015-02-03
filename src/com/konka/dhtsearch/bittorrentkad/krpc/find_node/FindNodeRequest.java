@@ -65,15 +65,16 @@ public class FindNodeRequest extends KadRequest {
 	@Override
 	public byte[] getBencodeData() {
 		BMap bMap = new HashBMap();
-		bMap.put(TRANSACTION, transaction);
-		bMap.put("y", "q");
-		bMap.put("q", "find_node");
+		bMap.put(TRANSACTION, Util.HexString2Bytes(transaction));
+		bMap.put("y", "q".getBytes());
+		bMap.put("q", "find_node".getBytes());
 		// ----------------------------------
 		BMap a = new HashBMap();
-		a.put("id", AppManager.getLocalNode().getKey().getKeyid());// 自己的节点id
-		a.put("target", getSrc().getKey().toString());// 对方的节点id
+		a.put("id", AppManager.getLocalNode().getKey().getBytes());// 自己的节点id
+		a.put("target", getSrc().getKey().getBytes());// 对方的节点id
 		bMap.put("a", a);
 		// ----------------------------------
+		System.out.println("发送findnode请求-----------"+bMap);
 		return BEncodedOutputStream.bencode(bMap);
 	}
 

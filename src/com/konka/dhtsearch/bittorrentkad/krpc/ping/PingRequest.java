@@ -11,8 +11,6 @@ import com.konka.dhtsearch.bittorrentkad.krpc.KadRequest;
 /**
  * A ping request as defined in the kademlia protocol
  * 
- * @author eyal.kibbar@gmail.com
- *
  */
 public class PingRequest extends KadRequest {
 
@@ -35,14 +33,11 @@ public class PingRequest extends KadRequest {
 		bMap.put("q", "ping");
 		// ----------------------------------
 		BMap a = new HashBMap();
-		a.put("id", AppManager.getLocalNode().getKey().toBinaryString());// 自己的节点id
+		a.put("id", AppManager.getLocalNode().getKey().getBytes());// 自己的节点id
 		bMap.put("a", a);
 		// ----------------------------------
+		System.out.println("响应ping-----------"+bMap);
 		return BEncodedOutputStream.bencode(bMap);
 	}
-//	public byte[] getBencodeData() {// ping 不需要对方的节点
-//		return getBencodeData(null);
-//	}
-	
 
 }

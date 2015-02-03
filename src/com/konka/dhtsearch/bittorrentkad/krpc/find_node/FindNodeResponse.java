@@ -9,6 +9,7 @@ import org.yaircc.torrent.bencoding.HashBMap;
 import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadResponse;
+import com.konka.dhtsearch.util.Util;
 
 /**
  * A findNode response as defined in the kademlia protocol
@@ -54,16 +55,19 @@ public class FindNodeResponse extends KadResponse {
 
 	@Override
 	public byte[] getBencodeData() {
-	 
+
 		BMap bMap = new HashBMap();
-		bMap.put(TRANSACTION, transaction);
-		bMap.put("y", "r");
+		bMap.put(TRANSACTION, Util.HexString2Bytes(transaction));
+		bMap.put("y", "r".getBytes());
 		// ----------------------------------
 		BMap a = new HashBMap();
-		a.put("id", AppManager.getLocalNode().getKey().toBinaryString());// 自己的节点id
-		a.put("nodes", "nodesnodes");// 对方的节点id
+		a.put("id", AppManager.getLocalNode().getKey().getBytes());// 自己的节点id
+		
+		byte[] nodesbyte = Util.nodesToBytes(getNodes());
+		a.put("nodes", nodesbyte);// 对方要查找的节点id
 		bMap.put("r", a);
 		// ----------------------------------
+		System.out.println("响应findnode-----------"+bMap);
 		return BEncodedOutputStream.bencode(bMap);
 	}
 }

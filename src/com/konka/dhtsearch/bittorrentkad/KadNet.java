@@ -19,6 +19,7 @@ import com.konka.dhtsearch.KeybasedRouting;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.RandomKeyFactory;
 import com.konka.dhtsearch.bittorrentkad.bucket.KadBuckets;
+import com.konka.dhtsearch.bittorrentkad.bucket.SlackBucket;
 import com.konka.dhtsearch.bittorrentkad.bucket.StableBucket;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.net.KadSendMsgServer;
@@ -26,7 +27,7 @@ import com.konka.dhtsearch.bittorrentkad.net.KadServer;
 
 public class KadNet implements KeybasedRouting {
 	// private final KadBuckets findValueOperation;// 查找相识节点用
-
+	
 	private final KadServer kadServer;// = AppManager.getKadServer();// Runnable 主要是TODO KadServer
 	private final KadSendMsgServer kadSendMsgServer;// = AppManager.getKadServer();// Runnable 主要是TODO KadServer
 	private final KadBuckets kadBuckets;// = AppManager.getKadBuckets();// 路由表
@@ -51,15 +52,23 @@ public class KadNet implements KeybasedRouting {
 	public KadNet(BootstrapNodesSaver bootstrapNodesSaver) throws SocketException, NoSuchAlgorithmException {
 		this.bootstrapNodesSaver = bootstrapNodesSaver;
 		DatagramSocket socket = null;
-		socket = new DatagramSocket(AppManager.getLocalNode().getSocketAddress());
-		this.kadServer = new KadServer(socket, nodesqueue);
-		this.kadSendMsgServer = new KadSendMsgServer(socket, nodesqueue);
 		this.keyFactory = new RandomKeyFactory(20, new Random(), "SHA-1");
-		this.kadBuckets = new KadBuckets(keyFactory, new StableBucket(kadServer));// 这里要换成kadSendMsgServer
+		socket = new DatagramSocket(AppManager.getLocalNode().getSocketAddress());	 
+		
+		this.kadSendMsgServer = new KadSendMsgServer(socket, nodesqueue);//111111111
+		
+		this.kadBuckets = new KadBuckets(keyFactory, new StableBucket(kadSendMsgServer));// 这里要换成kadSendMsgServer
+		//22222
+		this.kadServer = new KadServer(socket, nodesqueue,kadBuckets);//3333
+		//123顺序不能变
 	}
 
 	public KadServer getKadServer() {
 		return kadServer;
+	}
+
+	public KadSendMsgServer getKadSendMsgServer() {
+		return kadSendMsgServer;
 	}
 
 	@Override

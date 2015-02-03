@@ -30,13 +30,12 @@ public class KadBuckets implements KBuckets {
 
 	// private final MessageDispatcher<Object> msgDispatcherProvider;
 	private final Bucket[] kbuckets;// 默认160
-//	protected final Node localNode;
+	// protected final Node localNode;
 	private final KeyFactory keyFactory;
 
-	public KadBuckets(KeyFactory keyFactory, Bucket kBucket ) {
+	public KadBuckets(KeyFactory keyFactory, Bucket kBucket) {
 		this.keyFactory = keyFactory;
 		// this.msgDispatcherProvider = msgDispatcherProvider;
-		 
 
 		kbuckets = new Bucket[keyFactory.getBitLength()];
 		for (int i = 0; i < kbuckets.length; ++i) {
@@ -155,6 +154,7 @@ public class KadBuckets implements KBuckets {
 	 */
 	@Override
 	public void insert(KadNode node) {
+		// 这里需要操作数据库
 		int i = getKBucketIndex(node.getNode().getKey());// 产生一个0-159之间的数，由key决定
 		// 其实i就代表是哪一层
 		if (i == -1)

@@ -7,14 +7,13 @@ import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.KadNode;
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingResponse;
-import com.konka.dhtsearch.bittorrentkad.net.KadServer;
+import com.konka.dhtsearch.bittorrentkad.net.KadSendMsgServer;
 import com.konka.dhtsearch.bittorrentkad.net.MessageDispatcher;
 import com.konka.dhtsearch.bittorrentkad.net.filter.IdMessageFilter;
 import com.konka.dhtsearch.bittorrentkad.net.filter.TypeMessageFilter;
@@ -34,9 +33,9 @@ public class StableBucket implements Bucket {
 	private final int maxSize = 8;
 	private final long validTimespan = 15 * 60 * 1000;
 	private final ExecutorService pingExecutor = new ScheduledThreadPoolExecutor(3);
-	private final KadServer kadServer;
+	private final KadSendMsgServer kadServer;
 
-	public StableBucket(KadServer kadServer) {
+	public StableBucket(KadSendMsgServer kadServer) {
 		this.bucket = new LinkedList<KadNode>();
 		this.kadServer = kadServer;
 	}
@@ -45,10 +44,6 @@ public class StableBucket implements Bucket {
 	public synchronized void insert(final KadNode n) {
 		int i = bucket.indexOf(n);// 查找这个节点
 		if (i != -1) {// 找到了
-			// found node in bucket
-
-			// if heard from n (it is possible to insert n i never had
-			// contact with simply by hearing about from another node)
 			if (bucket.get(i).getLastContact() < n.getLastContact()) {// old的插入时间小于new的
 				KadNode s = bucket.remove(i);
 				s.setNodeWasContacted(n.getLastContact());
@@ -56,33 +51,25 @@ public class StableBucket implements Bucket {
 				// 移除旧的，添加新的
 			}
 		} else if (bucket.size() < maxSize) {// 没有找到,并且没有满 直接添加
-			// not found in bucket and there is enough room for n
 			bucket.add(n);
 
 		} else {// 没有找到，但是满了
-			// n is not in bucket and bucket is full
-
-			// don't bother to insert n if I never recved a msg from it
 			// 如果重来没有冲这个node发来信息，不要插入
 			if (n.hasNeverContacted())
 				return;
 
-			// check the first node, ping him if no one else is currently pinging
 			KadNode inBucketReplaceCandidate = bucket.get(0);// 取最老的一个
 
-			// the first node was only inserted indirectly (meaning, I never recved
-			// a msg from it !) and I did recv a msg from n.
 			if (inBucketReplaceCandidate.hasNeverContacted()) {// 检测这个有没有返回过信息，没有就删除他，他新的插入到最后
 				bucket.remove(inBucketReplaceCandidate);
 				bucket.add(n);
 				return;
 			}
 
-			// ping is still valid, don't replace检测是否超过有效时间了，没有就直接返回
+			// 检测是否超过有效时间了，没有就直接返回
 			if (inBucketReplaceCandidate.isPingStillValid(validTimespan))
 				return;
 
-			// send ping and act accordingly
 			if (inBucketReplaceCandidate.lockForPing()) {
 				sendPing(bucket.get(0), n);
 			}

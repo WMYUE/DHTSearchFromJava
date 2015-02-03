@@ -18,15 +18,15 @@ public class Key implements Serializable, Comparable<Key> {
 
 	public Key(final byte[] bytes, String keyid) {
 		this.bytes = bytes;
-		this.keyid = keyid;
+//		this.keyid = keyid;
 	}
 	public Key(final byte[] bytes ) {
 		this.bytes = bytes;
 	}
 
-	public String getKeyid() {
-		return keyid;
-	}
+//	public String getKeyid() {
+////		return keyid;
+//	}
 	public void setKeyid(String keyid) {
 		this.keyid = keyid;
 	}
@@ -67,9 +67,12 @@ public class Key implements Serializable, Comparable<Key> {
 	 *            another key
 	 * @return 返回异或后的新key
 	 */
-	public Key xor(final Key k) {
-		if (k.getByteLength() != getByteLength())
+	public Key xor (final Key k) {
+		if (k.getByteLength() != getByteLength()){
+			System.out.println("k.getByteLength()=" + k.getByteLength());  //20
+			System.out.println(" getByteLength()=" + getByteLength());			//38
 			throw new IllegalArgumentException("incompatable key for xor");
+		}
 		final byte[] b = new byte[getByteLength()];
 		for (int i = 0; i < b.length; ++i)
 			b[i] = (byte) (getBytes()[i] ^ k.getBytes()[i]);
