@@ -1,5 +1,7 @@
 package com.konka.dhtsearch.bittorrentkad.krpc.find_node;
 
+import org.yaircc.torrent.bencoding.BDecodingException;
+import org.yaircc.torrent.bencoding.BEncodedInputStream;
 import org.yaircc.torrent.bencoding.BEncodedOutputStream;
 import org.yaircc.torrent.bencoding.BMap;
 import org.yaircc.torrent.bencoding.HashBMap;
@@ -7,6 +9,7 @@ import org.yaircc.torrent.bencoding.HashBMap;
 import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.Node;
+import com.konka.dhtsearch.bencode.BEncoder;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadRequest;
 import com.konka.dhtsearch.util.Util;
 
@@ -66,16 +69,20 @@ public class FindNodeRequest extends KadRequest {
 	public byte[] getBencodeData() {
 		BMap bMap = new HashBMap();
 		bMap.put(TRANSACTION, Util.HexString2Bytes(transaction));
-		bMap.put("y", "q".getBytes());
-		bMap.put("q", "find_node".getBytes());
+		bMap.put("y", "q");
+		bMap.put("q", "find_node");
 		// ----------------------------------
 		BMap a = new HashBMap();
+//		a.put("id", Util.random_tranctionId());// 自己的节点id
 		a.put("id", AppManager.getLocalNode().getKey().getBytes());// 自己的节点id
-		a.put("target", getSrc().getKey().getBytes());// 对方的节点id
+//		a.put("target", getSrc().getKey().getBytes());// 对方的节点id  **这里应该是你要查询的id
+		a.put("target", AppManager.getKeyFactory().generate().getBytes());// 对方的节点id  **这里应该是你要查询的id
 		bMap.put("a", a);
 		// ----------------------------------
-		System.out.println("发送findnode请求-----------"+bMap);
-		return BEncodedOutputStream.bencode(bMap);
+//		System.out.println("发送findnode请求-----------"+bMap);
+//		System.out.println("findnode请求的编码字符串="+new String(new BEncoder().bencode(bMap)));
+		byte[] bb=BEncodedOutputStream.bencode(bMap);
+		return bb;
 	}
 
 }

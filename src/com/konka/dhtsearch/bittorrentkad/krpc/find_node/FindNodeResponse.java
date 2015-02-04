@@ -58,16 +58,16 @@ public class FindNodeResponse extends KadResponse {
 
 		BMap bMap = new HashBMap();
 		bMap.put(TRANSACTION, Util.HexString2Bytes(transaction));
-		bMap.put("y", "r".getBytes());
+		bMap.put("y", "r");
 		// ----------------------------------
 		BMap a = new HashBMap();
 		a.put("id", AppManager.getLocalNode().getKey().getBytes());// 自己的节点id
-		
+
 		byte[] nodesbyte = Util.nodesToBytes(getNodes());
 		a.put("nodes", nodesbyte);// 对方要查找的节点id
 		bMap.put("r", a);
 		// ----------------------------------
-		System.out.println("响应findnode-----------"+bMap);
+		// System.out.println("响应findnode-----------"+bMap);
 		return BEncodedOutputStream.bencode(bMap);
 	}
 }

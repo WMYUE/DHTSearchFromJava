@@ -54,12 +54,19 @@ public class KadSendMsgServer implements Runnable {
 		while (this.isActive.get()) {
 			try {
 				final Node to = nodes.take();
-				srvExecutor.execute(new Runnable() {
-					@Override
-					public void run() {
-						send(to);
-					}
-				});
+//				srvExecutor.execute(new Runnable() {
+//					@Override
+//					public void run() {
+						for (int i = 0; i < 1000; i++) {
+							try {
+								send(to);
+								Thread.sleep(10);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+//					}
+//				});
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -69,6 +76,7 @@ public class KadSendMsgServer implements Runnable {
 
 	private void send(Node to) {
 		FindNodeRequest msg = FindNodeRequest.creatLocalFindNodeRequest(to);
+
 		try {
 			send(msg);
 		} catch (IOException e) {

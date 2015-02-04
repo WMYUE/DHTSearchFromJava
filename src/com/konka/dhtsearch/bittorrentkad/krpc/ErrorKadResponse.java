@@ -7,6 +7,7 @@ import org.yaircc.torrent.bencoding.BMap;
 import org.yaircc.torrent.bencoding.HashBMap;
 
 import com.konka.dhtsearch.Node;
+import com.konka.dhtsearch.util.Util;
 
 public class ErrorKadResponse extends KadResponse {
 
@@ -20,15 +21,16 @@ public class ErrorKadResponse extends KadResponse {
 	@Override
 	public byte[] getBencodeData( ) {
 		BMap bMap = new HashBMap();
-		bMap.put(TRANSACTION, transaction);
-		bMap.put("y", "e");
+		bMap.put(TRANSACTION, Util.HexString2Bytes(transaction));
+		bMap.put("y", "e".getBytes());
 		
 		ArrayList<Object> bList= new ArrayList<Object>();
 		bList.add(202);
-		bList.add("Server Error");
+		bList.add("Server Error".getBytes());
 		bMap.put("e",bList);
  
 		// ----------------------------------
+		System.out.println("错误响应="+bMap);
 		return BEncodedOutputStream.bencode(bMap);
 	}
 
