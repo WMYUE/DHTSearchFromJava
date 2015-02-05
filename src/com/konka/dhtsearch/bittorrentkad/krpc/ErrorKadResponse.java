@@ -14,24 +14,24 @@ public class ErrorKadResponse extends KadResponse {
 	/**
 	 */
 	private static final long serialVersionUID = 5277034232185175274L;
+
 	public ErrorKadResponse(String transaction, Node src) {
 		super(transaction, src);
 	}
 
 	@Override
-	public byte[] getBencodeData( ) {
+	public byte[] getBencodeData() {
 		BMap bMap = new HashBMap();
 		bMap.put(TRANSACTION, Util.HexString2Bytes(transaction));
-		bMap.put("y", "e".getBytes());
-		
-		ArrayList<Object> bList= new ArrayList<Object>();
+		bMap.put("y", "e");
+
+		ArrayList<Object> bList = new ArrayList<Object>();
 		bList.add(202);
-		bList.add("Server Error".getBytes());
-		bMap.put("e",bList);
- 
+		bList.add("Server Error");
+		bMap.put("e", bList);
+
 		// ----------------------------------
-		System.out.println("错误响应="+bMap);
+		System.out.println("错误响应=" + bMap);
 		return BEncodedOutputStream.bencode(bMap);
 	}
-
 }

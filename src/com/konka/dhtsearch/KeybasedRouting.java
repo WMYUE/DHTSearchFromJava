@@ -139,7 +139,7 @@ public interface KeybasedRouting {
 	 * 
 	 * @return
 	 */
-	public List<Node> getNeighbours();
+//	public List<Node> getNeighbours();
 
 	/**
 	 * 

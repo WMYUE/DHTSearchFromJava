@@ -10,7 +10,6 @@ import org.yaircc.torrent.bencoding.HashBMap;
 import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadResponse;
-import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeResponse;
 import com.konka.dhtsearch.util.Util;
 
 /**

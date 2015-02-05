@@ -31,7 +31,7 @@ public class FindNodeRequest extends KadRequest {
 
 	public static FindNodeRequest creatLocalFindNodeRequest(Node src) {
 
-		FindNodeRequest findNodeRequest = new FindNodeRequest(Util.random_tranctionId(), src);
+		FindNodeRequest findNodeRequest = new FindNodeRequest(Util.random_tranctionId(4), src);
 		return findNodeRequest;
 	}
 
@@ -74,9 +74,11 @@ public class FindNodeRequest extends KadRequest {
 		// ----------------------------------
 		BMap a = new HashBMap();
 //		a.put("id", Util.random_tranctionId());// 自己的节点id
+//		a.put("id", AppManager.getKeyFactory().generate().getBytes());// 自己的节点id
 		a.put("id", AppManager.getLocalNode().getKey().getBytes());// 自己的节点id
 //		a.put("target", getSrc().getKey().getBytes());// 对方的节点id  **这里应该是你要查询的id
-		a.put("target", AppManager.getKeyFactory().generate().getBytes());// 对方的节点id  **这里应该是你要查询的id
+//		System.out.println("空吗="+getKey());
+		a.put("target", getSrc().getKey().getBytes());// 对方的节点id  **这里应该是你要查询的id
 		bMap.put("a", a);
 		// ----------------------------------
 //		System.out.println("发送findnode请求-----------"+bMap);

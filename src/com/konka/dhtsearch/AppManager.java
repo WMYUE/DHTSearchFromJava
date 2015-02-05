@@ -31,7 +31,7 @@ public class AppManager {
 			Key key = keyFactory.generate();
 			localNode = new Node(key);
 			localNode.setInetAddress(InetAddress.getByName("0.0.0.0"));// 这里注意InetAddress.getLocalHost();为空
-			localNode.setPoint(9500);
+			localNode.setPoint(9800);
 
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Random;
 
 import com.konka.dhtsearch.Node;
 
@@ -27,8 +28,12 @@ public class Util {
 		return builder.toString();
 	}
 
-	public static String random_tranctionId() {
-		return sha(rundom_id(20));
+	public static String random_tranctionId(int size) {
+		final byte[] b = new byte[size];
+		Random rnd = new Random();
+		rnd.nextBytes(b);
+		return hex(b);
+		// return sha(rundom_id(20));
 	}
 
 	public static byte[] nodesToBytes(List<Node> nodes) {

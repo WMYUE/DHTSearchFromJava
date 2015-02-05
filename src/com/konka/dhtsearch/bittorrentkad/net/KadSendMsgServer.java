@@ -3,27 +3,31 @@ package com.konka.dhtsearch.bittorrentkad.net;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.util.concurrent.BlockingQueue;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Node;
+import com.konka.dhtsearch.bittorrentkad.KadNode;
+import com.konka.dhtsearch.bittorrentkad.bucket.Bucket;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeRequest;
 
 public class KadSendMsgServer implements Runnable {
 
 	private final DatagramSocket socket;
-	private final BlockingQueue<Node> nodes;
+//	private final BlockingQueue<Node> nodes;
 	private final ExecutorService srvExecutor = new ScheduledThreadPoolExecutor(10);
 	private final AtomicBoolean isActive = new AtomicBoolean(false);
 	private final Thread startThread;// ;=new Thread();
+	private final  Bucket  kadBuckets;
 
-	public KadSendMsgServer(DatagramSocket socket, BlockingQueue<Node> nodes) {
-		this.nodes = nodes;
+	public KadSendMsgServer(DatagramSocket socket,  Bucket kadBuckets) {
 		this.socket = socket;
 		startThread = new Thread(this);
+		this.kadBuckets = kadBuckets;
 	}
 
 	/**
@@ -36,10 +40,14 @@ public class KadSendMsgServer implements Runnable {
 	 */
 	public void send(final KadMessage msg) throws IOException {
 		try {
+			if(msg.getSrc().equals(AppManager.getLocalNode())){
+				return;
+			}
 			byte[] buf = msg.getBencodeData();
 			final DatagramPacket pkt = new DatagramPacket(buf, 0, buf.length);
 			pkt.setSocketAddress(msg.getSrc().getSocketAddress());
 			this.socket.send(pkt);
+//			System.out.println("发送="+BEncodedInputStream.bdecode(buf));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -53,20 +61,19 @@ public class KadSendMsgServer implements Runnable {
 		this.isActive.set(true);
 		while (this.isActive.get()) {
 			try {
-				final Node to = nodes.take();
-//				srvExecutor.execute(new Runnable() {
-//					@Override
-//					public void run() {
-						for (int i = 0; i < 1000; i++) {
-							try {
-								send(to);
-								Thread.sleep(10);
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-						}
-//					}
-//				});
+//				final Node to = nodes.take();
+				// srvExecutor.execute(new Runnable() {
+				// @Override
+				// public void run() {
+				Thread.sleep(1000);
+				List<KadNode> nodes=kadBuckets.getAllNodes();
+				System.out.println("发数="+nodes.size());
+				for(KadNode node:nodes){
+					if(!node.getNode().equals(AppManager.getLocalNode())){
+						send(node.getNode());
+					}
+				}
+			
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

@@ -8,9 +8,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
-import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Node;
-import com.konka.dhtsearch.bittorrentkad.bucket.KadBuckets;
+import com.konka.dhtsearch.bittorrentkad.bucket.Bucket;
 
 /**
  * 开机节点保护
@@ -20,10 +19,10 @@ import com.konka.dhtsearch.bittorrentkad.bucket.KadBuckets;
  */
 public class BootstrapNodesSaver {
 
-	private final KadBuckets kBuckets ;//= AppManager.getKadBuckets();
+	private final Bucket kBuckets ;//= AppManager.getKadBuckets();
 	private final File nodesFile;
 
-	public BootstrapNodesSaver(File nodesFile,KadBuckets kBuckets) {
+	public BootstrapNodesSaver(File nodesFile, Bucket  kBuckets) {
 		this.nodesFile = nodesFile;
 		this.kBuckets = kBuckets;
 	}

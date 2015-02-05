@@ -16,10 +16,7 @@ import com.konka.dhtsearch.bittorrentkad.net.filter.MessageFilter;
 
 /**
  * Handle all the messages different states. A request state: init -> sent -> response received -> callback invoked
- * 
  * @处理所有信息的不同状态 A message state: init -> expecting -> message received -> callback invoked -> back to expecting or end
- * 
- *
  * @param
  */
 public class MessageDispatcher {
@@ -170,7 +167,7 @@ public class MessageDispatcher {
 	 * @param to
 	 * @param req
 	 */
-	public void send( KadRequest req) {
+	public void send ( KadRequest req) {
 		setConsumable(true);
 		try {
 			/*

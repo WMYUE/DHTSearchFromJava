@@ -11,6 +11,7 @@ import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.RandomKeyFactory;
 import com.konka.dhtsearch.bittorrentkad.KadNet;
+import com.konka.dhtsearch.bittorrentkad.KadNode;
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeRequest;
@@ -44,17 +45,18 @@ public class SearchText {
 		InetAddress.getByName("router.bittorrent.com"), //
 				InetAddress.getByName("dht.transmissionbt.com"), //
 				InetAddress.getByName("router.utorrent.com"), //
-				Inet4Address.getByName("127.0.0.1") //
+//				Inet4Address.getByName("127.0.0.1") //
 		};
 		try {
 			for (InetAddress inetAddress : inetAddresss) {
-				Key key = new RandomKeyFactory(20, new Random(), "SHA-1").getZeroKey();
-				key.setKeyid("dddd");
+				Key key = new RandomKeyFactory(20, new Random(), "SHA-1").generate();
+//				key.setKeyid("dddd");
 				Node localNode = new Node(key).setInetAddress(inetAddress).setPoint(6881);
-				String t = Util.random_tranctionId();
-				System.out.println("ddd" + t);
-				FindNodeRequest findNodeResponse = new FindNodeRequest(t, localNode);
-				sendFindNode(localNode, findNodeResponse, kadNet);
+//				String t = Util.random_tranctionId();
+//				System.out.println("ddd" + t);
+//				FindNodeRequest findNodeResponse = new FindNodeRequest(t, localNode);
+				kadNet.getKadBuckets().insert(new KadNode().setNode(localNode).setNodeWasContacted());
+//				sendFindNode(localNode, findNodeResponse, kadNet);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -76,7 +78,7 @@ public class SearchText {
 				.setCallback(null, new CompletionHandler<KadMessage, String>() {
 					@Override
 					public void completed(KadMessage msg, String nothing) {
-						System.out.println("收到请求的响应" + msg);
+//						System.out.println("收到请求的响应" + msg);
 					}
 
 					@Override
