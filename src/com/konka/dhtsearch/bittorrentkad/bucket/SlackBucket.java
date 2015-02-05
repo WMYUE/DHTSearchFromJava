@@ -58,6 +58,7 @@ public class SlackBucket implements Bucket {
 
 	@Override
 	public List<KadNode> getAllNodes() {
+		
 		return bucket;
 	}
 

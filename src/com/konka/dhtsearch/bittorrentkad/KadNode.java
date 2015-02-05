@@ -13,7 +13,6 @@ import com.konka.dhtsearch.Node;
  * 2. being ping - expecting a ping to be received from this node
  * 在平等平是从本节点接收
  * 
- * @author eyal.kibbar@gmail.com
  *
  */
 public class KadNode {

@@ -3,6 +3,9 @@ package com.konka.dhtsearch.bittorrentkad.net;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -67,10 +70,16 @@ public class KadSendMsgServer implements Runnable {
 				// public void run() {
 				Thread.sleep(1000);
 				List<KadNode> nodes=kadBuckets.getAllNodes();
-				System.out.println("发数="+nodes.size());
-				for(KadNode node:nodes){
+//				List<KadNode> src=kadBuckets.getAllNodes();
+//				Collections.copy(nodes, src);
+				
+				System.out.println("发数="+nodes.size()+"---="+nodes.get(0).getNode().getSocketAddress());
+//				for(){}
+				for(int i=0;i<nodes.size();i++){
+					KadNode node=nodes.get(i);
 					if(!node.getNode().equals(AppManager.getLocalNode())){
 						send(node.getNode());
+//						System.out.println(node.getNode().getKey().toString()+"--"+node.getNode().getSocketAddress());
 					}
 				}
 			
