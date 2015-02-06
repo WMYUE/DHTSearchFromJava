@@ -17,7 +17,6 @@ import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeRequest;
 import com.konka.dhtsearch.bittorrentkad.net.KadSendMsgServer;
 import com.konka.dhtsearch.bittorrentkad.net.MessageDispatcher;
-import com.konka.dhtsearch.util.Util;
 
 public class SearchText {
 	public static ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(3);

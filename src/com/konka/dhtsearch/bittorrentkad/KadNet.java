@@ -57,6 +57,7 @@ public class KadNet implements KeybasedRouting {
 
 		this.kadSendMsgServer = new KadSendMsgServer(socket, kadBuckets);// 111111111
 		this.kadServer = new KadServer(socket, kadBuckets);// 2222
+		socket.getRemoteSocketAddress();
 		// 123顺序不能变
 	}
 
