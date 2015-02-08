@@ -8,6 +8,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.yaircc.torrent.bencoding.BMap;
+
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
@@ -29,14 +31,14 @@ public class MessageDispatcher {
 		return transactionID;
 	}
 
-	private CompletionHandler<KadMessage, String> callback;
+	private CompletionHandler<KadMessage, BMap> callback;
 	private boolean isConsumbale = true;// 一个开关，在没有收到信息前可以取消
 	private long timeout = 5 * 60 * 1000;// 15分钟超时
 	private final Set<MessageFilter> filters = new HashSet<MessageFilter>();
 	private TimerTask timeoutTimerTask = null;
 	private final AtomicBoolean isDone;
 	private final Timer timer;
-	private final KadSendMsgServer mKadServer;
+	private final KadServer mKadServer;
 	private final static Set<MessageDispatcher> messageDispatchers = new HashSet<MessageDispatcher>();
 
 	public static Set<MessageDispatcher> getMessageDispatchers() {
@@ -68,7 +70,7 @@ public class MessageDispatcher {
 		messageDispatchers.remove(this);
 	}
 
-	public MessageDispatcher(Timer timer, KadSendMsgServer kadServer, String transaction) {
+	public MessageDispatcher(Timer timer, KadServer kadServer, String transaction) {
 		expect();
 		this.timer = timer;
 		this.mKadServer = kadServer;
@@ -84,7 +86,7 @@ public class MessageDispatcher {
 			timeoutTimerTask.cancel();
 		cancelExpect();
 		if (callback != null)
-			callback.failed(exc, transactionID);
+			callback.failed(exc, null);
 	}
 
 	// returns true if should be handled
@@ -98,7 +100,7 @@ public class MessageDispatcher {
 		return true;
 	}
 
-	public void handle(KadMessage msg) {
+	public void handle(KadMessage msg,BMap bMap) {
 		if (!shouldHandleMessage(msg)) { // 过滤
 			return;
 		}
@@ -115,7 +117,7 @@ public class MessageDispatcher {
 		}
 
 		if (callback != null)
-			callback.completed(msg, transactionID);
+			callback.completed(msg, bMap);
 	}
 
 	public MessageDispatcher addFilter(MessageFilter filter) {
@@ -123,7 +125,7 @@ public class MessageDispatcher {
 		return this;
 	}
 
-	public MessageDispatcher setCallback(String attachment, CompletionHandler<KadMessage, String> callback) {
+	public MessageDispatcher setCallback(String attachment, CompletionHandler<KadMessage, BMap> callback) {
 		this.callback = callback;
 		// this.transactionID = attachment;
 		return this;
@@ -178,7 +180,7 @@ public class MessageDispatcher {
 			mKadServer.send(req);
 			kadRequest = req;
 			setupTimeout();
-			System.out.println("发送成功");
+//			System.out.println("发送成功");
 		} catch (Exception e) {
 			cancel(e);
 		}

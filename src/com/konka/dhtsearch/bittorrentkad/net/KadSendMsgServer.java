@@ -73,7 +73,7 @@ public class KadSendMsgServer implements Runnable {
 //				List<KadNode> src=kadBuckets.getAllNodes();
 //				Collections.copy(nodes, src);
 				
-				System.out.println("发数="+nodes.size()+"---="+nodes.get(0).getNode().getSocketAddress());
+//				System.out.println("发数="+nodes.size()+"---="+nodes.get(0).getNode().getSocketAddress());
 //				for(){}
 				for(int i=0;i<nodes.size();i++){
 					KadNode node=nodes.get(i);

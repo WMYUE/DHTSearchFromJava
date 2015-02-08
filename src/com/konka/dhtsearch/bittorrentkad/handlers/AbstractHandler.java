@@ -36,6 +36,6 @@ public abstract class AbstractHandler implements CompletionHandler<KadMessage, S
 			dispatcher.addFilter(filter);
 		}
 
-		dispatcher.setConsumable(false).setCallback(null, this).register();
+//		dispatcher.setConsumable(false).setCallback(null, this).register();
 	}
 }

@@ -19,13 +19,13 @@ public class TagMessageFilter implements MessageFilter {
 	
 	@Override
 	public boolean shouldHandle(KadMessage m) {
-		String tag = null;
-		if (m instanceof GetPeersRequest)
-			tag = ((GetPeersRequest)m).getTag();
-		else if (m instanceof ContentMessage)
-			tag = ((ContentMessage)m).getTag();
-		else
-			return false;
+//		String tag = null;
+//		if (m instanceof GetPeersRequest)
+////			tag = ((GetPeersRequest)m).getTag();
+//		else if (m instanceof ContentMessage)
+//			tag = ((ContentMessage)m).getTag();
+//		else
+//			return false;
 		
 		return this.tag.equals(tag);
 	}
