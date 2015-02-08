@@ -1,11 +1,16 @@
 package org.konkakjb.text;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Random;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+import org.yaircc.torrent.bencoding.BEncodedInputStream;
+import org.yaircc.torrent.bencoding.BMap;
 
 import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Key;
@@ -17,7 +22,34 @@ import com.konka.dhtsearch.bittorrentkad.KadNode;
 
 public class SearchText {
 	public static ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(3);
-
+	public static byte[] File2byte(String filePath)  
+    {  
+        byte[] buffer = null;  
+        try  
+        {  
+            File file = new File(filePath);  
+            FileInputStream fis = new FileInputStream(file);  
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();  
+            byte[] b = new byte[1024];  
+            int n;  
+            while ((n = fis.read(b)) != -1)  
+            {  
+                bos.write(b, 0, n);  
+            }  
+            fis.close();  
+            bos.close();  
+            buffer = bos.toByteArray();  
+        }  
+        catch (FileNotFoundException e)  
+        {  
+            e.printStackTrace();  
+        }  
+        catch (IOException e)  
+        {  
+            e.printStackTrace();  
+        }  
+        return buffer;  
+    } 
 	public static void main(String[] args) {
 		KadNet kadNet = null;
 		try {
@@ -36,9 +68,19 @@ public class SearchText {
 		}
 		try {
 			File file=new File("D:/aaa.torrent");
-			BDecoder bDecoder=new BDecoder(new FileInputStream(file));
-			Object object=bDecoder.decodeMap();
-			System.out.println(object);
+//			BDecoder bDecoder=new BDecoder(new FileInputStream(file));
+//			Object object=bDecoder.decodeMap();
+//			System.out.println(object);
+//			ByteArrayInputStream arrayInputStream=new 
+//			new FileInputStream(file).
+//			file.
+//			BEncodedInputStream.bdecode(arg0)
+//			BMap bMap = (BMap) BEncodedInputStream.bdecode(pkt
+//					.getData());
+			BEncodedInputStream bEncodedInputStream=new BEncodedInputStream(new FileInputStream(file));
+			Object object2=bEncodedInputStream.readElement();
+			System.out.println(object2);
+			bEncodedInputStream.close();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
