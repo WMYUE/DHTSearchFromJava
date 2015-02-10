@@ -13,6 +13,7 @@ import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -271,12 +272,13 @@ public class KadServer implements Runnable, DHTConstant {
 	 * @throws UnknownHostException
 	 * @throws BTypeException
 	 */
-	private void handlefindNodeResponse(BMap bMap) throws UnknownHostException, BTypeException {
-		if (bMap.containsKey(R)) {
-			BMap bmap_r = bMap.getMap(R);
-			if (bmap_r.containsKey(NODES)) {
-				byte[] bb = (byte[]) bmap_r.get(NODES);
-				passNodes(bb);
+	private void handlefindNodeResponse(BMap decodedData) throws UnknownHostException, BTypeException {
+		if (decodedData.containsKey(R)) {
+			BMap respondData = decodedData.getMap(R);
+			if (respondData.containsKey(NODES)) {
+				byte[] nodesbyteArray = (byte[]) respondData.get(NODES);
+				List<Node> nodes = passNodes(nodesbyteArray);
+				addNodesToQueue(nodes);
 			}
 		}
 	}
@@ -305,40 +307,44 @@ public class KadServer implements Runnable, DHTConstant {
 
 	}
 
-	private void passNodes(byte[] bb) throws UnknownHostException {
-		int bytelength = bb.length;
+	private List<Node> passNodes(byte[] nodesbyteArray) throws UnknownHostException {
+		int bytelength = nodesbyteArray.length;
 		if (bytelength % 26 != 0) {
-			return;
+			return null;
 		}
 		int count = bytelength / 26;
+		List<Node> nodes = new ArrayList<Node>();
 		for (int i = 0; i < count; i++) {
-			byte[] nid = Arrays.copyOfRange(bb, i * 26, i * 26 + 20);
-			byte[] ip = Arrays.copyOfRange(bb, i * 26 + 20, i * 26 + 24);
-			byte[] p = Arrays.copyOfRange(bb, i * 26 + 24, i * 26 + 26);
+			byte[] nid = Arrays.copyOfRange(nodesbyteArray, i * 26, i * 26 + 20);
+			byte[] ip = Arrays.copyOfRange(nodesbyteArray, i * 26 + 20, i * 26 + 24);
+			byte[] p = Arrays.copyOfRange(nodesbyteArray, i * 26 + 24, i * 26 + 26);
 
 			InetAddress inet4Address = InetAddress.getByAddress(ip);
 			Node node = new Node(new Key(nid));
 			node.setInetAddress(inet4Address).setPoint(Util.bytesToInt(p));
-			addToQueue(node);
+
+			if (!node.equals(AppManager.getLocalNode())) {
+				nodes.add(node);
+			}
+
 			// System.out.println(inet4Address.getHostAddress()+":"+Util.bytesToInt(p));
 		}
-
+		return nodes;
 	}
 
 	int count = 0;
 
 	private void addToQueue(Node node) {
 		if (!node.equals(AppManager.getLocalNode())) {
-			// nodesqueue.add(node);
-
-			// System.out.println("key=" + node.getKey().toString());
-
-			// nodes.add(node);
-			// System.out.println("节点数     ="+nodesqueue.size());
-			// System.out.println("这里就是空吗="+node.getKey());
 			kadBuckets.insert(new KadNode().setNode(node).setNodeWasContacted());// 插入一个节点
-			// System.out.println("队列数量=" + nodesqueue.size());
-			// System.out.println("计数=" + (++count));
+		}
+	}
+
+	private void addNodesToQueue(List<Node> nodes) {
+		for (Node node : nodes) {
+			if (!node.equals(AppManager.getLocalNode())) {
+				kadBuckets.insert(new KadNode().setNode(node).setNodeWasContacted());// 插入一个节点
+			}
 		}
 	}
 
