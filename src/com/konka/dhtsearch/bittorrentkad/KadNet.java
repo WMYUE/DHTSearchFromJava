@@ -2,8 +2,12 @@ package com.konka.dhtsearch.bittorrentkad;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.URI;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,7 +36,8 @@ public class KadNet implements KeybasedRouting {
 	private final BootstrapNodesSaver bootstrapNodesSaver;// 关机后保存到本地，启动时候从本地文件中加载
 	// private final BlockingQueue<Node> nodesqueue = new LinkedBlockingDeque<Node>();
 	private final KeyFactory keyFactory;
-//	private final SlackBucket stableBucket;
+
+	// private final SlackBucket stableBucket;
 
 	// KadBuckets kadBuckets=new KadBuckets(keyFactory, new StableBucket());
 	/**
@@ -44,21 +49,31 @@ public class KadNet implements KeybasedRouting {
 	 *            路由表
 	 * @param bootstrapNodesSaver
 	 *            保存数据用
-	 * @throws SocketException
 	 * @throws NoSuchAlgorithmException
+	 * @throws IOException
 	 */
-	public KadNet(BootstrapNodesSaver bootstrapNodesSaver) throws SocketException, NoSuchAlgorithmException {
+	public KadNet(BootstrapNodesSaver bootstrapNodesSaver) throws NoSuchAlgorithmException, IOException {
 		this.bootstrapNodesSaver = bootstrapNodesSaver;
 		DatagramSocket socket = null;
 		this.keyFactory = new RandomKeyFactory(20, new Random(), "SHA-1");
-		socket = new DatagramSocket(AppManager.getLocalNode().getSocketAddress());
-//		stableBucket = new SlackBucket(200);// 每一个
+		// socket = new DatagramSocket(AppManager.getLocalNode().getSocketAddress());
+		// stableBucket = new SlackBucket(200);// 每一个
+		Selector selector = null;
+		// -----------------------------------------------------------------------
+		DatagramChannel channel = DatagramChannel.open();
+		socket = channel.socket();
+		channel.configureBlocking(false);
+		socket.bind(AppManager.getLocalNode().getSocketAddress());
+		selector = Selector.open();
+		channel.register(selector, SelectionKey.OP_READ);
+		// -----------------------------------------------------------------------
+
 		this.kadBuckets = new SlackBucket(1000);// 这里要换成kadSendMsgServer
 
-		this.kadSendMsgServer = new KadSendMsgServer(socket, kadBuckets);// 111111111
-		this.kadServer = new KadServer(socket, kadBuckets);// 2222
+		this.kadSendMsgServer = new KadSendMsgServer(socket, kadBuckets,channel);// 111111111
+		this.kadServer = new KadServer(socket, kadBuckets,selector,channel);// 2222
 		socket.getRemoteSocketAddress();
-		// 123顺序不能变
+
 	}
 
 	public KadServer getKadServer() {
@@ -72,7 +87,7 @@ public class KadNet implements KeybasedRouting {
 	@Override
 	public void create() throws IOException {
 
-//		kadBuckets.registerIncomingMessageHandler();
+		// kadBuckets.registerIncomingMessageHandler();
 
 		kadServer.start();
 		kadSendMsgServer.start();
@@ -103,8 +118,6 @@ public class KadNet implements KeybasedRouting {
 		return result;
 	}
 
- 
-
 	@Override
 	public Node getLocalNode() {
 		return AppManager.getLocalNode();
@@ -119,7 +132,7 @@ public class KadNet implements KeybasedRouting {
 		return getLocalNode().toString() + "\n" + kadBuckets.toString();
 	}
 
-	public  Bucket  getKadBuckets() {
+	public Bucket getKadBuckets() {
 		return kadBuckets;
 	}
 

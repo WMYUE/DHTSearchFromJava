@@ -9,14 +9,10 @@ import java.net.InetAddress;
 import java.util.Random;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import org.yaircc.torrent.bencoding.BEncodedInputStream;
-import org.yaircc.torrent.bencoding.BMap;
-
 import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.RandomKeyFactory;
-import com.konka.dhtsearch.bencode.BDecoder;
 import com.konka.dhtsearch.bittorrentkad.KadNet;
 import com.konka.dhtsearch.bittorrentkad.KadNode;
 
@@ -59,32 +55,26 @@ public class SearchText {
 			// kadNet = new KadNet(bootstrapNodesSaver);
 			kadNet = new KadNet(null);
 			kadNet.create();
-//			doth(kadNet);
+			doth(kadNet);
 		} catch (Exception e) {
 			e.printStackTrace();
 			if (kadNet != null) {
 				kadNet.shutdown();
 			}
 		}
-		try {
-			File file=new File("D:/aaa.torrent");
-//			BDecoder bDecoder=new BDecoder(new FileInputStream(file));
-//			Object object=bDecoder.decodeMap();
-//			System.out.println(object);
-//			ByteArrayInputStream arrayInputStream=new 
-//			new FileInputStream(file).
-//			file.
-//			BEncodedInputStream.bdecode(arg0)
-//			BMap bMap = (BMap) BEncodedInputStream.bdecode(pkt
-//					.getData());
-			BEncodedInputStream bEncodedInputStream=new BEncodedInputStream(new FileInputStream(file));
-			Object object2=bEncodedInputStream.readElement();
-			System.out.println(object2);
-			bEncodedInputStream.close();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+// 
+//			TorrentInfo torrentInfo=new TorrentInfo("D:/bbb.torrent");
+//			AsyncHttpClient client = new AsyncHttpClient(); 
+//		 
+//			Future<Response> f = client.prepareGet("http://www.google.com.hk/").execute(); 
+//			System.out.println(f.get().getResponseBody("Big5"));//谷歌的输出编码集为Big5，反向解析结果的时候使用 
+//			Response response=f.get();
+////			response.
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 
 	public static void doth(KadNet kadNet) throws Exception {

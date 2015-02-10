@@ -3,6 +3,9 @@ package com.konka.dhtsearch.bittorrentkad.net;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.Selector;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,6 +13,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.yaircc.torrent.bencoding.BEncodedInputStream;
 
 import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Node;
@@ -26,11 +31,12 @@ public class KadSendMsgServer implements Runnable {
 	private final AtomicBoolean isActive = new AtomicBoolean(false);
 	private final Thread startThread;// ;=new Thread();
 	private final  Bucket  kadBuckets;
-
-	public KadSendMsgServer(DatagramSocket socket,  Bucket kadBuckets) {
+	private final DatagramChannel channel;
+	public KadSendMsgServer(DatagramSocket socket,  Bucket kadBuckets,DatagramChannel channel) {
 		this.socket = socket;
 		startThread = new Thread(this);
 		this.kadBuckets = kadBuckets;
+		this.channel=channel;
 	}
 
 	/**
@@ -49,7 +55,9 @@ public class KadSendMsgServer implements Runnable {
 			byte[] buf = msg.getBencodeData();
 			final DatagramPacket pkt = new DatagramPacket(buf, 0, buf.length);
 			pkt.setSocketAddress(msg.getSrc().getSocketAddress());
-			this.socket.send(pkt);
+//			this.socket.send(pkt);
+//			;
+			channel.send(ByteBuffer.wrap(buf), msg.getSrc().getSocketAddress());
 //			System.out.println("发送="+BEncodedInputStream.bdecode(buf));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -73,7 +81,7 @@ public class KadSendMsgServer implements Runnable {
 //				List<KadNode> src=kadBuckets.getAllNodes();
 //				Collections.copy(nodes, src);
 				
-//				System.out.println("发数="+nodes.size()+"---="+nodes.get(0).getNode().getSocketAddress());
+				System.out.println("发数="+nodes.size()+"---="+nodes.get(0).getNode().getSocketAddress());
 //				for(){}
 				for(int i=0;i<nodes.size();i++){
 					KadNode node=nodes.get(i);

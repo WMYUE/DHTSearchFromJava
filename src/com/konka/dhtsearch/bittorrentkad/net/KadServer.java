@@ -4,10 +4,20 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Timer;
@@ -25,7 +35,6 @@ import org.yaircc.torrent.bencoding.BTypeException;
 import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.Node;
-import com.konka.dhtsearch.bittorrentkad.KadNet;
 import com.konka.dhtsearch.bittorrentkad.KadNode;
 import com.konka.dhtsearch.bittorrentkad.bucket.Bucket;
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
@@ -46,21 +55,24 @@ import com.konka.dhtsearch.util.Util;
  */
 public class KadServer implements Runnable {
 
-	private final DatagramSocket socket;
+//	private final DatagramSocket socket;
 	private final BlockingQueue<DatagramPacket> pkts = new LinkedBlockingDeque<DatagramPacket>();;
 	// private final BlockingQueue<Node> nodesqueue;// = new
 	// LinkedBlockingDeque<Node>();;
-	private final ExecutorService srvExecutor = new ScheduledThreadPoolExecutor(
-			1);
+	private final ExecutorService srvExecutor = new ScheduledThreadPoolExecutor(1);
 	private final AtomicBoolean isActive = new AtomicBoolean(false);
 	private final Thread startThread;// ;=new Thread();
 	private final Bucket kadBuckets;
 	private final Set<String> info_hashset = new HashSet<String>();
+	private final Selector selector;
+	private final DatagramChannel channel;
 
-	public KadServer(DatagramSocket socket, Bucket kadBuckets) {
-		this.socket = socket;
+	public KadServer(DatagramSocket socket, Bucket kadBuckets, Selector selector,DatagramChannel channel) {
+//		this.socket = socket;
 		startThread = new Thread(this);
 		this.kadBuckets = kadBuckets;
+		this.selector = selector;
+		this.channel = channel;
 
 	}
 
@@ -84,62 +96,12 @@ public class KadServer implements Runnable {
 			final DatagramPacket pkt = new DatagramPacket(buf, 0, buf.length);
 
 			pkt.setSocketAddress(msg.getSrc().getSocketAddress());
-			this.socket.send(pkt);
+//			this.socket.send(pkt);
+			channel.send(ByteBuffer.wrap(buf), msg.getSrc().getSocketAddress());
+//			channel.send(src, target);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	// 收到信息后处理
-	private void handleIncomingPacket(final DatagramPacket pkt) {
-		this.srvExecutor.execute(new Runnable() {// 交给线程池处理
-					@Override
-					public void run() {
-						try {// 这里处理消息的方法需要重写
-							BMap bMap = (BMap) BEncodedInputStream.bdecode(pkt
-									.getData());
-
-							// System.out.println(bMap);
-							Node src = new Node().setInetAddress(pkt
-									.getAddress());// InetAddress;//对方的node信息
-							// bMap.get
-							// String transaction =Util.hex((byte[])
-							// bMap.get("t"));
-							// Hash hash = new Hash((byte[]) bMap.get("t"),
-							// Type.ID);
-							String transaction = Util.hex((byte[]) (bMap
-									.get("t")));
-							// System.out.println("transaction-hash=" +
-							// transaction);
-							// System.out.println("transaction-hex==" +
-							// Util.hex((byte[]) (bMap.get("t"))));
-							// System.out.println();
-							// String transaction = bMap.getString("t");//
-							// 交互用的识别id 收到的是二进制数组，要转码
-
-							if (bMap.containsKey("y")) {
-								String y = bMap.getString("y");
-								if ("q".equals(y)) {// 对方请求
-									// System.out.println("收到请求 " + bMap + "---"
-									// + pkt.getSocketAddress());
-									handleRequestMsg(pkt, bMap, transaction);
-								} else if ("r".equals(y)) {// 对方的响应（由于值爬数据，不用处理太复杂）
-									// Map<Thread, StackTraceElement[]> maps =
-									// Thread.getAllStackTraces();
-									// System.out.println("收到响应+线程数" + "-----" +
-									// bMap + "---" + pkt.getSocketAddress());
-									handleResponseMsg(bMap, src, transaction);
-								}
-							}
-						} catch (final Exception e) {
-							e.printStackTrace();
-							return;
-						} finally {
-							KadServer.this.pkts.offer(pkt);// 如果可以，将ptk加入到队列
-						}
-					}
-
-				});
 	}
 
 	/**
@@ -149,8 +111,7 @@ public class KadServer implements Runnable {
 	 * @throws BTypeException
 	 * @throws IOException
 	 */
-	protected void hanldePingRequest(String transaction, BMap bMap, Node src)
-			throws BTypeException, IOException {
+	protected void hanldePingRequest(String transaction, BMap bMap, Node src) throws BTypeException, IOException {
 		// byte[] keybyte = (byte[]) bMap.getMap("a").get("id");
 		// Node src = new Node(new Key(keybyte));
 		PingResponse pingResponse = new PingResponse(transaction, src);
@@ -166,16 +127,14 @@ public class KadServer implements Runnable {
 	 * @throws BTypeException
 	 * @throws IOException
 	 */
-	private void handleFind_NodeRequest(String transaction, BMap bMap, Node src)
-			throws BTypeException, IOException {
+	private void handleFind_NodeRequest(String transaction, BMap bMap, Node src) throws BTypeException, IOException {
 		byte[] target = (byte[]) bMap.getMap("a").get("target");
 		List<Node> lists = kadBuckets.getClosestNodesByKey(new Key(target), 8);
 
 		// String transaction = Util.hex((byte[]) (bMap.get("t")));
 
 		byte[] tt = (byte[]) (bMap.get("t"));
-		FindNodeResponse findNodeResponse = new FindNodeResponse(transaction,
-				src);
+		FindNodeResponse findNodeResponse = new FindNodeResponse(transaction, src);
 		findNodeResponse.setTt(tt);
 		findNodeResponse.setNodes(lists);
 		send(findNodeResponse);
@@ -194,8 +153,7 @@ public class KadServer implements Runnable {
 	 *             info_hash
 	 * @throws IOException
 	 */
-	protected void handleGet_PeersRequest(String transaction, BMap bMap,
-			Node src) throws BTypeException, IOException {
+	protected void handleGet_PeersRequest(String transaction, BMap bMap, Node src) throws BTypeException, IOException {
 		byte[] infohash = (byte[]) bMap.getMap("a").get("info_hash");
 		// final ErrorKadResponse errorKadResponse = new
 		// ErrorKadResponse(transaction, src);
@@ -213,10 +171,8 @@ public class KadServer implements Runnable {
 		getPeersRequest.setInfo_hash(Util.hex(infohash));
 
 		sendGet_Peers(transaction, infohash, src);
-		GetPeersResponse getPeersResponse = new GetPeersResponse(transaction,
-				src);
-		List<Node> nodes = kadBuckets
-				.getClosestNodesByKey(new Key(infohash), 8);
+		GetPeersResponse getPeersResponse = new GetPeersResponse(transaction, src);
+		List<Node> nodes = kadBuckets.getClosestNodesByKey(new Key(infohash), 8);
 		getPeersResponse.setNodes(nodes);
 		addToQueue(src);
 		send(getPeersResponse);
@@ -239,8 +195,7 @@ public class KadServer implements Runnable {
 		// } catch (IOException e1) {
 		// e1.printStackTrace();
 		// }
-		MessageDispatcher dispatcher = new MessageDispatcher(timer,
-				KadServer.this, findNodeResponse.getTransaction());
+		MessageDispatcher dispatcher = new MessageDispatcher(timer, KadServer.this, findNodeResponse.getTransaction());
 		dispatcher.setConsumable(true)//
 				// .addFilter(new
 				// IdMessageFilter(findNodeResponse.getTransaction()))// 只接受的类型
@@ -253,22 +208,22 @@ public class KadServer implements Runnable {
 						try {
 							bb = bMap.getMap("r");
 							if (bb.containsKey("nodes")) {
-								byte[] ddd=(byte[]) bb.get("nodes");
-								passgetpeersNodes(msg,ddd);
-							}else if( bb.containsKey("values")){
-								System.out.println("收到相应value=========="+bMap);
+								byte[] ddd = (byte[]) bb.get("nodes");
+								passgetpeersNodes(msg, ddd);
+							} else if (bb.containsKey("values")) {
+								System.out.println("收到相应value==========" + bMap);
 							}
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}// .getn
-					
-//						System.out.println("收到正确的响应" + ++countcount);
+
+						// System.out.println("收到正确的响应" + ++countcount);
 					}
 
 					@Override
 					public void failed(Throwable exc, BMap nothing) {
-//						System.out.println("相响应错误了==" + ++fail);
+						// System.out.println("相响应错误了==" + ++fail);
 					}
 				});
 		try {
@@ -290,20 +245,17 @@ public class KadServer implements Runnable {
 	 * @throws BDecodingException
 	 * @throws UnknownHostException
 	 */
-	private void handleResponseMsg(BMap bMap, Node src, String transaction)
-			throws BTypeException, BDecodingException, UnknownHostException {
+	private void handleResponseMsg(BMap bMap, Node src, String transaction) throws BTypeException, BDecodingException, UnknownHostException {
 
-		MessageDispatcher messageDispatcher = MessageDispatcher
-				.findMessageDispatcherByTag(transaction);// 取出之前的请求对象
+		MessageDispatcher messageDispatcher = MessageDispatcher.findMessageDispatcherByTag(transaction);// 取出之前的请求对象
 		if (messageDispatcher != null) {// 有记录
 			KadRequest kadRequest = messageDispatcher.getKadRequest();
-			messageDispatcher.handle(kadRequest,bMap);
+			messageDispatcher.handle(kadRequest, bMap);
 			if (kadRequest.getClass() == FindNodeRequest.class) {
 				// FindNodeResponse findNodeResponse =
 				// receiveFind_Node(transaction, bMap, src);
-				ReceiveFindNodeResponse receiveFindNodeResponse = new ReceiveFindNodeResponse(
-						transaction, bMap, src);
-				messageDispatcher.handle(receiveFindNodeResponse,bMap);
+				ReceiveFindNodeResponse receiveFindNodeResponse = new ReceiveFindNodeResponse(transaction, bMap, src);
+				messageDispatcher.handle(receiveFindNodeResponse, bMap);
 				// System.out.println("t=" + transaction);
 				handlehindNodeResponse(bMap);// *****
 
@@ -313,13 +265,13 @@ public class KadServer implements Runnable {
 					if (bmap_r.containsKey("id")) {
 						String id = bmap_r.getString("id");
 						// System.out.println("连接="+id);
-						messageDispatcher.handle(kadRequest,bMap);
-				
+						messageDispatcher.handle(kadRequest, bMap);
+
 					}
 				}
 			} else if (kadRequest.getClass() == GetPeersRequest.class) {
-				messageDispatcher.handle(kadRequest,bMap);
-				
+				messageDispatcher.handle(kadRequest, bMap);
+
 			} else {
 				// TODO 响应的操作应该根据请求的id t判断是哪个响应，t清楚一次必须改变
 			}
@@ -336,8 +288,7 @@ public class KadServer implements Runnable {
 	 * @throws UnknownHostException
 	 * @throws BTypeException
 	 */
-	private void handlehindNodeResponse(BMap bMap) throws UnknownHostException,
-			BTypeException {
+	private void handlehindNodeResponse(BMap bMap) throws UnknownHostException, BTypeException {
 		if (bMap.containsKey("r")) {
 			BMap bmap_r = bMap.getMap("r");
 			if (bmap_r.containsKey("nodes")) {
@@ -352,32 +303,33 @@ public class KadServer implements Runnable {
 
 	int nodescount = 0;
 
-	private void passgetpeersNodes(KadMessage msg,byte[] bb) throws UnknownHostException {
+	private void passgetpeersNodes(KadMessage msg, byte[] bb) throws UnknownHostException {
 		// byte[] bb = (byte[]) bMap.getMap("r").get("nodes");
 		int count = bb.length / 26;
 		// if (count != 0) {
 		// return;
 		// }
-//		 System.out.println("解析node");
+		// System.out.println("解析node");
 		nodescount += count;
 		// System.out.println("收到nodes数量="+nodescount);
 		for (int i = 0; i < count; i++) {
 			byte[] nid = Arrays.copyOfRange(bb, i * 26, i * 26 + 20);
 			byte[] ip = Arrays.copyOfRange(bb, i * 26 + 20, i * 26 + 24);
 			byte[] p = Arrays.copyOfRange(bb, i * 26 + 24, i * 26 + 26);
-			
+
 			InetAddress inet4Address = InetAddress.getByAddress(ip);
 			Node node = new Node(new Key(nid));
 			node.setInetAddress(inet4Address).setPoint(Util.bytesToInt(p));
-//			addToQueue(node);
-			
-			KadRequest kadRequest=(KadRequest) msg;
+			// addToQueue(node);
+
+			KadRequest kadRequest = (KadRequest) msg;
 			kadRequest.setNode(node);
 			sendGet_Peers(kadRequest);
 			// System.out.println(inet4Address.getHostAddress()+":"+Util.bytesToInt(p));
 		}
-		
+
 	}
+
 	private void passNodes(byte[] bb) throws UnknownHostException {
 		// byte[] bb = (byte[]) bMap.getMap("r").get("nodes");
 		int count = bb.length / 26;
@@ -412,8 +364,7 @@ public class KadServer implements Runnable {
 			// nodes.add(node);
 			// System.out.println("节点数     ="+nodesqueue.size());
 			// System.out.println("这里就是空吗="+node.getKey());
-			kadBuckets
-					.insert(new KadNode().setNode(node).setNodeWasContacted());// 插入一个节点
+			kadBuckets.insert(new KadNode().setNode(node).setNodeWasContacted());// 插入一个节点
 			// System.out.println("队列数量=" + nodesqueue.size());
 			// System.out.println("计数=" + (++count));
 		}
@@ -428,64 +379,35 @@ public class KadServer implements Runnable {
 	 * @throws IOException
 	 */
 
-	protected synchronized void handleRequestMsg(DatagramPacket pkt, BMap bMap,
-			String transaction) throws BTypeException,
-			NoSuchAlgorithmException, IOException {
+	protected synchronized void handleRequestMsg(InetSocketAddress pkt, BMap bMap, String transaction) throws BTypeException, NoSuchAlgorithmException, IOException {
 
 		if (bMap.containsKey("q")) {
 			String q = bMap.getString("q");// find_node or getpeers===
 
-			// System.out.println("收到请求=" + q);
-			// String id = bMap.getMap("a").getString("id");
-			// System.out.println("id长度=="+bMap.getMap("a").get("id"));
-			// System.out.println("id长度"+id.length());
-			// Key key = new Key(Util.StringId2bytes(id));
 			Key key = new Key((byte[]) bMap.getMap("a").get("id"));
-			// System.out.println(key.toString());
-			// int idd=Integer.parseInt(id, 16);
-			final Node to = new Node(key);
-			to.setInetAddress(pkt.getAddress());
-			to.setPoint(pkt.getPort());
+
+			final Node to = new Node(key).setSocketAddress(pkt);
 
 			switch (q) {
-			case "find_node":
-				// ByteArrayInputStream arrayInputStream = new
-				// ByteArrayInputStream(pkt.getData());
-				// BDecoder bDecoder = new BDecoder(arrayInputStream);
-				// Map<String, Object> map = bDecoder.decodeMap();
-				// System.out.println("收到findnode_map="+map);
-				// Map<String, Object> map_a=(Map<String, Object>) map.get("a");
-				// Object t= map.get("t");
-				// System.out.println("t----="+t.getClass());
-				// System.out.println("收到findnode_map_a="+map_a);
-				// byte[] bb=(byte[]) t;
-
-				// System.out.println("字符串=" + new String(pkt.getData()));
-				// System.out.println("收到消息的解码=" + map + "----" +
-				// pkt.getSocketAddress());
-				// System.out.println("transaction-hash=" + transaction);
-				// System.out.println("收到请求===find_node=" +
-				// pkt.getSocketAddress() + "--tttt=" + transaction + "-key=" +
-				// key.toString());
-				handleFind_NodeRequest(transaction, bMap, to);
-				break;
-			case "get_peers":
-				handleGet_PeersRequest(transaction, bMap, to);
-				break;
-			case "ping"://
-				// System.out.println("收到请求===ping=" + pkt.getSocketAddress());
-				hanldePingRequest(transaction, bMap, to);
-				break;
-			case "announce_peer"://
-				hanldeAnnounce_PeerRequest(transaction, bMap, to);
-				// System.out.println("收到请求===announce_peer="
-				// + pkt.getSocketAddress());
-				break;
-
-			default:
-				// System.out.println("收到请求===其他=" + q + "==="
-				// + pkt.getSocketAddress());
-				break;
+				case "find_node":
+					handleFind_NodeRequest(transaction, bMap, to);
+					break;
+				case "get_peers":
+					handleGet_PeersRequest(transaction, bMap, to);
+					break;
+				case "ping"://
+					// System.out.println("收到请求===ping=" + pkt.getSocketAddress());
+					hanldePingRequest(transaction, bMap, to);
+					break;
+				case "announce_peer"://
+					hanldeAnnounce_PeerRequest(transaction, bMap, to);
+					// System.out.println("收到请求===announce_peer="
+					// + pkt.getSocketAddress());
+					break;
+				default:
+					// System.out.println("收到请求===其他=" + q + "==="
+					// + pkt.getSocketAddress());
+					break;
 			}
 
 		} else {
@@ -493,8 +415,7 @@ public class KadServer implements Runnable {
 		}
 	}
 
-	private void hanldeAnnounce_PeerRequest(String transaction, BMap bMap,
-			Node to) throws BTypeException {
+	private void hanldeAnnounce_PeerRequest(String transaction, BMap bMap, Node to) throws BTypeException {
 		String info_hash = Util.hex((byte[]) bMap.getMap("a").get("info_hash"));
 		System.out.println("获取到announce_peer=" + info_hash);
 		if (!info_hashset.contains(info_hash)) {
@@ -520,26 +441,78 @@ public class KadServer implements Runnable {
 		this.isActive.set(true);
 
 		while (this.isActive.get()) {
-			DatagramPacket pkt = null;
+			// DatagramPacket pkt = null;
+			// try {
+			// // System.out.println("等待数据");
+			// pkt = this.pkts.poll();
+			// if (pkt == null)
+			// pkt = new DatagramPacket(new byte[1024], 1024);
+			//
+			// this.socket.receive(pkt);// 堵塞
+			// // System.out.println("已经拿到数据可");
+			// handleIncomingPacket(pkt);// 收到信息后处理
+			//
+			// } catch (final Exception e) {
+			// // insert the taken pkt back
+			// if (pkt != null)
+			// this.pkts.offer(pkt);
+			//
+			// e.printStackTrace();
+			// }
+			ByteBuffer byteBuffer = ByteBuffer.allocate(65536);
 			try {
-				// System.out.println("等待数据");
-				pkt = this.pkts.poll();
-				if (pkt == null)
-					pkt = new DatagramPacket(new byte[1024], 1024);
+				int eventsCount = selector.select();// 这里堵塞
+				if (eventsCount > 0) {
+					Set<SelectionKey> selectedKeys = selector.selectedKeys();
+					Iterator<SelectionKey> iterator = selectedKeys.iterator();
+					while (iterator.hasNext()) {
+						SelectionKey sk = (SelectionKey) iterator.next();
+						iterator.remove();
+						if (sk.isReadable()) {
+							DatagramChannel datagramChannel = (DatagramChannel) sk.channel();
+							SocketAddress target = datagramChannel.receive(byteBuffer);// 接受数据
 
-				this.socket.receive(pkt);// 堵塞
-				// System.out.println("已经拿到数据可");
-				handleIncomingPacket(pkt);// 收到信息后处理
-
-			} catch (final Exception e) {
-				// insert the taken pkt back
-				if (pkt != null)
-					this.pkts.offer(pkt);
-
+							byteBuffer.flip();
+							byte[] dst = new byte[byteBuffer.limit()];
+							byteBuffer.get(dst);
+							byteBuffer.clear();
+							handleIncomingData((InetSocketAddress) target, dst);
+						}
+					}
+				}
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
+			//
 		}
+	}
+
+	private void handleIncomingData(final InetSocketAddress target, final byte[] dst) throws SocketException {
+		this.srvExecutor.execute(new Runnable() {// 交给线程池处理
+					@Override
+					public void run() {
+						try {
+							BMap bMap = (BMap) BEncodedInputStream.bdecode(dst);
+
+							Node src = new Node().setInetAddress(target.getAddress());// InetAddress;//对方的node信息
+
+							String transaction = Util.hex((byte[]) (bMap.get("t")));
+
+							if (bMap.containsKey("y")) {
+								String y = bMap.getString("y");
+								if ("q".equals(y)) {// 对方请求
+									handleRequestMsg(target, bMap, transaction);
+								} else if ("r".equals(y)) {// 对方的响应
+									handleResponseMsg(bMap, src, transaction);
+								}
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+
+				});
 	}
 
 	/**
@@ -550,7 +523,7 @@ public class KadServer implements Runnable {
 	// @Override
 	public void shutdown() {
 		this.isActive.set(false);
-		this.socket.close();
+//		this.socket.close();
 		startThread.interrupt();
 		try {
 			startThread.join();

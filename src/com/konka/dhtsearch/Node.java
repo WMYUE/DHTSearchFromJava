@@ -18,17 +18,19 @@ public class Node implements Serializable,Comparable<Node> {
 	
 	private final Key key;
 	private InetAddress addr = null;
-	private Integer point;
-//	private Map<String, Integer> portFromScheme = new HashMap<String, Integer>();
+	private Integer port;
 	
-	// dummy node
 	/**
 	 * Creates a dummy node with no key in it
 	 */
 	public Node() {
 		this(null);
 	}
-	
+	public Node setSocketAddress(InetSocketAddress socketAddress){
+		addr=socketAddress.getAddress();
+		port=socketAddress.getPort();
+		return this;
+	}
 	/**
 	 * Create a node with only a key and no IP address
 	 * @param key
@@ -45,29 +47,6 @@ public class Node implements Serializable,Comparable<Node> {
 		return key;
 	}
 	
-	/**
-	 * The endpoints map is a map containing all the nodes available protocols as keys
-	 * and the protocol's port as values
-	 *  
-	 * @return node's protocols
-	 */
-//	public Map<String, Integer> getAllEndpoints() {
-//		return portFromScheme;
-//	}
-	
-	/**
-	 * Creates a uri from a given protocol name
-	 * @param scheme the protocol name (such as http or openkad.udp)
-	 * @return the uri
-	 */
-//	public URI getURI(String scheme) {
-//		try {
-//			return new URI(scheme+"://"+addr.getHostAddress()+":"+getPort(scheme)+"/"+key.toBase64());
-//		} catch (URISyntaxException e) {
-//			throw new RuntimeException(e);
-//		}
-//	}
-	
 	
 	/**
 	 * Creates a SocketAddress from a protocol name
@@ -75,21 +54,11 @@ public class Node implements Serializable,Comparable<Node> {
 	 * @return
 	 */
 	public SocketAddress getSocketAddress() {
-		return new InetSocketAddress(addr,point);
+		return new InetSocketAddress(addr,port);
 	}
 	
-	/**
-	 * Append a new protocol for this node.
-	 * Use this method to add your own protocol support (such as http support). Make sure
-	 * you add the new protocol BEFORE joining a network
-	 * @param scheme the protocol name
-	 * @param port the protocol port
-	 */
-//	public void addEndpoint(String scheme, int port) {
-//		portFromScheme.put(scheme, port);
-//	}
 	public Node setPoint(Integer point) {
-		this.point = point;
+		this.port = point;
 		return this;
 	}
 	/**
@@ -117,7 +86,7 @@ public class Node implements Serializable,Comparable<Node> {
 	 * @return the port number
 	 */
 	public int getPort() {
-		return point;
+		return port;
 	}
 	
 	@Override
