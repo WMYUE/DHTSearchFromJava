@@ -45,14 +45,6 @@ public interface KBuckets extends NodeStorage {
 	 */
 	public abstract List<Node> getClosestNodesByKey(Key k, int n);
 
-	/**
-	 * Gets all nodes with keys closest to the given k.
-	 * The size of the list will be MIN(n, total number of nodes in the data structure)
-	 * @param k the key which the result's nodes are close to
-	 * @param n the maximum number of nodes expected
-	 * @return a list of nodes sorted by proximity to the given key's color
-	 */
-//	public abstract List<Node> getClosestNodesByColor(Key k, int n);
 
 	@Override
 	public abstract String toString();

@@ -22,12 +22,6 @@ public interface Bucket {
 	public void insert(KadNode n);
 
 	/**
-	 * Adds all nodes in bucket to the given collection
-	 * @param c the collection the nodes will be added to
-	 */
-	void addNodesTo(Collection<Node> c);
-
-	/**
 	 * Marks a node as dead: the dead node will be replace if 
 	 * insert was invoked 
 	 * @param n the dead node

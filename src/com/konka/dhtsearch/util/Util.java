@@ -1,11 +1,18 @@
 package com.konka.dhtsearch.util;
 
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import com.konka.dhtsearch.AppManager;
+import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.Node;
 
 public class Util {
@@ -50,6 +57,31 @@ public class Util {
 			System.arraycopy(port, 0, nodesbyte, 0 + i * 26 + id.length + address.length, port.length);
 		}
 		return nodesbyte;
+	}
+
+	public static List<Node> passNodes(byte[] nodesbyteArray) throws UnknownHostException {
+		int bytelength = nodesbyteArray.length;
+		if (bytelength % 26 != 0) {
+			return null;
+		}
+		int count = bytelength / 26;
+		List<Node> nodes = new ArrayList<Node>();
+		for (int i = 0; i < count; i++) {
+			byte[] nid = Arrays.copyOfRange(nodesbyteArray, i * 26, i * 26 + 20);
+			byte[] ip = Arrays.copyOfRange(nodesbyteArray, i * 26 + 20, i * 26 + 24);
+			byte[] p = Arrays.copyOfRange(nodesbyteArray, i * 26 + 24, i * 26 + 26);
+
+			InetAddress inet4Address = InetAddress.getByAddress(ip);
+			Node node = new Node(new Key(nid));
+			node.setInetAddress(inet4Address).setPoint(Util.bytesToInt(p));
+
+			if (!node.equals(AppManager.getLocalNode())) {
+				nodes.add(node);
+			}
+
+			// System.out.println(inet4Address.getHostAddress()+":"+Util.bytesToInt(p));
+		}
+		return nodes;
 	}
 
 	/**

@@ -18,6 +18,7 @@ import com.konka.dhtsearch.bittorrentkad.net.filter.MessageFilter;
 
 /**
  * Handle all the messages different states. A request state: init -> sent -> response received -> callback invoked
+ * 
  * @处理所有信息的不同状态 A message state: init -> expecting -> message received -> callback invoked -> back to expecting or end
  * @param
  */
@@ -37,7 +38,7 @@ public class MessageDispatcher {
 	private final Set<MessageFilter> filters = new HashSet<MessageFilter>();
 	private TimerTask timeoutTimerTask = null;
 	private final AtomicBoolean isDone;
-	private final Timer timer;
+	private final Timer timer=new Timer();
 	private final KadServer mKadServer;
 	private final static Set<MessageDispatcher> messageDispatchers = new HashSet<MessageDispatcher>();
 
@@ -70,9 +71,8 @@ public class MessageDispatcher {
 		messageDispatchers.remove(this);
 	}
 
-	public MessageDispatcher(Timer timer, KadServer kadServer, String transaction) {
+	public MessageDispatcher(KadServer kadServer, String transaction) {
 		expect();
-		this.timer = timer;
 		this.mKadServer = kadServer;
 		this.isDone = new AtomicBoolean(false);
 		this.transactionID = transaction;
@@ -100,7 +100,7 @@ public class MessageDispatcher {
 		return true;
 	}
 
-	public void handle(KadMessage msg,BMap bMap) {
+	public void handle(KadMessage msg, BMap bMap) {
 		if (!shouldHandleMessage(msg)) { // 过滤
 			return;
 		}
@@ -169,7 +169,7 @@ public class MessageDispatcher {
 	 * @param to
 	 * @param req
 	 */
-	public void send ( KadRequest req) {
+	public void send(KadRequest req) {
 		setConsumable(true);
 		try {
 			/*
@@ -180,7 +180,7 @@ public class MessageDispatcher {
 			mKadServer.send(req);
 			kadRequest = req;
 			setupTimeout();
-//			System.out.println("发送成功");
+			// System.out.println("发送成功");
 		} catch (Exception e) {
 			cancel(e);
 		}

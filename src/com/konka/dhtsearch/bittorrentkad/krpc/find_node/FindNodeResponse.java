@@ -22,16 +22,6 @@ public class FindNodeResponse extends KadResponse {
 	private boolean cachedResults;
 	// not in openKad - for vision.
 	private boolean needed;
-	private byte[] tt;
-	
-
-	public byte[] getTt() {
-		return tt;
-	}
-
-	public void setTt(byte[] tt) {
-		this.tt = tt;
-	}
 
 	public FindNodeResponse(String transaction, Node src) {
 		super(transaction, src);
@@ -67,11 +57,7 @@ public class FindNodeResponse extends KadResponse {
 	public byte[] getBencodeData() {
 
 		BMap bMap = new HashBMap();
-		if(tt==null){
-			bMap.put(TRANSACTION, Util.HexString2Bytes(transaction));
-		}else{
-			bMap.put(TRANSACTION, tt);
-		}
+		bMap.put(TRANSACTION, Util.HexString2Bytes(transaction));
 		bMap.put("y", "r");
 		// ----------------------------------
 		BMap a = new HashBMap();

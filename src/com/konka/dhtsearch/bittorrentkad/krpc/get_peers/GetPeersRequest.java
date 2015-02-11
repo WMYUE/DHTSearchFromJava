@@ -53,10 +53,11 @@ public class GetPeersRequest extends KadRequest {
 		// ----------------------------------
 		BMap a = new HashBMap();
 		a.put("id", AppManager.getLocalNode().getKey().getBytes());// 自己的节点id
-		a.put("info_hash", info_hash);// 对方的节点id **这里应该是你要查询的id
+		a.put("info_hash", Util.HexString2Bytes(info_hash));// 对方的节点id **这里应该是你要查询的id
 		bMap.put("a", a);
 		// ----------------------------------
 		byte[] bb = BEncodedOutputStream.bencode(bMap);
+//		System.out.println(new String(bb));
 		return bb;
 	}
 

@@ -7,6 +7,7 @@ import org.yaircc.torrent.bencoding.HashBMap;
 import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadRequest;
+import com.konka.dhtsearch.util.Util;
 
 /**
  * A ping request as defined in the kademlia protocol
@@ -28,7 +29,7 @@ public class PingRequest extends KadRequest {
 	@Override
 	public byte[] getBencodeData( ) {// ping 不需要对方的节点
 		BMap bMap = new HashBMap();
-		bMap.put(TRANSACTION, transaction);
+		bMap.put(TRANSACTION, Util.HexString2Bytes(transaction));
 		bMap.put("y", "q");
 		bMap.put("q", "ping");
 		// ----------------------------------

@@ -5,16 +5,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
-import java.nio.channels.Selector;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.yaircc.torrent.bencoding.BEncodedInputStream;
 
 import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Node;
@@ -26,17 +18,16 @@ import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeRequest;
 public class KadSendMsgServer implements Runnable {
 
 	private final DatagramSocket socket;
-//	private final BlockingQueue<Node> nodes;
-	private final ExecutorService srvExecutor = new ScheduledThreadPoolExecutor(10);
 	private final AtomicBoolean isActive = new AtomicBoolean(false);
 	private final Thread startThread;// ;=new Thread();
-	private final  Bucket  kadBuckets;
+	private final Bucket kadBuckets;
 	private final DatagramChannel channel;
-	public KadSendMsgServer(DatagramSocket socket,  Bucket kadBuckets,DatagramChannel channel) {
+
+	public KadSendMsgServer(DatagramSocket socket, Bucket kadBuckets, DatagramChannel channel) {
 		this.socket = socket;
 		startThread = new Thread(this);
 		this.kadBuckets = kadBuckets;
-		this.channel=channel;
+		this.channel = channel;
 	}
 
 	/**
@@ -49,16 +40,11 @@ public class KadSendMsgServer implements Runnable {
 	 */
 	public void send(final KadMessage msg) throws IOException {
 		try {
-			if(msg.getSrc().equals(AppManager.getLocalNode())){
+			if (msg.getSrc().equals(AppManager.getLocalNode())) {
 				return;
 			}
 			byte[] buf = msg.getBencodeData();
-			final DatagramPacket pkt = new DatagramPacket(buf, 0, buf.length);
-			pkt.setSocketAddress(msg.getSrc().getSocketAddress());
-//			this.socket.send(pkt);
-//			;
 			channel.send(ByteBuffer.wrap(buf), msg.getSrc().getSocketAddress());
-//			System.out.println("发送="+BEncodedInputStream.bdecode(buf));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -72,25 +58,25 @@ public class KadSendMsgServer implements Runnable {
 		this.isActive.set(true);
 		while (this.isActive.get()) {
 			try {
-//				final Node to = nodes.take();
+				// final Node to = nodes.take();
 				// srvExecutor.execute(new Runnable() {
 				// @Override
 				// public void run() {
 				Thread.sleep(1000);
-				List<KadNode> nodes=kadBuckets.getAllNodes();
-//				List<KadNode> src=kadBuckets.getAllNodes();
-//				Collections.copy(nodes, src);
-				
-				System.out.println("发数="+nodes.size()+"---="+nodes.get(0).getNode().getSocketAddress());
-//				for(){}
-				for(int i=0;i<nodes.size();i++){
-					KadNode node=nodes.get(i);
-					if(!node.getNode().equals(AppManager.getLocalNode())){
+				List<KadNode> nodes = kadBuckets.getAllNodes();
+				// List<KadNode> src=kadBuckets.getAllNodes();
+				// Collections.copy(nodes, src);
+
+				// System.out.println("发数="+nodes.size()+"---="+nodes.get(0).getNode().getSocketAddress());
+				// for(){}
+				for (int i = 0; i < nodes.size(); i++) {
+					KadNode node = nodes.get(i);
+					if (!node.getNode().equals(AppManager.getLocalNode())) {
 						send(node.getNode());
-//						System.out.println(node.getNode().getKey().toString()+"--"+node.getNode().getSocketAddress());
+						// System.out.println(node.getNode().getKey().toString()+"--"+node.getNode().getSocketAddress());
 					}
 				}
-			
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -98,14 +84,10 @@ public class KadSendMsgServer implements Runnable {
 		}
 	}
 
-	private void send(Node to) {
+	private void send(Node to) throws IOException {
 		FindNodeRequest msg = FindNodeRequest.creatLocalFindNodeRequest(to);
+		send(msg);
 
-		try {
-			send(msg);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	/**
