@@ -351,34 +351,33 @@ public class KadServer implements Runnable, DHTConstant {
 	/**
 	 * 处理请求信息
 	 * 
-	 * @param bMap
+	 * @param decodedData
 	 * @throws BTypeException
 	 * @throws NoSuchAlgorithmException
 	 * @throws IOException
 	 */
 
-	protected synchronized void handleRequestMsg(InetSocketAddress pkt, BMap bMap, String transaction) throws BTypeException, NoSuchAlgorithmException, IOException {
+	protected synchronized void handleRequestMsg(InetSocketAddress inetSocketAddress, BMap decodedData, String transaction) throws BTypeException, NoSuchAlgorithmException, IOException {
 
-		if (bMap.containsKey(Q)) {
-			String q = bMap.getString(Q);// find_node or getpeers===
+		if (decodedData.containsKey(Q)) {
+			String q_value = decodedData.getString(Q);// find_node or getpeers===
 
-			Key key = new Key((byte[]) bMap.getMap(A).get(ID));
+			Key key = new Key((byte[]) decodedData.getMap(A).get(ID));
 
-			final Node to = new Node(key).setSocketAddress(pkt);
+			final Node to = new Node(key).setSocketAddress(inetSocketAddress);
 
-			switch (q) {
+			switch (q_value) {
 				case FIND_NODE:
-					handleFind_NodeRequest(transaction, bMap, to);
+					handleFind_NodeRequest(transaction, decodedData, to);
 					break;
 				case GET_PEERS:
-					handleGet_PeersRequest(transaction, bMap, to);
+					handleGet_PeersRequest(transaction, decodedData, to);
 					break;
 				case PING://
-					// System.out.println("收到请求===ping=" + pkt.getSocketAddress());
-					hanldePingRequest(transaction, bMap, to);
+					hanldePingRequest(transaction, decodedData, to);
 					break;
 				case ANNOUNCE_PEER://
-					hanldeAnnounce_PeerRequest(transaction, bMap, to);
+					hanldeAnnounce_PeerRequest(transaction, decodedData, to);
 					// System.out.println("收到请求===announce_peer="
 					// + pkt.getSocketAddress());
 					break;
@@ -419,24 +418,6 @@ public class KadServer implements Runnable, DHTConstant {
 		this.isActive.set(true);
 
 		while (this.isActive.get()) {
-			// DatagramPacket pkt = null;
-			// try {
-			// // System.out.println("等待数据");
-			// pkt = this.pkts.poll();
-			// if (pkt == null)
-			// pkt = new DatagramPacket(new byte[1024], 1024);
-			//
-			// this.socket.receive(pkt);// 堵塞
-			// // System.out.println("已经拿到数据可");
-			// handleIncomingPacket(pkt);// 收到信息后处理
-			//
-			// } catch (final Exception e) {
-			// // insert the taken pkt back
-			// if (pkt != null)
-			// this.pkts.offer(pkt);
-			//
-			// e.printStackTrace();
-			// }
 			ByteBuffer byteBuffer = ByteBuffer.allocate(65536);
 			try {
 				int eventsCount = selector.select();// 这里堵塞
