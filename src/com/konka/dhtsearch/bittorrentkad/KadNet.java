@@ -3,6 +3,7 @@ package com.konka.dhtsearch.bittorrentkad;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -27,59 +28,50 @@ import com.konka.dhtsearch.bittorrentkad.net.KadReceiveServer;
  *
  */
 public class KadNet implements KeybasedRouting {
-	// private final KadBuckets findValueOperation;// 查找相识节点用
-
-	private final KadReceiveServer kadServer;// = AppManager.getKadServer();// Runnable 主要是TODO KadServer
-	private final KadSendMsgServer kadSendMsgServer;// = AppManager.getKadServer();// Runnable 主要是TODO KadServer
+	private final KadReceiveServer kadServer;// 接受消息
+	private final KadSendMsgServer kadSendMsgServer;// 发生消息
 	private final Bucket kadBuckets;// = AppManager.getKadBuckets();// 路由表
-	private final int bucketSize = 8;// 一个k桶大小
+	private final int BUCKETSIZE = 8;// 一个k桶大小
 	private final BootstrapNodesSaver bootstrapNodesSaver;// 关机后保存到本地，启动时候从本地文件中加载
+	private final DatagramChannel channel;
+	private final Node localnode;
 
 	/**
-	 * @param findValueOperation
-	 *            查找相识节点用
-	 * @param kadServer
-	 *            服务
-	 * @param kadBuckets
-	 *            路由表
 	 * @param bootstrapNodesSaver
-	 *            保存数据用
+	 * @param localnode
 	 * @throws NoSuchAlgorithmException
 	 * @throws IOException
 	 */
-	public KadNet(BootstrapNodesSaver bootstrapNodesSaver) throws NoSuchAlgorithmException, IOException {
+	public KadNet(BootstrapNodesSaver bootstrapNodesSaver, Node localnode) throws NoSuchAlgorithmException, IOException {
 		this.bootstrapNodesSaver = bootstrapNodesSaver;
 		DatagramSocket socket = null;
 		Selector selector = null;
+		this.localnode = localnode;
 		// -----------------------------------------------------------------------
-		DatagramChannel channel = DatagramChannel.open();
+		channel = DatagramChannel.open();
 		socket = channel.socket();
 		channel.configureBlocking(false);
-		socket.bind(AppManager.getLocalNode().getSocketAddress());
+		socket.bind(localnode.getSocketAddress());
 		selector = Selector.open();
 		channel.register(selector, SelectionKey.OP_READ);
 		// -----------------------------------------------------------------------
 
 		this.kadBuckets = new SlackBucket(1000);
 
-		this.kadSendMsgServer = new KadSendMsgServer(kadBuckets, channel);// 111111111
-		this.kadServer = new KadReceiveServer(kadBuckets, selector, this);// 2222
+		this.kadSendMsgServer = new KadSendMsgServer(this);
+		this.kadServer = new KadReceiveServer(selector, this);
 		socket.getRemoteSocketAddress();
 
 	}
 
-	public KadReceiveServer getKadServer() {
-		return kadServer;
-	}
-
-	public KadSendMsgServer getKadSendMsgServer() {
-		return kadSendMsgServer;
+	public void addNodeToBuckets(Node node) {
+		if (!node.equals(localnode)) {
+			kadBuckets.insert(new KadNode().setNode(node).setNodeWasContacted());// 插入一个节点
+		}
 	}
 
 	@Override
 	public void create() throws IOException {
-
-		// kadBuckets.registerIncomingMessageHandler();
 
 		kadServer.start();
 		kadSendMsgServer.start();
@@ -100,43 +92,38 @@ public class KadNet implements KeybasedRouting {
 		}
 	}
 
-	public void join(InetSocketAddress... inetSocketAddresses) {
+	public List<KadNode> getAllNodes() {
+		return kadBuckets.getAllNodes();
+	}
+
+	public KadNet join(InetSocketAddress... inetSocketAddresses) {
 		for (InetSocketAddress socketAddress : inetSocketAddresses) {
 			Key key = AppManager.getKeyFactory().generate();
-			Node localNode = new Node(key).setSocketAddress(socketAddress);
-			join(new KadNode().setNode(localNode).setNodeWasContacted());
+			Node node = new Node(key).setSocketAddress(socketAddress);
+			join(new KadNode().setNode(node).setNodeWasContacted());
 		}
+		return this;
 	}
 
 	@Override
 	public List<Node> findNode(Key k) {// 根据k返回相似节点
-		List<Node> result = kadBuckets.getClosestNodesByKey(k, 8);
+		List<Node> result = kadBuckets.getClosestNodesByKey(k, BUCKETSIZE);
 
 		List<Node> $ = new ArrayList<Node>(result);
 
-		if ($.size() > bucketSize)
-			$.subList(bucketSize, $.size()).clear();
+		if ($.size() > BUCKETSIZE)
+			$.subList(BUCKETSIZE, $.size()).clear();
 
 		return result;
 	}
 
 	@Override
-	public Node getLocalNode() {
-		return AppManager.getLocalNode();
-	}
-
-	@Override
-	public String toString() {
-		return getLocalNode().toString() + "\n" + kadBuckets.toString();
-	}
-
-	public Bucket getKadBuckets() {
-		return kadBuckets;
-	}
-
-	@Override
 	public void sendMessage(KadMessage msg) throws IOException {
-		kadSendMsgServer.send(msg);
+		if (msg.getSrc().equals(localnode)) {
+			return;
+		}
+		byte[] buf = msg.getBencodeData(localnode);
+		channel.send(ByteBuffer.wrap(buf), msg.getSrc().getSocketAddress());
 	}
 
 	@Override

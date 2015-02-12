@@ -16,4 +16,5 @@ public interface DHTConstant {
 	String PING = "ping";
 	String ANNOUNCE_PEER = "announce_peer";
 	Integer CLOSEST_GOOD_NODES_COUNT = 8;
+	String TRANSACTION = "t";
 }

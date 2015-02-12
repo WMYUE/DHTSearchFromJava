@@ -1,15 +1,12 @@
 package com.konka.dhtsearch.bittorrentkad.net;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.DatagramChannel;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Node;
+import com.konka.dhtsearch.bittorrentkad.KadNet;
 import com.konka.dhtsearch.bittorrentkad.KadNode;
-import com.konka.dhtsearch.bittorrentkad.bucket.Bucket;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeRequest;
 
@@ -23,13 +20,12 @@ public class KadSendMsgServer implements Runnable {
 
 	private final AtomicBoolean isActive = new AtomicBoolean(false);
 	private final Thread startThread;
-	private final Bucket kadBuckets;
-	private final DatagramChannel channel;
+	private final KadNet kadNet;
 
-	public KadSendMsgServer( Bucket kadBuckets, DatagramChannel channel) {
+	public KadSendMsgServer(KadNet kadNet) {
 		startThread = new Thread(this);
-		this.kadBuckets = kadBuckets;
-		this.channel = channel;
+
+		this.kadNet = kadNet;
 	}
 
 	/**
@@ -41,15 +37,7 @@ public class KadSendMsgServer implements Runnable {
 	 *             any socket exception
 	 */
 	public void send(final KadMessage msg) throws IOException {
-		try {
-			if (msg.getSrc().equals(AppManager.getLocalNode())) {
-				return;
-			}
-			byte[] buf = msg.getBencodeData();
-			channel.send(ByteBuffer.wrap(buf), msg.getSrc().getSocketAddress());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		kadNet.sendMessage(msg);
 	}
 
 	/**
@@ -61,13 +49,11 @@ public class KadSendMsgServer implements Runnable {
 		while (this.isActive.get()) {
 			try {
 				Thread.sleep(1000);
-				List<KadNode> nodes = kadBuckets.getAllNodes();
+				List<KadNode> nodes = kadNet.getAllNodes();
 				for (int i = 0; i < nodes.size(); i++) {
 					KadNode node = nodes.get(i);
-					if (!node.getNode().equals(AppManager.getLocalNode())) {
-						send(node.getNode());
-						// System.out.println(node.getNode().getKey().toString()+"--"+node.getNode().getSocketAddress());
-					}
+					send(node.getNode());
+					// System.out.println(node.getNode().getKey().toString()+"--"+node.getNode().getSocketAddress());
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -85,7 +71,6 @@ public class KadSendMsgServer implements Runnable {
 	 * 
 	 * @param kadServerThread
 	 */
-	// @Override
 	public void shutdown() {
 		this.isActive.set(false);
 		startThread.interrupt();

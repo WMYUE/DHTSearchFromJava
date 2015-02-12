@@ -9,7 +9,7 @@ import com.konka.dhtsearch.Node;
  */
 public class ContentMessage extends KadMessage {
 	// "t" with a string value representing a transaction ID
-	
+
 	private static final long serialVersionUID = -57547778613163861L;
 
 	private String tag;
@@ -27,14 +27,13 @@ public class ContentMessage extends KadMessage {
 		return tag;
 	}
 
-
 	public ContentMessage setTag(String tag) {
 		this.tag = tag;
 		return this;
 	}
 
 	@Override
-	public byte[] getBencodeData(  ) {
+	public byte[] getBencodeData(Node localNode) {
 		// TODO Auto-generated method stub
 		return null;
 	}

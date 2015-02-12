@@ -23,12 +23,9 @@ import org.yaircc.torrent.bencoding.BList;
 import org.yaircc.torrent.bencoding.BMap;
 import org.yaircc.torrent.bencoding.BTypeException;
 
-import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.KadNet;
-import com.konka.dhtsearch.bittorrentkad.KadNode;
-import com.konka.dhtsearch.bittorrentkad.bucket.Bucket;
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadRequest;
@@ -50,14 +47,12 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 	private final ExecutorService srvExecutor = new ScheduledThreadPoolExecutor(10);
 	private final AtomicBoolean isActive = new AtomicBoolean(false);
 	private final Thread startThread;
-	private final Bucket kadBuckets;
 	private final Set<String> info_hashset = new HashSet<String>();
 	private final Selector selector;
 	private final KadNet kadNet;
 
-	public KadReceiveServer(Bucket kadBuckets, Selector selector, KadNet kadNet) {
+	public KadReceiveServer(Selector selector, KadNet kadNet) {
 		startThread = new Thread(this);
-		this.kadBuckets = kadBuckets;
 		this.selector = selector;
 		this.kadNet = kadNet;
 	}
@@ -89,6 +84,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 		if (!info_hashset.contains(infoHash)) {
 			info_hashset.add(infoHash);
 			// TODO 这里要保存种子
+			System.out.println("种子数=" + info_hashset.size());
 		}
 		GetPeersRequest getPeersRequest = new GetPeersRequest(transaction, src);
 		getPeersRequest.setInfo_hash(Util.hex(bytesFromInfohash));
@@ -96,7 +92,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 		// sendGet_Peers(transaction, bytesFromInfohash, src);// *******发送请求。查找infohash
 
 		GetPeersResponse getPeersResponse = new GetPeersResponse(transaction, src);
-		List<Node> nodes = kadBuckets.getClosestNodesByKey(new Key(bytesFromInfohash), CLOSEST_GOOD_NODES_COUNT);
+		List<Node> nodes = kadNet.findNode(new Key(bytesFromInfohash));
 		getPeersResponse.setNodes(nodes);
 		addNodeToQueue(src);
 		kadNet.sendMessage(getPeersResponse);
@@ -213,13 +209,8 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 		// System.out.println("获取到announce_peer=" + info_hash);
 		if (!info_hashset.contains(info_hash)) {
 			info_hashset.add(info_hash);
-			// System.out.println("收到种子=" + info_hashset.size());
-			// for (String s : info_hashset) {
-			// System.out.println(s);
-			// }
-			// System.out.println("正在种子="+Util.hex((byte[])
-			// bMap.getMap("a").get("info_hash")));
 			// TODO 这里要保存种子
+			System.out.println("种子数=" + info_hashset.size());
 		}
 	}
 
@@ -232,7 +223,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 	 */
 	private void handleFind_NodeRequest(String transaction, BMap decodedData, Node src) throws BTypeException, IOException {
 		byte[] target = (byte[]) decodedData.getMap(A).get(TARGET);
-		List<Node> lists = kadBuckets.getClosestNodesByKey(new Key(target), 8);
+		List<Node> lists = kadNet.findNode(new Key(target));
 
 		FindNodeResponse findNodeResponse = new FindNodeResponse(transaction, src);
 		findNodeResponse.setNodes(lists);
@@ -306,7 +297,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 			} else if (kadRequest.getClass() == GetPeersRequest.class) {
 
 			} else {
-				// TODO 响应的操作应该根据请求的id t判断是哪个响应，t清楚一次必须改变
+				// TODO 响应的操作应该根据请求的id t判断是哪个响应，t 一次必须改变
 			}
 			// messageDispatcher.handle(msg);
 		} else {// 没有记录就按照大众处理
@@ -334,14 +325,12 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 
 	private void addNodesToQueue(List<Node> nodes) {
 		for (Node node : nodes) {
-			addNodeToQueue(node);
+			kadNet.addNodeToBuckets(node);
 		}
 	}
 
 	private void addNodeToQueue(Node node) {
-		if (!node.equals(AppManager.getLocalNode())) {
-			kadBuckets.insert(new KadNode().setNode(node).setNodeWasContacted());// 插入一个节点
-		}
+		kadNet.addNodeToBuckets(node);
 	}
 
 	private void handleIncomingData(final InetSocketAddress target, final byte[] dst) {
@@ -360,7 +349,10 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 								}
 							}
 						} catch (BDecodingException e) {
-							e.printStackTrace();
+							// System.out.println("长度="+dst.length);
+							// System.out.println(new String(dst));
+							// System.out.println(target);
+							// e.printStackTrace();
 						} catch (NoSuchAlgorithmException e) {
 							e.printStackTrace();
 						} catch (BTypeException e) {
@@ -381,7 +373,6 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 	 */
 	public void shutdown() {
 		this.isActive.set(false);
-		// this.socket.close();
 		startThread.interrupt();
 		try {
 			startThread.join();

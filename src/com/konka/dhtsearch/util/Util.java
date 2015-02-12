@@ -2,7 +2,6 @@ package com.konka.dhtsearch.util;
 
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -11,7 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.Node;
 
@@ -43,7 +41,7 @@ public class Util {
 		// return sha(rundom_id(20));
 	}
 
-	public static byte[] nodesToBytes(List<Node> nodes) {
+	public static byte[] nodesToBytes (List<Node> nodes) {
 		int size = nodes.size();
 		byte[] nodesbyte = new byte[size * 26];
 		for (int i = 0; i < size; i++) {
@@ -74,10 +72,6 @@ public class Util {
 			InetAddress inet4Address = InetAddress.getByAddress(ip);
 			Node node = new Node(new Key(nid));
 			node.setInetAddress(inet4Address).setPoint(Util.bytesToInt(p));
-
-			if (!node.equals(AppManager.getLocalNode())) {
-				nodes.add(node);
-			}
 
 			// System.out.println(inet4Address.getHostAddress()+":"+Util.bytesToInt(p));
 		}

@@ -1,19 +1,15 @@
 package com.konka.dhtsearch.bittorrentkad.krpc.get_peers;
 
-import java.io.Serializable;
-
 import org.yaircc.torrent.bencoding.BEncodedOutputStream;
 import org.yaircc.torrent.bencoding.BMap;
 import org.yaircc.torrent.bencoding.HashBMap;
 
-import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadRequest;
 import com.konka.dhtsearch.util.Util;
 
 /**
- * A message containing arbitrary data to be used by the
- * KeybasedRouting.sendRequest methods
+ * A message containing arbitrary data to be used by the KeybasedRouting.sendRequest methods
  * 
  */
 public class GetPeersRequest extends KadRequest {
@@ -45,19 +41,19 @@ public class GetPeersRequest extends KadRequest {
 	// bencoded =
 	// d1:ad2:id20:abcdefghij01234567899:info_hash20:mnopqrstuvwxyz123456e1:q9:get_peers1:t2:aa1:y1:qe
 	@Override
-	public byte[] getBencodeData() {
+	public byte[] getBencodeData(Node localNode) {
 		BMap bMap = new HashBMap();
 		bMap.put(TRANSACTION, Util.HexString2Bytes(transaction));
-		bMap.put("y", "q");
-		bMap.put("q", "get_peers");
+		bMap.put(Y, Q);
+		bMap.put(Q, GET_PEERS);
 		// ----------------------------------
 		BMap a = new HashBMap();
-		a.put("id", AppManager.getLocalNode().getKey().getBytes());// 自己的节点id
-		a.put("info_hash", Util.HexString2Bytes(info_hash));// 对方的节点id **这里应该是你要查询的id
-		bMap.put("a", a);
+		a.put(ID, localNode.getKey().getBytes());// 自己的节点id
+		a.put(INFO_HASH, Util.HexString2Bytes(info_hash));// 对方的节点id **这里应该是你要查询的id
+		bMap.put(A, a);
 		// ----------------------------------
 		byte[] bb = BEncodedOutputStream.bencode(bMap);
-//		System.out.println(new String(bb));
+		// System.out.println(new String(bb));
 		return bb;
 	}
 

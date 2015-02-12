@@ -52,7 +52,7 @@ public class SearchText1 {
 			// File nodesFile = new File(SearchText.class.getResource("/").getPath()); // 2---
 			// BootstrapNodesSaver bootstrapNodesSaver = new BootstrapNodesSaver(nodesFile);// 3---
 			// kadNet = new KadNet(bootstrapNodesSaver);
-			kadNet = new KadNet(null);
+//			kadNet = new KadNet(null);
 			kadNet.create();
 			doth(kadNet);
 		} catch (Exception e) {

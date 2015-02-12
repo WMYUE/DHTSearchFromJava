@@ -20,7 +20,7 @@ public class ErrorKadResponse extends KadResponse {
 	}
 
 	@Override
-	public byte[] getBencodeData() {
+	public byte[] getBencodeData(Node localNode) {
 		BMap bMap = new HashBMap();
 		bMap.put(TRANSACTION, Util.HexString2Bytes(transaction));
 		bMap.put("y", "e");

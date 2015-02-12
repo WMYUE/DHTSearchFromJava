@@ -145,7 +145,7 @@ public interface KeybasedRouting {
 	 * 
 	 * @return the local node associated with this Key Based Routing.
 	 */
-	public Node getLocalNode();
+//	public Node getLocalNode();
 
 	/**
 	 * Closes the sockets and shutdown all the thread pools

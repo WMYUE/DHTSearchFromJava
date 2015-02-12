@@ -4,7 +4,6 @@ import org.yaircc.torrent.bencoding.BEncodedOutputStream;
 import org.yaircc.torrent.bencoding.BMap;
 import org.yaircc.torrent.bencoding.HashBMap;
 
-import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadRequest;
 import com.konka.dhtsearch.util.Util;
@@ -27,17 +26,16 @@ public class PingRequest extends KadRequest {
 	}
 
 	@Override
-	public byte[] getBencodeData( ) {// ping 不需要对方的节点
+	public byte[] getBencodeData(Node localNode) {// ping 不需要对方的节点
 		BMap bMap = new HashBMap();
 		bMap.put(TRANSACTION, Util.HexString2Bytes(transaction));
-		bMap.put("y", "q");
-		bMap.put("q", "ping");
+		bMap.put(Y, Q);
+		bMap.put(Q, PING);
 		// ----------------------------------
 		BMap a = new HashBMap();
-		a.put("id", AppManager.getLocalNode().getKey().getBytes());// 自己的节点id
-		bMap.put("a", a);
+		a.put(ID, localNode.getKey().getBytes());// 自己的节点id
+		bMap.put(A, a);
 		// ----------------------------------
-		System.out.println("响应ping-----------"+bMap);
 		return BEncodedOutputStream.bencode(bMap);
 	}
 
