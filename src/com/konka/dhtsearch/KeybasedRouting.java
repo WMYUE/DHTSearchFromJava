@@ -19,9 +19,9 @@ along with openkad.  If not, see <http://www.gnu.org/licenses/>.
 package com.konka.dhtsearch;
 
 import java.io.IOException;
-import java.net.URI;
-import java.util.Collection;
 import java.util.List;
+
+import com.konka.dhtsearch.bittorrentkad.KadNode;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 
 /**
@@ -48,7 +48,7 @@ public interface KeybasedRouting {
 	 * @throws IllegalStateException
 	 *             if all bootstrap nodes did not answer
 	 */
-	public void join(Collection<URI> bootstraps);
+	public void join(KadNode... bootstraps);
 
 	/**
 	 * Finds nodes with keys closest to the given key (using XOR metric). The list may be any size between 1 and openkad.bucket.kbuckets.maxsize
@@ -139,7 +139,7 @@ public interface KeybasedRouting {
 	 * 
 	 * @return
 	 */
-//	public List<Node> getNeighbours();
+	// public List<Node> getNeighbours();
 
 	/**
 	 * 

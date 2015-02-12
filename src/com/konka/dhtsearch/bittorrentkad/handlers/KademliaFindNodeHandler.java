@@ -12,7 +12,7 @@ import com.konka.dhtsearch.bittorrentkad.cache.KadCache;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeResponse;
-import com.konka.dhtsearch.bittorrentkad.net.KadServer;
+import com.konka.dhtsearch.bittorrentkad.net.KadSendMsgServer;
 import com.konka.dhtsearch.bittorrentkad.net.MessageDispatcher;
 import com.konka.dhtsearch.bittorrentkad.net.filter.MessageFilter;
 import com.konka.dhtsearch.bittorrentkad.net.filter.TypeMessageFilter;
@@ -22,13 +22,13 @@ import com.konka.dhtsearch.bittorrentkad.net.filter.TypeMessageFilter;
  * 
  */
 public class KademliaFindNodeHandler extends AbstractHandler {
-	private final KadServer kadServer;
+	private final KadSendMsgServer kadServer;
 	private final Node localNode;
 	private final KadCache cache;
 	private final KBuckets kBuckets;
 	private final int kBucketSize;
 
-	KademliaFindNodeHandler(final MessageDispatcher msgDispatcherProvider, final KadServer kadServer,//
+	KademliaFindNodeHandler(final MessageDispatcher msgDispatcherProvider, final KadSendMsgServer kadServer,//
 			final Node localNode, final KadCache cache, final KBuckets kBuckets, final int kBucketSize) {
 		super(msgDispatcherProvider);
 

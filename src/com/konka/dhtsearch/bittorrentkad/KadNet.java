@@ -3,43 +3,38 @@ package com.konka.dhtsearch.bittorrentkad;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.net.SocketException;
-import java.net.URI;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 
 import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Key;
-import com.konka.dhtsearch.KeyFactory;
 import com.konka.dhtsearch.KeybasedRouting;
 import com.konka.dhtsearch.Node;
-import com.konka.dhtsearch.RandomKeyFactory;
 import com.konka.dhtsearch.bittorrentkad.bucket.Bucket;
 import com.konka.dhtsearch.bittorrentkad.bucket.SlackBucket;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.net.KadSendMsgServer;
-import com.konka.dhtsearch.bittorrentkad.net.KadServer;
+import com.konka.dhtsearch.bittorrentkad.net.KadReceiveServer;
 
+/**
+ * KadNet
+ * 
+ * @author 耳东 (cgp@0731life.com)
+ *
+ */
 public class KadNet implements KeybasedRouting {
 	// private final KadBuckets findValueOperation;// 查找相识节点用
 
-	private final KadServer kadServer;// = AppManager.getKadServer();// Runnable 主要是TODO KadServer
+	private final KadReceiveServer kadServer;// = AppManager.getKadServer();// Runnable 主要是TODO KadServer
 	private final KadSendMsgServer kadSendMsgServer;// = AppManager.getKadServer();// Runnable 主要是TODO KadServer
 	private final Bucket kadBuckets;// = AppManager.getKadBuckets();// 路由表
 	private final int bucketSize = 8;// 一个k桶大小
 	private final BootstrapNodesSaver bootstrapNodesSaver;// 关机后保存到本地，启动时候从本地文件中加载
-	// private final BlockingQueue<Node> nodesqueue = new LinkedBlockingDeque<Node>();
-	private final KeyFactory keyFactory;
 
-	// private final SlackBucket stableBucket;
-
-	// KadBuckets kadBuckets=new KadBuckets(keyFactory, new StableBucket());
 	/**
 	 * @param findValueOperation
 	 *            查找相识节点用
@@ -55,9 +50,6 @@ public class KadNet implements KeybasedRouting {
 	public KadNet(BootstrapNodesSaver bootstrapNodesSaver) throws NoSuchAlgorithmException, IOException {
 		this.bootstrapNodesSaver = bootstrapNodesSaver;
 		DatagramSocket socket = null;
-		this.keyFactory = new RandomKeyFactory(20, new Random(), "SHA-1");
-		// socket = new DatagramSocket(AppManager.getLocalNode().getSocketAddress());
-		// stableBucket = new SlackBucket(200);// 每一个
 		Selector selector = null;
 		// -----------------------------------------------------------------------
 		DatagramChannel channel = DatagramChannel.open();
@@ -68,15 +60,15 @@ public class KadNet implements KeybasedRouting {
 		channel.register(selector, SelectionKey.OP_READ);
 		// -----------------------------------------------------------------------
 
-		this.kadBuckets = new SlackBucket(1000);// 这里要换成kadSendMsgServer
+		this.kadBuckets = new SlackBucket(1000);
 
-		this.kadSendMsgServer = new KadSendMsgServer(socket, kadBuckets,channel);// 111111111
-		this.kadServer = new KadServer(socket, kadBuckets,selector,channel);// 2222
+		this.kadSendMsgServer = new KadSendMsgServer(kadBuckets, channel);// 111111111
+		this.kadServer = new KadReceiveServer(kadBuckets, selector, this);// 2222
 		socket.getRemoteSocketAddress();
 
 	}
 
-	public KadServer getKadServer() {
+	public KadReceiveServer getKadServer() {
 		return kadServer;
 	}
 
@@ -102,8 +94,18 @@ public class KadNet implements KeybasedRouting {
 	 * 加入已知节点uri
 	 */
 	@Override
-	public void join(Collection<URI> bootstraps) {
-		// joinOperation.addBootstrap(bootstraps).doJoin();
+	public void join(KadNode... kadNodes) {
+		for (KadNode kadNode : kadNodes) {
+			kadBuckets.insert(kadNode);
+		}
+	}
+
+	public void join(InetSocketAddress... inetSocketAddresses) {
+		for (InetSocketAddress socketAddress : inetSocketAddresses) {
+			Key key = AppManager.getKeyFactory().generate();
+			Node localNode = new Node(key).setSocketAddress(socketAddress);
+			join(new KadNode().setNode(localNode).setNodeWasContacted());
+		}
 	}
 
 	@Override
@@ -123,10 +125,6 @@ public class KadNet implements KeybasedRouting {
 		return AppManager.getLocalNode();
 	}
 
-	// public SlackBucket getStableBucket() {
-	// return stableBucket;
-	// }
-
 	@Override
 	public String toString() {
 		return getLocalNode().toString() + "\n" + kadBuckets.toString();
@@ -138,7 +136,7 @@ public class KadNet implements KeybasedRouting {
 
 	@Override
 	public void sendMessage(KadMessage msg) throws IOException {
-		kadServer.send(msg);
+		kadSendMsgServer.send(msg);
 	}
 
 	@Override

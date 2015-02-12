@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.yaircc.torrent.bencoding.BMap;
 
-import com.konka.dhtsearch.Node;
+import com.konka.dhtsearch.bittorrentkad.KadNet;
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadRequest;
@@ -39,7 +39,7 @@ public class MessageDispatcher {
 	private TimerTask timeoutTimerTask = null;
 	private final AtomicBoolean isDone;
 	private final Timer timer=new Timer();
-	private final KadServer mKadServer;
+	private final KadNet mKadServer;
 	private final static Set<MessageDispatcher> messageDispatchers = new HashSet<MessageDispatcher>();
 
 	public static Set<MessageDispatcher> getMessageDispatchers() {
@@ -71,7 +71,7 @@ public class MessageDispatcher {
 		messageDispatchers.remove(this);
 	}
 
-	public MessageDispatcher(KadServer kadServer, String transaction) {
+	public MessageDispatcher(KadNet kadServer, String transaction) {
 		expect();
 		this.mKadServer = kadServer;
 		this.isDone = new AtomicBoolean(false);
@@ -177,7 +177,7 @@ public class MessageDispatcher {
 			 */
 			// outstandingRequests.put(this);
 			expect();
-			mKadServer.send(req);
+			mKadServer.sendMessage(req);
 			kadRequest = req;
 			setupTimeout();
 			// System.out.println("发送成功");

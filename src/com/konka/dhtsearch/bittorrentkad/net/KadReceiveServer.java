@@ -1,18 +1,14 @@
 package com.konka.dhtsearch.bittorrentkad.net;
 
 import java.io.IOException;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -30,11 +26,13 @@ import org.yaircc.torrent.bencoding.BTypeException;
 import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.Node;
+import com.konka.dhtsearch.bittorrentkad.KadNet;
 import com.konka.dhtsearch.bittorrentkad.KadNode;
 import com.konka.dhtsearch.bittorrentkad.bucket.Bucket;
 import com.konka.dhtsearch.bittorrentkad.concurrent.CompletionHandler;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadRequest;
+import com.konka.dhtsearch.bittorrentkad.krpc.downbittorrent.ClientPeer;
 import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeResponse;
 import com.konka.dhtsearch.bittorrentkad.krpc.get_peers.GetPeersRequest;
@@ -47,52 +45,21 @@ import com.konka.dhtsearch.util.Util;
  * 守护线程，负责接受和发送消息
  * 
  */
-public class KadServer implements Runnable, DHTConstant {
+public class KadReceiveServer implements Runnable, DHTConstant {
 
-	private final ExecutorService srvExecutor = new ScheduledThreadPoolExecutor(1);
+	private final ExecutorService srvExecutor = new ScheduledThreadPoolExecutor(10);
 	private final AtomicBoolean isActive = new AtomicBoolean(false);
-	private final Thread startThread;// ;=new Thread();
+	private final Thread startThread;
 	private final Bucket kadBuckets;
 	private final Set<String> info_hashset = new HashSet<String>();
 	private final Selector selector;
-	private final DatagramChannel channel;
+	private final KadNet kadNet;
 
-	public KadServer(DatagramSocket socket, Bucket kadBuckets, Selector selector, DatagramChannel channel) {
-		// this.socket = socket;
+	public KadReceiveServer(Bucket kadBuckets, Selector selector, KadNet kadNet) {
 		startThread = new Thread(this);
 		this.kadBuckets = kadBuckets;
 		this.selector = selector;
-		this.channel = channel;
-
-	}
-
-	/**
-	 * 真正发送网络数据报消息
-	 * 
-	 * @param to
-	 *            目的地的节点
-	 * @param msg
-	 *            要发送的消息（一般是具体实现）
-	 * @throws IOException
-	 *             any socket exception
-	 */
-	// @Override
-	public void send(final KadMessage msg) throws IOException {
-		try {
-			if (msg.getSrc().equals(AppManager.getLocalNode())) {
-				return;
-			}
-			byte[] buf = msg.getBencodeData();
-			// final DatagramPacket pkt = new DatagramPacket(buf, 0,
-			// buf.length);
-
-			// pkt.setSocketAddress(msg.getSrc().getSocketAddress());
-			// this.socket.send(pkt);
-			channel.send(ByteBuffer.wrap(buf), msg.getSrc().getSocketAddress());
-			// channel.send(src, target);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		this.kadNet = kadNet;
 	}
 
 	/**
@@ -104,7 +71,7 @@ public class KadServer implements Runnable, DHTConstant {
 	 */
 	protected void hanldePingRequest(String transaction, Node src) throws BTypeException, IOException {
 		PingResponse pingResponse = new PingResponse(transaction, src);
-		send(pingResponse);
+		kadNet.sendMessage(pingResponse);
 		addNodeToQueue(src);
 	}
 
@@ -121,18 +88,21 @@ public class KadServer implements Runnable, DHTConstant {
 		String infoHash = Util.hex(bytesFromInfohash);
 		if (!info_hashset.contains(infoHash)) {
 			info_hashset.add(infoHash);
+			// TODO 这里要保存种子
 		}
 		GetPeersRequest getPeersRequest = new GetPeersRequest(transaction, src);
 		getPeersRequest.setInfo_hash(Util.hex(bytesFromInfohash));
 
-		sendGet_Peers(transaction, bytesFromInfohash, src);// 发送请求。查找infohash
+		// sendGet_Peers(transaction, bytesFromInfohash, src);// *******发送请求。查找infohash
+
 		GetPeersResponse getPeersResponse = new GetPeersResponse(transaction, src);
 		List<Node> nodes = kadBuckets.getClosestNodesByKey(new Key(bytesFromInfohash), CLOSEST_GOOD_NODES_COUNT);
 		getPeersResponse.setNodes(nodes);
 		addNodeToQueue(src);
-		send(getPeersResponse);
+		kadNet.sendMessage(getPeersResponse);
 	}
 
+	@SuppressWarnings("unused")
 	private void sendGet_Peers(String transaction, byte[] infohash, Node src) {
 		GetPeersRequest getPeersRequest = new GetPeersRequest(transaction, src);
 		getPeersRequest.setInfo_hash(Util.hex(infohash));
@@ -143,7 +113,7 @@ public class KadServer implements Runnable, DHTConstant {
 	int countcount = 0;
 
 	private void sendGet_Peers(KadRequest getPeersRequest) {
-		MessageDispatcher dispatcher = new MessageDispatcher(KadServer.this, getPeersRequest.getTransaction());
+		MessageDispatcher dispatcher = new MessageDispatcher(kadNet, getPeersRequest.getTransaction());
 		dispatcher.setConsumable(true)//
 				// .addFilter(new
 				// IdMessageFilter(findNodeResponse.getTransaction()))// 只接受的类型
@@ -161,14 +131,13 @@ public class KadServer implements Runnable, DHTConstant {
 							} else if (responseMap.containsKey(VALUES)) {
 								// System.out.println("收到相应value==========" + decodedData);
 								BList bList = responseMap.getList(VALUES);
-								byte[] bytes = (byte[]) bList.get(0);
-//								System.out.println("value长度=" + bytes.length);
+								GetPeersRequest request = (GetPeersRequest) msg;
+								// request.g
+								for (Object bytesobj : bList) {
+									ClientPeer cp = new ClientPeer((byte[]) bytesobj, request);
+									srvExecutor.execute(cp);
 
-								byte[] ip = Arrays.copyOfRange(bytes, 0, 4);
-								byte[] p = Arrays.copyOfRange(bytes, 4, 6);
-
-								InetSocketAddress inetSocketAddress = new InetSocketAddress(InetAddress.getByAddress(ip), Util.bytesToInt(p));
-								System.out.println(inetSocketAddress);
+								}
 							}
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -222,7 +191,6 @@ public class KadServer implements Runnable, DHTConstant {
 					handleFind_NodeRequest(transaction, decodedData, to);
 					break;
 				case GET_PEERS://
-					// byte[] bytesFromInfohash = (byte[]) decodedData.getMap(A).get(INFO_HASH);
 					handleGet_PeersRequest(transaction, decodedData, to);
 					break;
 				case PING://
@@ -232,8 +200,6 @@ public class KadServer implements Runnable, DHTConstant {
 					hanldeAnnounce_PeerRequest(transaction, decodedData);// 不回复
 					break;
 				default:
-					// System.out.println("收到请求===其他=" + q + "==="
-					// + pkt.getSocketAddress());
 					break;
 			}
 
@@ -253,6 +219,7 @@ public class KadServer implements Runnable, DHTConstant {
 			// }
 			// System.out.println("正在种子="+Util.hex((byte[])
 			// bMap.getMap("a").get("info_hash")));
+			// TODO 这里要保存种子
 		}
 	}
 
@@ -269,7 +236,7 @@ public class KadServer implements Runnable, DHTConstant {
 
 		FindNodeResponse findNodeResponse = new FindNodeResponse(transaction, src);
 		findNodeResponse.setNodes(lists);
-		send(findNodeResponse);
+		kadNet.sendMessage(findNodeResponse);
 		addNodeToQueue(src);
 
 	}
@@ -381,10 +348,8 @@ public class KadServer implements Runnable, DHTConstant {
 		this.srvExecutor.execute(new Runnable() {// 交给线程池处理
 					@Override
 					public void run() {
-
-						BMap decodedData;
 						try {
-							decodedData = (BMap) BEncodedInputStream.bdecode(dst);
+							BMap decodedData = (BMap) BEncodedInputStream.bdecode(dst);
 							String transaction = Util.hex((byte[]) (decodedData.get(T)));
 							if (decodedData.containsKey(Y)) {
 								String y = decodedData.getString(Y);
@@ -395,17 +360,12 @@ public class KadServer implements Runnable, DHTConstant {
 								}
 							}
 						} catch (BDecodingException e) {
-							// System.out.println("解析报错="+new String(dst));
-							// System.out.println("长度="+dst.length);
-							// e.printStackTrace();
+							e.printStackTrace();
 						} catch (NoSuchAlgorithmException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (BTypeException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (IOException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 

@@ -1,8 +1,6 @@
 package com.konka.dhtsearch.bittorrentkad.net;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.util.List;
@@ -15,16 +13,20 @@ import com.konka.dhtsearch.bittorrentkad.bucket.Bucket;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeRequest;
 
+/**
+ * 发送消息查找node
+ * 
+ * @author 耳东 (cgp@0731life.com)
+ *
+ */
 public class KadSendMsgServer implements Runnable {
 
-	private final DatagramSocket socket;
 	private final AtomicBoolean isActive = new AtomicBoolean(false);
-	private final Thread startThread;// ;=new Thread();
+	private final Thread startThread;
 	private final Bucket kadBuckets;
 	private final DatagramChannel channel;
 
-	public KadSendMsgServer(DatagramSocket socket, Bucket kadBuckets, DatagramChannel channel) {
-		this.socket = socket;
+	public KadSendMsgServer( Bucket kadBuckets, DatagramChannel channel) {
 		startThread = new Thread(this);
 		this.kadBuckets = kadBuckets;
 		this.channel = channel;
@@ -58,17 +60,8 @@ public class KadSendMsgServer implements Runnable {
 		this.isActive.set(true);
 		while (this.isActive.get()) {
 			try {
-				// final Node to = nodes.take();
-				// srvExecutor.execute(new Runnable() {
-				// @Override
-				// public void run() {
 				Thread.sleep(1000);
 				List<KadNode> nodes = kadBuckets.getAllNodes();
-				// List<KadNode> src=kadBuckets.getAllNodes();
-				// Collections.copy(nodes, src);
-
-				// System.out.println("发数="+nodes.size()+"---="+nodes.get(0).getNode().getSocketAddress());
-				// for(){}
 				for (int i = 0; i < nodes.size(); i++) {
 					KadNode node = nodes.get(i);
 					if (!node.getNode().equals(AppManager.getLocalNode())) {
@@ -76,18 +69,15 @@ public class KadSendMsgServer implements Runnable {
 						// System.out.println(node.getNode().getKey().toString()+"--"+node.getNode().getSocketAddress());
 					}
 				}
-
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-
 		}
 	}
 
 	private void send(Node to) throws IOException {
 		FindNodeRequest msg = FindNodeRequest.creatLocalFindNodeRequest(to);
 		send(msg);
-
 	}
 
 	/**
@@ -98,7 +88,6 @@ public class KadSendMsgServer implements Runnable {
 	// @Override
 	public void shutdown() {
 		this.isActive.set(false);
-		this.socket.close();
 		startThread.interrupt();
 		try {
 			startThread.join();
