@@ -31,10 +31,8 @@ public class SlackBucket implements Bucket {
 		synchronized (bucket) {
 			if (bucket.contains(n))
 				return;
-
 			if (bucket.size() == maxSize)
 				bucket.remove(0);
-
 			bucket.add(n);
 		}
 	}
@@ -61,5 +59,4 @@ public class SlackBucket implements Bucket {
 		}
 		return nodes;
 	}
-
 }
