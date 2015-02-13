@@ -381,6 +381,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 	}
 
 	public void start() {
+//		startThread.setDaemon(true);
 		startThread.start();
 	}
 

@@ -60,8 +60,7 @@ public class KadNet implements KeybasedRouting {
 
 		this.kadSendMsgServer = new KadSendMsgServer(this);
 		this.kadServer = new KadReceiveServer(selector, this);
-		socket.getRemoteSocketAddress();
-
+//		Thread.currentThread().setDaemon(true);
 	}
 
 	public void addNodeToBuckets(Node node) {
@@ -122,8 +121,13 @@ public class KadNet implements KeybasedRouting {
 		if (msg.getSrc().equals(localnode)) {
 			return;
 		}
-		byte[] buf = msg.getBencodeData(localnode);
-		channel.send(ByteBuffer.wrap(buf), msg.getSrc().getSocketAddress());
+		try {
+			byte[] buf = msg.getBencodeData(localnode);
+			channel.send(ByteBuffer.wrap(buf), msg.getSrc().getSocketAddress());
+		} catch (Exception e) {
+			System.out.println("报错时候的地址=" + msg.getSrc().getSocketAddress());
+			e.printStackTrace();
+		}
 	}
 
 	@Override

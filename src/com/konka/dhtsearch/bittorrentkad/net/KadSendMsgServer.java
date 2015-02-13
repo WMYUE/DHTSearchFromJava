@@ -50,6 +50,7 @@ public class KadSendMsgServer implements Runnable {
 			try {
 				Thread.sleep(1000);
 				List<KadNode> nodes = kadNet.getAllNodes();
+				// System.out.println(nodes.size());
 				for (int i = 0; i < nodes.size(); i++) {
 					KadNode node = nodes.get(i);
 					send(node.getNode());
@@ -68,7 +69,6 @@ public class KadSendMsgServer implements Runnable {
 
 	/**
 	 * Shutdown the server and closes the socket 关闭服务
-	 * 
 	 * @param kadServerThread
 	 */
 	public void shutdown() {
@@ -79,8 +79,8 @@ public class KadSendMsgServer implements Runnable {
 		} catch (final InterruptedException e) {
 		}
 	}
-
 	public void start() {
+//		startThread.setDaemon(true);
 		startThread.start();
 	}
 }

@@ -3,14 +3,9 @@ package com.konka.dhtsearch;
 import java.util.Random;
 
 public class AppManager {
-	private  static AppManager appManager;
-//	private static Node localNode;
+	private static AppManager appManager;
 
 	private static KeyFactory keyFactory;
-
-//	public static Node getLocalNode() {
-//		return localNode;
-//	}
 
 	public static AppManager getInstance() {
 		if (appManager == null) {
@@ -30,11 +25,9 @@ public class AppManager {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	public static void init() {
 		appManager = new AppManager();
 	}
-
 }

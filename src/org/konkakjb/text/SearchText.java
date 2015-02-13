@@ -23,7 +23,6 @@ public class SearchText {
 				Node localNode = new Node(key).setInetAddress(InetAddress.getByName("0.0.0.0")).setPoint(9200 + i);// 这里注意InetAddress.getLocalHost();为空
 				new KadNet(null, localNode).join(BOOTSTRAP_NODES).create();
 			}
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
