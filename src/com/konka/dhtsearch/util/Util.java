@@ -73,7 +73,7 @@ public class Util {
 			Node node = new Node(new Key(nid));
 			node.setInetAddress(inet4Address).setPoint(Util.bytesToInt(p));
 			nodes.add(node);
-			// System.out.println(inet4Address.getHostAddress()+":"+Util.bytesToInt(p));
+			 System.out.println(inet4Address.getHostAddress()+":"+Util.bytesToInt(p));
 		}
 		return nodes;
 	}

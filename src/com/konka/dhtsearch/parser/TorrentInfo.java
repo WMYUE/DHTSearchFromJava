@@ -21,7 +21,11 @@ public class TorrentInfo implements TorrentConstantKey {
 	private long creattime;// 创建时间 creation date
 	private String encoding = null;// 编码方式 utf-8
 	private List<MultiFile> multiFiles;
-	private boolean singerFile;// 是否是单文件 如果是多文件，文件放假multiFiles中
+	private boolean singerFile=true;// 是否是单文件 如果是多文件，文件放假multiFiles中
+
+	public boolean isSingerFile() {
+		return singerFile;
+	}
 
 	public TorrentInfo(InputStream in) {
 		BEncodedInputStream bEncodedInputStream = new BEncodedInputStream(in);
@@ -76,11 +80,11 @@ public class TorrentInfo implements TorrentConstantKey {
 					MultiFile multiFile;
 					for (Object multiFileobObject : filesMap) {
 						BMap multiFilemap = (BMap) multiFileobObject;
-						multiFile=new MultiFile();
+						multiFile = new MultiFile();
 						if (!StringUtil.isEmpty(encoding) && multiFilemap.containsKey(PATH)) {
 							List<byte[]> pathListbytearray = (List<byte[]>) multiFilemap.get(PATH);
 							for (byte[] pathbytearray : pathListbytearray) {
-								String path = new String(pathbytearray, "GBK");
+								String path = new String(pathbytearray, encoding);
 								multiFile.setPath(path);
 							}
 						} else {
@@ -94,9 +98,12 @@ public class TorrentInfo implements TorrentConstantKey {
 						}
 						if (multiFilemap.containsKey(LENGTH)) {
 							long length = multiFilemap.getLong(LENGTH);
+							multiFile.setSingleFileLength(length);
 							System.out.println("path=" + length);
 						}
+						multiFiles.add(multiFile);
 					}
+					singerFile=false;
 				}
 
 			}
