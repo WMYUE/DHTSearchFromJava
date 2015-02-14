@@ -36,6 +36,7 @@ import com.konka.dhtsearch.bittorrentkad.krpc.get_peers.GetPeersRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.get_peers.GetPeersResponse;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingResponse;
+import com.konka.dhtsearch.db.DhtInfo;
 import com.konka.dhtsearch.util.Util;
 
 /**
@@ -84,6 +85,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 		if (!info_hashset.contains(infoHash)) {
 			info_hashset.add(infoHash);
 			// TODO 这里要保存种子
+			saveInfoHash(infoHash);
 			System.out.println("种子数=" + info_hashset.size());
 		}
 		GetPeersRequest getPeersRequest = new GetPeersRequest(transaction, src);
@@ -96,6 +98,16 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 		getPeersResponse.setNodes(nodes);
 		addNodeToQueue(src);
 		kadNet.sendMessage(getPeersResponse);
+	}
+
+	/**
+	 * 保存磁力连接
+	 * 
+	 * @param info_hash
+	 */
+	private void saveInfoHash(String info_hash) {
+		DhtInfo dhtInfo = new DhtInfo();
+		dhtInfo.setInfo_hash(info_hash);
 	}
 
 	@SuppressWarnings("unused")
@@ -210,6 +222,8 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 		if (!info_hashset.contains(info_hash)) {
 			info_hashset.add(info_hash);
 			// TODO 这里要保存种子
+
+			saveInfoHash(info_hash);
 			System.out.println("种子数=" + info_hashset.size());
 		}
 	}
@@ -381,7 +395,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 	}
 
 	public void start() {
-//		startThread.setDaemon(true);
+		// startThread.setDaemon(true);
 		startThread.start();
 	}
 
