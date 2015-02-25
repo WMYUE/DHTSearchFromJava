@@ -4,8 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import com.konka.dhtsearch.db.exception.DhtException;
 import com.konka.dhtsearch.db.jdbc.ConnectionProvider;
@@ -22,7 +24,7 @@ public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 	}
 
 	@Override
-	public synchronized void  insert(DhtInfo dhtinfo) throws DhtException {
+	public synchronized void insert(DhtInfo dhtinfo) throws DhtException {
 
 		Transaction tx = TransactionJdbcImpl.getInstance();
 		Connection conn = tx.getConnection();
@@ -38,21 +40,20 @@ public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 			PreparedStatement stmt = conn.prepareStatement(sql);
 
 			// fill the values
-			stmt.setString(1, dhtinfo.getInfo_hash());
-			stmt.setString(2, dhtinfo.getPeerIp());
-			stmt.setString(3, dhtinfo.getInfo_hash());
-			stmt.setString(4, dhtinfo.getInfo_hash());
-			stmt.setString(5, dhtinfo.getInfo_hash());
-			stmt.setString(6, dhtinfo.getInfo_hash());
-			stmt.setString(7, dhtinfo.getInfo_hash());
-			stmt.setString(8, dhtinfo.getInfo_hash());
-			stmt.setString(9, dhtinfo.getInfo_hash());
-			stmt.setString(10, dhtinfo.getInfo_hash());
+			stmt.setString(1, dhtinfo.getInfo_hash());// info_hash
+			stmt.setString(2, dhtinfo.getPeerIp());// peerIp
+			stmt.setNull(3, java.sql.Types.VARCHAR);// fileName
+			stmt.setNull(4, java.sql.Types.VARCHAR);// torrentFilePath
+			stmt.setNull(5, java.sql.Types.VARCHAR);// filesize
+			stmt.setNull(6, java.sql.Types.VARCHAR);// createTime
+			stmt.setNull(7, java.sql.Types.VARCHAR);// fileList
+			stmt.setNull(8, java.sql.Types.VARCHAR);// lastRequestsTime
+			stmt.setInt(9, dhtinfo.getAnalysised());//analysised
+			stmt.setString(10, dhtinfo.getTag());//tag
 
 			stmt.executeUpdate();
 
 			tx.commit();
-			System.out.println("保存");
 		} catch (SQLException sqlException) {
 			throw new DhtException(sqlException);
 		} finally {
@@ -72,9 +73,9 @@ public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 		try {
 			tx.begin();
 
-			String query = "delete from persona where id = ?";
+			String query = "delete from dhtinfo where id = ?";
 			PreparedStatement statement = conn.prepareStatement(query);
-			// statement.setInt(1, persona.getId());
+			// statement.setInt(1, dhtinfo.getId());
 			statement.executeUpdate();
 
 			tx.commit();
@@ -93,13 +94,13 @@ public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 	@Override
 	public void update(DhtInfo dhtInfo) throws DhtException {
 		try {
-			String query = "update persona set nombre = ?, apellido = ?, edad = ? where id = ?";
+			String query = "update dhtinfo set nombre = ?, analysised = ?, edad = ? where id = ?";
 
 			PreparedStatement statement = TransactionJdbcImpl.getInstance().getConnection().prepareStatement(query);
-			// statement.setString(1, persona.getNombre());
-			// statement.setString(2, persona.getApellido());
-			// statement.setInt(3, persona.getEdad());
-			// statement.setInt(4, persona.getId());
+			// statement.setString(1, dhtinfo.getNombre());
+			// statement.setString(2, dhtinfo.getApellido());
+			// statement.setInt(3, dhtinfo.getEdad());
+			// statement.setInt(4, dhtinfo.getId());
 			statement.executeUpdate();
 		} catch (SQLException sqlException) {
 			throw new DhtException(sqlException);
@@ -109,7 +110,7 @@ public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 	public List<DhtInfo> findAll() throws DhtException {
 		List<DhtInfo> lista = new LinkedList<DhtInfo>();
 		try {
-			String query = "select * from persona";
+			String query = "select * from dhtinfo";
 			PreparedStatement statement = ConnectionProvider.getInstance().getConnection().prepareStatement(query);
 			ResultSet resultSet = statement.executeQuery();
 			while (resultSet.next()) {
@@ -124,33 +125,76 @@ public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 	@Override
 	public DhtInfo findById(Integer idDhtInfo) throws DhtException {
 		if (idDhtInfo == null) {
-			throw new IllegalArgumentException("El id de persona no debe ser nulo");
+			throw new IllegalArgumentException("El id de dhtinfo no debe ser nulo");
 		}
-		DhtInfo persona = null;
+		DhtInfo dhtinfo = null;
 		try {
 			Connection c = ConnectionProvider.getInstance().getConnection();
-			String query = "select * from persona where id = ?";
+			String query = "select * from dhtinfo where id = ?";
 			PreparedStatement statement = c.prepareStatement(query);
 			statement.setInt(1, idDhtInfo);
 			ResultSet resultSet = statement.executeQuery();
 			if (resultSet.next()) {
-				persona = convertOne(resultSet);
+				dhtinfo = convertOne(resultSet);
 			}
 		} catch (SQLException sqlException) {
 			throw new DhtException(sqlException);
 		}
-		return persona;
+		return dhtinfo;
+	}
+
+	/**
+	 * 根据条件查找
+	 * 
+	 * @param where
+	 * @return
+	 * @throws DhtException
+	 */
+	public List<DhtInfo> findByWhere(Map<String, String> where, int limit) throws DhtException {
+		List<DhtInfo> lista = new LinkedList<DhtInfo>();
+		try {
+			String query = "select * from dhtinfo where 1 = 1 ";
+			StringBuilder querySql = new StringBuilder(query);
+
+			for (String key : where.keySet()) {
+				String value = where.get(key);
+				querySql.append(" and " + key + " = " + value);
+			}
+			querySql.append(" order by id ");
+			querySql.append(" limit 0 , " + limit);
+			PreparedStatement statement = ConnectionProvider.getInstance().getConnection().prepareStatement(querySql.toString());
+			ResultSet resultSet = statement.executeQuery();
+			while (resultSet.next()) {
+				lista.add(convertOne(resultSet));
+			}
+		} catch (SQLException sqlException) {
+			throw new DhtException(sqlException);
+		}
+		return lista;
+	}
+
+	/**
+	 * 查找没有解析的info_hash;
+	 * 
+	 * @param limit
+	 *            要返回的条数
+	 * @return
+	 * @throws DhtException
+	 */
+	public List<DhtInfo> getNoAnalyticDhtInfos(int count) throws DhtException {
+		HashMap<String, String> hashMap = new HashMap<String, String>();
+		hashMap.put("analysised", "0");
+		return findByWhere(hashMap, count);
 	}
 
 	private DhtInfo convertOne(ResultSet resultSet) throws SQLException {
-		DhtInfo retorno = new DhtInfo();
+		DhtInfo dhtInfo = new DhtInfo();
 
-		retorno.setId(resultSet.getInt("id"));
-		// retorno.setNombre(resultSet.getString("nombre"));
-		// retorno.setApellido(resultSet.getString("apellido"));
-		// retorno.setEdad(resultSet.getInt("edad"));
+		dhtInfo.setId(resultSet.getInt("id"));
+		dhtInfo.setInfo_hash(resultSet.getString("info_hash"));
+		dhtInfo.setAnalysised(resultSet.getInt("analysised"));
 
-		return retorno;
+		return dhtInfo;
 	}
 
 }

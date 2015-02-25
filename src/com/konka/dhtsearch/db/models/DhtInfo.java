@@ -10,8 +10,8 @@ public class DhtInfo {
 	private String createTime;// 种子创建时间
 	private String fileList;// 多文件时候的file列表
 	private long lastRequestsTime;// 最后请求时间
-	private int analysised;// 是否解析了，1 ok 0没有解析
-	private String tag;// 标识
+	private int analysised;// 0没有解析 1解析了 ok , 2解析失败
+	private String tag = "";// 标识
 
 	public long getId() {
 		return id;

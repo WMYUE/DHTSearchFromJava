@@ -6,7 +6,7 @@ import com.konka.dhtsearch.db.dao.DhtInfoDaoJdbcImpl;
 
 public class DaoFactory {
 
-	public static DhtInfoDao getPersonaDao(){
+	public static DhtInfoDao getDhtInfoDao(){
 		return DhtInfoDaoJdbcImpl.getInstance();
 	}
 

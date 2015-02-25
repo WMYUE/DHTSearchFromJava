@@ -54,7 +54,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 	private final Set<String> info_hashset = new HashSet<String>();
 	private final Selector selector;
 	private final KadNet kadNet;
-	private final DhtInfoDao dhtInfoDao = DaoFactory.getPersonaDao();
+	private final DhtInfoDao dhtInfoDao = DaoFactory.getDhtInfoDao();
 
 	public KadReceiveServer(Selector selector, KadNet kadNet) {
 		startThread = new Thread(this);
