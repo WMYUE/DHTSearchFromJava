@@ -36,7 +36,10 @@ import com.konka.dhtsearch.bittorrentkad.krpc.get_peers.GetPeersRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.get_peers.GetPeersResponse;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingResponse;
-import com.konka.dhtsearch.db.DhtInfo;
+import com.konka.dhtsearch.db.DaoFactory;
+import com.konka.dhtsearch.db.dao.DhtInfoDao;
+import com.konka.dhtsearch.db.exception.DhtException;
+import com.konka.dhtsearch.db.models.DhtInfo;
 import com.konka.dhtsearch.util.Util;
 
 /**
@@ -51,6 +54,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 	private final Set<String> info_hashset = new HashSet<String>();
 	private final Selector selector;
 	private final KadNet kadNet;
+	private final DhtInfoDao dhtInfoDao = DaoFactory.getPersonaDao();
 
 	public KadReceiveServer(Selector selector, KadNet kadNet) {
 		startThread = new Thread(this);
@@ -85,7 +89,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 		if (!info_hashset.contains(infoHash)) {
 			info_hashset.add(infoHash);
 			// TODO 这里要保存种子
-			saveInfoHash(infoHash);
+			saveInfoHash(infoHash,src);
 			System.out.println("种子数=" + info_hashset.size());
 		}
 		GetPeersRequest getPeersRequest = new GetPeersRequest(transaction, src);
@@ -105,9 +109,16 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 	 * 
 	 * @param info_hash
 	 */
-	private void saveInfoHash(String info_hash) {
-		DhtInfo dhtInfo = new DhtInfo();
-		dhtInfo.setInfo_hash(info_hash);
+	private void saveInfoHash(String info_hash,Node src) {// TODO 保存磁力连接
+		try {
+			DhtInfo dhtInfo = new DhtInfo();
+			dhtInfo.setInfo_hash(info_hash);
+			dhtInfo.setPeerIp(src.getSocketAddress().toString());
+			dhtInfoDao.insert(dhtInfo);
+		} catch (DhtException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	@SuppressWarnings("unused")
@@ -151,7 +162,6 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 							e.printStackTrace();
 						}
 					}
-
 					@Override
 					public void failed(Throwable exc, BMap nothing) {
 						// System.out.println("相响应错误了==" + ++fail);
@@ -205,7 +215,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 					hanldePingRequest(transaction, to);
 					break;
 				case ANNOUNCE_PEER://
-					hanldeAnnounce_PeerRequest(transaction, decodedData);// 不回复
+					hanldeAnnounce_PeerRequest(transaction, decodedData,to);// 不回复
 					break;
 				default:
 					break;
@@ -216,14 +226,13 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 		}
 	}
 
-	private void hanldeAnnounce_PeerRequest(String transaction, BMap decodedData) throws BTypeException {
+	private void hanldeAnnounce_PeerRequest(String transaction, BMap decodedData,Node to) throws BTypeException {
 		String info_hash = Util.hex((byte[]) decodedData.getMap(A).get(INFO_HASH));
 		// System.out.println("获取到announce_peer=" + info_hash);
 		if (!info_hashset.contains(info_hash)) {
 			info_hashset.add(info_hash);
 			// TODO 这里要保存种子
-
-			saveInfoHash(info_hash);
+			saveInfoHash(info_hash,to);
 			System.out.println("种子数=" + info_hashset.size());
 		}
 	}

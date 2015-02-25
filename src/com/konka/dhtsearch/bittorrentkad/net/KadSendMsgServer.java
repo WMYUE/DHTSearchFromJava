@@ -50,11 +50,11 @@ public class KadSendMsgServer implements Runnable {
 			try {
 				Thread.sleep(1000);
 				List<KadNode> nodes = kadNet.getAllNodes();
-				// System.out.println(nodes.size());
+				 System.out.println(nodes.size());
 				for (int i = 0; i < nodes.size(); i++) {
 					KadNode node = nodes.get(i);
 					send(node.getNode());
-					// System.out.println(node.getNode().getKey().toString()+"--"+node.getNode().getSocketAddress());
+//					 System.out.println(node.getNode().getKey().toString()+"--"+node.getNode().getSocketAddress());
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

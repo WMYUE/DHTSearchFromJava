@@ -1,4 +1,4 @@
-package com.konka.dhtsearch.db;
+package com.konka.dhtsearch.db.models;
 
 public class DhtInfo {
 	private long id;
