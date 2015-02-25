@@ -7,11 +7,11 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.konka.dhtsearch.db.Transaction;
-import com.konka.dhtsearch.db.TransactionJdbcImpl;
 import com.konka.dhtsearch.db.exception.DhtException;
 import com.konka.dhtsearch.db.jdbc.ConnectionProvider;
 import com.konka.dhtsearch.db.models.DhtInfo;
+import com.konka.dhtsearch.db.transaction.Transaction;
+import com.konka.dhtsearch.db.transaction.TransactionJdbcImpl;
 
 public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 
@@ -22,7 +22,7 @@ public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 	}
 
 	@Override
-	public void insert(DhtInfo dhtinfo) throws DhtException {
+	public synchronized void  insert(DhtInfo dhtinfo) throws DhtException {
 
 		Transaction tx = TransactionJdbcImpl.getInstance();
 		Connection conn = tx.getConnection();
@@ -39,7 +39,7 @@ public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 
 			// fill the values
 			stmt.setString(1, dhtinfo.getInfo_hash());
-			stmt.setString(2, dhtinfo.getInfo_hash());
+			stmt.setString(2, dhtinfo.getPeerIp());
 			stmt.setString(3, dhtinfo.getInfo_hash());
 			stmt.setString(4, dhtinfo.getInfo_hash());
 			stmt.setString(5, dhtinfo.getInfo_hash());
@@ -48,12 +48,11 @@ public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 			stmt.setString(8, dhtinfo.getInfo_hash());
 			stmt.setString(9, dhtinfo.getInfo_hash());
 			stmt.setString(10, dhtinfo.getInfo_hash());
-			
-			
+
 			stmt.executeUpdate();
 
 			tx.commit();
-
+			System.out.println("保存");
 		} catch (SQLException sqlException) {
 			throw new DhtException(sqlException);
 		} finally {
@@ -75,7 +74,7 @@ public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 
 			String query = "delete from persona where id = ?";
 			PreparedStatement statement = conn.prepareStatement(query);
-//			statement.setInt(1, persona.getId());
+			// statement.setInt(1, persona.getId());
 			statement.executeUpdate();
 
 			tx.commit();
@@ -96,12 +95,11 @@ public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 		try {
 			String query = "update persona set nombre = ?, apellido = ?, edad = ? where id = ?";
 
-			PreparedStatement statement = TransactionJdbcImpl.getInstance()
-					.getConnection().prepareStatement(query);
-//			statement.setString(1, persona.getNombre());
-//			statement.setString(2, persona.getApellido());
-//			statement.setInt(3, persona.getEdad());
-//			statement.setInt(4, persona.getId());
+			PreparedStatement statement = TransactionJdbcImpl.getInstance().getConnection().prepareStatement(query);
+			// statement.setString(1, persona.getNombre());
+			// statement.setString(2, persona.getApellido());
+			// statement.setInt(3, persona.getEdad());
+			// statement.setInt(4, persona.getId());
 			statement.executeUpdate();
 		} catch (SQLException sqlException) {
 			throw new DhtException(sqlException);
@@ -112,8 +110,7 @@ public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 		List<DhtInfo> lista = new LinkedList<DhtInfo>();
 		try {
 			String query = "select * from persona";
-			PreparedStatement statement = ConnectionProvider.getInstance()
-					.getConnection().prepareStatement(query);
+			PreparedStatement statement = ConnectionProvider.getInstance().getConnection().prepareStatement(query);
 			ResultSet resultSet = statement.executeQuery();
 			while (resultSet.next()) {
 				lista.add(convertOne(resultSet));
@@ -127,8 +124,7 @@ public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 	@Override
 	public DhtInfo findById(Integer idDhtInfo) throws DhtException {
 		if (idDhtInfo == null) {
-			throw new IllegalArgumentException(
-					"El id de persona no debe ser nulo");
+			throw new IllegalArgumentException("El id de persona no debe ser nulo");
 		}
 		DhtInfo persona = null;
 		try {
@@ -150,9 +146,9 @@ public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 		DhtInfo retorno = new DhtInfo();
 
 		retorno.setId(resultSet.getInt("id"));
-//		retorno.setNombre(resultSet.getString("nombre"));
-//		retorno.setApellido(resultSet.getString("apellido"));
-//		retorno.setEdad(resultSet.getInt("edad"));
+		// retorno.setNombre(resultSet.getString("nombre"));
+		// retorno.setApellido(resultSet.getString("apellido"));
+		// retorno.setEdad(resultSet.getInt("edad"));
 
 		return retorno;
 	}

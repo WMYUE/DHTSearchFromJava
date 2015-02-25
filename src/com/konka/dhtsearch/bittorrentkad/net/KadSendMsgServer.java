@@ -1,6 +1,7 @@
 package com.konka.dhtsearch.bittorrentkad.net;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -48,9 +49,10 @@ public class KadSendMsgServer implements Runnable {
 		this.isActive.set(true);
 		while (this.isActive.get()) {
 			try {
+				displayAvailableMemory();
 				Thread.sleep(1000);
 				List<KadNode> nodes = kadNet.getAllNodes();
-				 System.out.println(nodes.size());
+//				 System.out.println(nodes.size());
 				for (int i = 0; i < nodes.size(); i++) {
 					KadNode node = nodes.get(i);
 					send(node.getNode());
@@ -65,8 +67,27 @@ public class KadSendMsgServer implements Runnable {
 	private void send(Node to) throws IOException {
 		FindNodeRequest msg = FindNodeRequest.creatLocalFindNodeRequest(to);
 		send(msg);
+	
 	}
-
+	public void displayAvailableMemory() {
+		DecimalFormat df = new DecimalFormat("0.00");
+		// 显示JVM总内存
+//		long totalMem = Runtime.getRuntime().totalMemory();
+//		System.out.println(df.format(totalMem/(1024F*1024F)) + "MB");
+		// 显示JVM尝试使用的最大内存
+//		long maxMem = Runtime.getRuntime().maxMemory();
+//		System.out.println(df.format(maxMem/(1024F*1024F)) + "MB");
+		// 空闲内存
+//		long freeMem = Runtime.getRuntime().freeMemory();
+//		System.out.println("空闲内存-----"+(df.format(freeMem/(1024F*1024F)) + "MB"));
+//		Runtime.getRuntime().
+		Runtime.getRuntime().gc();
+		long freeMem1 = Runtime.getRuntime().freeMemory();
+		System.out.println("-----"+(df.format(freeMem1/(1024F*1024F)) + "MB"));
+		
+		int size=Thread.getAllStackTraces().size();
+		System.out.println("系统中的线程数="+size);
+	}
 	/**
 	 * Shutdown the server and closes the socket 关闭服务
 	 * @param kadServerThread

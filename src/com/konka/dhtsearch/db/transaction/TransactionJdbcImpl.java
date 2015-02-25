@@ -1,4 +1,4 @@
-package com.konka.dhtsearch.db;
+package com.konka.dhtsearch.db.transaction;
 
 import java.sql.Connection;
 import java.sql.SQLException;

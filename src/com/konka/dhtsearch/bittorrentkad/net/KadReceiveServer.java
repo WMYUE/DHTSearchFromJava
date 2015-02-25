@@ -87,10 +87,10 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 		byte[] bytesFromInfohash = (byte[]) decodedData.getMap(A).get(INFO_HASH);
 		String infoHash = Util.hex(bytesFromInfohash);
 		if (!info_hashset.contains(infoHash)) {
+			System.out.println("种子数=" + info_hashset.size());
 			info_hashset.add(infoHash);
 			// TODO 这里要保存种子
-			saveInfoHash(infoHash,src);
-			System.out.println("种子数=" + info_hashset.size());
+			saveInfoHash(infoHash, src);
 		}
 		GetPeersRequest getPeersRequest = new GetPeersRequest(transaction, src);
 		getPeersRequest.setInfo_hash(Util.hex(bytesFromInfohash));
@@ -109,7 +109,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 	 * 
 	 * @param info_hash
 	 */
-	private void saveInfoHash(String info_hash,Node src) {// TODO 保存磁力连接
+	private void saveInfoHash(String info_hash, Node src) {// TODO 保存磁力连接
 		try {
 			DhtInfo dhtInfo = new DhtInfo();
 			dhtInfo.setInfo_hash(info_hash);
@@ -162,6 +162,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 							e.printStackTrace();
 						}
 					}
+
 					@Override
 					public void failed(Throwable exc, BMap nothing) {
 						// System.out.println("相响应错误了==" + ++fail);
@@ -203,7 +204,6 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 			Key key = new Key((byte[]) decodedData.getMap(A).get(ID));
 
 			final Node to = new Node(key).setSocketAddress(inetSocketAddress);
-
 			switch (q_value) {
 				case FIND_NODE://
 					handleFind_NodeRequest(transaction, decodedData, to);
@@ -215,7 +215,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 					hanldePingRequest(transaction, to);
 					break;
 				case ANNOUNCE_PEER://
-					hanldeAnnounce_PeerRequest(transaction, decodedData,to);// 不回复
+					hanldeAnnounce_PeerRequest(transaction, decodedData, to);// 不回复
 					break;
 				default:
 					break;
@@ -226,13 +226,13 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 		}
 	}
 
-	private void hanldeAnnounce_PeerRequest(String transaction, BMap decodedData,Node to) throws BTypeException {
+	private void hanldeAnnounce_PeerRequest(String transaction, BMap decodedData, Node to) throws BTypeException {
 		String info_hash = Util.hex((byte[]) decodedData.getMap(A).get(INFO_HASH));
 		// System.out.println("获取到announce_peer=" + info_hash);
 		if (!info_hashset.contains(info_hash)) {
 			info_hashset.add(info_hash);
 			// TODO 这里要保存种子
-			saveInfoHash(info_hash,to);
+			saveInfoHash(info_hash, to);
 			System.out.println("种子数=" + info_hashset.size());
 		}
 	}
@@ -295,6 +295,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 			//
 		}
 	}
+
 
 	/**
 	 * 处理响应信息
@@ -362,6 +363,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 					public void run() {
 						try {
 							BMap decodedData = (BMap) BEncodedInputStream.bdecode(dst);
+
 							String transaction = Util.hex((byte[]) (decodedData.get(T)));
 							if (decodedData.containsKey(Y)) {
 								String y = decodedData.getString(Y);

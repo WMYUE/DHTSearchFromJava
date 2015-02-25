@@ -41,7 +41,7 @@ public class Util {
 		// return sha(rundom_id(20));
 	}
 
-	public static byte[] nodesToBytes (List<Node> nodes) {
+	public static byte[] nodesToBytes(List<Node> nodes) {
 		int size = nodes.size();
 		byte[] nodesbyte = new byte[size * 26];
 		for (int i = 0; i < size; i++) {
@@ -71,9 +71,11 @@ public class Util {
 
 			InetAddress inet4Address = InetAddress.getByAddress(ip);
 			Node node = new Node(new Key(nid));
-			node.setInetAddress(inet4Address).setPoint(Util.bytesToInt(p));
-			nodes.add(node);
-			 System.out.println(inet4Address.getHostAddress()+":"+Util.bytesToInt(p));
+			Integer poin = Util.bytesToInt(p);
+			if (poin != 0) {
+				node.setInetAddress(inet4Address).setPoint(poin);
+				nodes.add(node);
+			}
 		}
 		return nodes;
 	}

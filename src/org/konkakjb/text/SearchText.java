@@ -21,7 +21,7 @@ public class SearchText {
 		 for (int i = 0; i < size; i++) {
 		 AppManager.init();// 1---
 		 Key key = AppManager.getKeyFactory().generate();
-		 Node localNode = new Node(key).setInetAddress(InetAddress.getByName("0.0.0.0")).setPoint(9200 + i);// 这里注意InetAddress.getLocalHost();为空
+		 Node localNode = new Node(key).setInetAddress(InetAddress.getByName("0.0.0.0")).setPoint(20200 + i);// 这里注意InetAddress.getLocalHost();为空
 		 new KadNet(null, localNode).join(BOOTSTRAP_NODES).create();
 		 }
 		 } catch (Exception e) {

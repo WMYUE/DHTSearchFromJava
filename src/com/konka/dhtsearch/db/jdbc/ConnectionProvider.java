@@ -14,7 +14,7 @@ public class ConnectionProvider {
 
 	private String driver = "com.mysql.jdbc.Driver";
 	private String dbName = "dht";
-	private String passwrod = "";
+	private String passwrod = "cgp888";
 	private String userName = "root";
 	private String url = "jdbc:mysql://localhost:3306/" + dbName;
 
