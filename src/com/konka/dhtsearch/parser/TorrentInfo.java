@@ -74,12 +74,12 @@ public class TorrentInfo implements TorrentConstantKey {
 				if (infoMap.containsKey(NAME_UTF_8)) {
 					byte[] dd = (byte[]) infoMap.get(NAME_UTF_8);
 					name = new String(dd, UTF_8);
-				}else if(infoMap.containsKey(NAME)){
+				} else if (infoMap.containsKey(NAME)) {
 					byte[] namearray = (byte[]) infoMap.get(NAME);
-					name = new String(namearray, StringUtil.isEmpty(encoding)?UTF_8:encoding);
+					name = new String(namearray, StringUtil.isEmpty(encoding) ? UTF_8 : encoding);
 				}
 				System.out.println("name--utf8=" + name);
-				System.out.println("bMap=" + bMap);
+				// System.out.println("bMap=" + bMap);
 
 				if (infoMap.containsKey(LENGTH)) {
 					filelenth = infoMap.getLong(LENGTH);
