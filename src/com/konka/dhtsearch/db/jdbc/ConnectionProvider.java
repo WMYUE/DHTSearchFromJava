@@ -3,6 +3,7 @@ package com.konka.dhtsearch.db.jdbc;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import com.konka.dhtsearch.db.exception.DhtException;
 
@@ -14,9 +15,10 @@ public class ConnectionProvider {
 
 	private String driver = "com.mysql.jdbc.Driver";
 	private String dbName = "dht";
+	// private String passwrod = "";
 	private String passwrod = "cgp888";
 	private String userName = "root";
-	private String url = "jdbc:mysql://localhost:3306/" + dbName;
+	private String url = "jdbc:mysql://localhost:3306/" + dbName + "?useUnicode=true&characterEncoding=UTF-8";
 
 	// -----------------------------------------------------------------
 	private static ConnectionProvider instance;
@@ -26,6 +28,10 @@ public class ConnectionProvider {
 		try {
 			Class.forName(driver);
 			connection = DriverManager.getConnection(url, userName, passwrod);
+			// DriverManager.getConnection(url, info)
+			// Properties d=new Properties();
+			// d.s
+
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		} catch (ClassNotFoundException e) {

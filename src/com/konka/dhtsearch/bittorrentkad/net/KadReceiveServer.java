@@ -54,7 +54,8 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 	private final Set<String> info_hashset = new HashSet<String>();
 	private final Selector selector;
 	private final KadNet kadNet;
-	private final DhtInfoDao dhtInfoDao = DaoFactory.getDhtInfoDao();
+
+	// private final DhtInfoDao dhtInfoDao = ;
 
 	public KadReceiveServer(Selector selector, KadNet kadNet) {
 		startThread = new Thread(this);
@@ -114,7 +115,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 			DhtInfo dhtInfo = new DhtInfo();
 			dhtInfo.setInfo_hash(info_hash);
 			dhtInfo.setPeerIp(src.getSocketAddress().toString());
-			dhtInfoDao.insert(dhtInfo);
+			DaoFactory.getDhtInfoDao().insert(dhtInfo);
 		} catch (DhtException e) {
 			e.printStackTrace();
 		}
@@ -295,7 +296,6 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 			//
 		}
 	}
-
 
 	/**
 	 * 处理响应信息

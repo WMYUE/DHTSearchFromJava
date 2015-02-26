@@ -2,7 +2,6 @@ package com.konka.dhtsearch.parser;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -21,18 +20,32 @@ public class TorrentInfo implements TorrentConstantKey {
 	private long creattime;// 创建时间 creation date
 	private String encoding = null;// 编码方式 utf-8
 	private List<MultiFile> multiFiles;
-	private boolean singerFile=true;// 是否是单文件 如果是多文件，文件放假multiFiles中
+	private boolean singerFile = true;// 是否是单文件 如果是多文件，文件放假multiFiles中
+
+	public String getName() {
+		return name;
+	}
+
+	public long getFilelenth() {
+		return filelenth;
+	}
+
+	public long getCreattime() {
+		return creattime;
+	}
+
+	public List<MultiFile> getMultiFiles() {
+		return multiFiles;
+	}
 
 	public boolean isSingerFile() {
 		return singerFile;
 	}
 
-	public TorrentInfo(InputStream in) {
+	public TorrentInfo(InputStream in) throws IOException, BDecodingException, BTypeException {
 		BEncodedInputStream bEncodedInputStream = new BEncodedInputStream(in);
 		try {
 			parser(bEncodedInputStream);
-		} catch (Exception e) {
-			e.printStackTrace();
 		} finally {
 			try {
 				if (bEncodedInputStream != null) {
@@ -58,22 +71,20 @@ public class TorrentInfo implements TorrentConstantKey {
 		if (bMap.containsKey(INFO)) {
 			BMap infoMap = bMap.getMap(INFO);
 			if (infoMap != null) {
-				if (!StringUtil.isEmpty(encoding) && infoMap.containsKey(NAME)) {
+				if (infoMap.containsKey(NAME_UTF_8)) {
+					byte[] dd = (byte[]) infoMap.get(NAME_UTF_8);
+					name = new String(dd, UTF_8);
+				}else if(infoMap.containsKey(NAME)){
 					byte[] namearray = (byte[]) infoMap.get(NAME);
-					name = new String(namearray, encoding);
-				} else {
-					if (infoMap.containsKey(NAME_UTF_8)) {
-						byte[] dd = (byte[]) infoMap.get(NAME_UTF_8);
-						name = new String(dd, UTF_8);
-					}
+					name = new String(namearray, StringUtil.isEmpty(encoding)?UTF_8:encoding);
 				}
-				System.out.println("name=" + name);
+				System.out.println("name--utf8=" + name);
+				System.out.println("bMap=" + bMap);
 
 				if (infoMap.containsKey(LENGTH)) {
 					filelenth = infoMap.getLong(LENGTH);
 					System.out.println("filelenth=" + filelenth);
 				}
-
 				if (infoMap.containsKey(FILES)) {
 					List<Object> filesMap = infoMap.getList(FILES);
 					multiFiles = new ArrayList<MultiFile>(filesMap.size());
@@ -103,7 +114,7 @@ public class TorrentInfo implements TorrentConstantKey {
 						}
 						multiFiles.add(multiFile);
 					}
-					singerFile=false;
+					singerFile = false;
 				}
 
 			}
@@ -111,11 +122,11 @@ public class TorrentInfo implements TorrentConstantKey {
 
 	}
 
-	public TorrentInfo(String filePath) throws FileNotFoundException {
+	public TorrentInfo(String filePath) throws IOException, BDecodingException, BTypeException {
 		this(new File(filePath));
 	}
 
-	public TorrentInfo(File file) throws FileNotFoundException {
+	public TorrentInfo(File file) throws IOException, BDecodingException, BTypeException {
 		this(new FileInputStream(file));
 	}
 

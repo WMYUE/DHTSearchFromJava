@@ -45,11 +45,11 @@ public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 			stmt.setNull(3, java.sql.Types.VARCHAR);// fileName
 			stmt.setNull(4, java.sql.Types.VARCHAR);// torrentFilePath
 			stmt.setNull(5, java.sql.Types.VARCHAR);// filesize
-			stmt.setNull(6, java.sql.Types.VARCHAR);// createTime
+			stmt.setNull(6, java.sql.Types.TIMESTAMP);// createTime
 			stmt.setNull(7, java.sql.Types.VARCHAR);// fileList
 			stmt.setNull(8, java.sql.Types.VARCHAR);// lastRequestsTime
-			stmt.setInt(9, dhtinfo.getAnalysised());//analysised
-			stmt.setString(10, dhtinfo.getTag());//tag
+			stmt.setInt(9, dhtinfo.getAnalysised());// analysised
+			stmt.setString(10, dhtinfo.getTag());// tag
 
 			stmt.executeUpdate();
 
@@ -92,15 +92,24 @@ public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 	}
 
 	@Override
-	public void update(DhtInfo dhtInfo) throws DhtException {
+	public void update(DhtInfo dhtinfo) throws DhtException {
 		try {
-			String query = "update dhtinfo set nombre = ?, analysised = ?, edad = ? where id = ?";
+			String query = "update dhtinfo set "//
+					+ "fileName = ?, " + "filesize = ?, "//
+					+ "createTime = ? " + ",analysised = ? " + ",fileList = ? "//
+					+ " where id = ?";
 
 			PreparedStatement statement = TransactionJdbcImpl.getInstance().getConnection().prepareStatement(query);
-			// statement.setString(1, dhtinfo.getNombre());
-			// statement.setString(2, dhtinfo.getApellido());
-			// statement.setInt(3, dhtinfo.getEdad());
-			// statement.setInt(4, dhtinfo.getId());
+			// statement.setString(1, "蔡庆和");
+			// statement.sets
+			statement.setString(1, dhtinfo.getFileName());
+			statement.setLong(2, dhtinfo.getFileSize());
+			statement.setLong(3, dhtinfo.getCreateTime());
+			statement.setInt(4, dhtinfo.getAnalysised());
+			String filelist = dhtinfo.getFileList();
+			statement.setString(5, filelist == null ? "" : filelist);
+			statement.setLong(6, dhtinfo.getId());
+
 			statement.executeUpdate();
 		} catch (SQLException sqlException) {
 			throw new DhtException(sqlException);

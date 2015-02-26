@@ -1,16 +1,24 @@
 package com.konka.dhtsearch.db.models;
 
+import com.konka.dhtsearch.db.DhtInfoStateCode;
+
 public class DhtInfo {
 	private long id;
 	private String info_hash;
 	private String peerIp;
 	private String fileName;
 	private String torrentFilePath;
-	private String filesize;
-	private String createTime;// 种子创建时间
+	private long fileSize;
+	private long createTime;// 种子创建时间
 	private String fileList;// 多文件时候的file列表
 	private long lastRequestsTime;// 最后请求时间
-	private int analysised;// 0没有解析 1解析了 ok , 2解析失败
+	/**
+	 * @category 没有下载。
+	 * @category 下载失败。
+	 * @category 下载成功，解析失败
+	 * @category 下载成功，解析成功
+	 */
+	private int analysised = DhtInfoStateCode.NO_DOWNLOAD;
 	private String tag = "";// 标识
 
 	public long getId() {
@@ -19,6 +27,14 @@ public class DhtInfo {
 
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	public long getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(long createTime) {
+		this.createTime = createTime;
 	}
 
 	public String getInfo_hash() {
@@ -53,20 +69,12 @@ public class DhtInfo {
 		this.torrentFilePath = torrentFilePath;
 	}
 
-	public String getFilesize() {
-		return filesize;
+	public long getFileSize() {
+		return fileSize;
 	}
 
-	public void setFilesize(String filesize) {
-		this.filesize = filesize;
-	}
-
-	public String getCreateTime() {
-		return createTime;
-	}
-
-	public void setCreateTime(String createTime) {
-		this.createTime = createTime;
+	public void setFileSize(long fileSize) {
+		this.fileSize = fileSize;
 	}
 
 	public String getFileList() {

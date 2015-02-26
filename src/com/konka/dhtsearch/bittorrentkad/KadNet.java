@@ -18,8 +18,9 @@ import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.bucket.Bucket;
 import com.konka.dhtsearch.bittorrentkad.bucket.SlackBucket;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
-import com.konka.dhtsearch.bittorrentkad.net.KadSendMsgServer;
+import com.konka.dhtsearch.bittorrentkad.net.KadParserTorrentServer;
 import com.konka.dhtsearch.bittorrentkad.net.KadReceiveServer;
+import com.konka.dhtsearch.bittorrentkad.net.KadSendMsgServer;
 
 /**
  * KadNet
@@ -30,6 +31,7 @@ import com.konka.dhtsearch.bittorrentkad.net.KadReceiveServer;
 public class KadNet implements KeybasedRouting {
 	private final KadReceiveServer kadServer;// 接受消息
 	private final KadSendMsgServer kadSendMsgServer;// 发生消息
+	private final KadParserTorrentServer kadParserTorrentServer;//  解析种子
 	private final Bucket kadBuckets;// = AppManager.getKadBuckets();// 路由表
 	private final int BUCKETSIZE = 8;// 一个k桶大小
 	private final BootstrapNodesSaver bootstrapNodesSaver;// 关机后保存到本地，启动时候从本地文件中加载
@@ -60,6 +62,7 @@ public class KadNet implements KeybasedRouting {
 
 		this.kadSendMsgServer = new KadSendMsgServer(this);
 		this.kadServer = new KadReceiveServer(selector, this);
+		this.kadParserTorrentServer = new KadParserTorrentServer();
 //		Thread.currentThread().setDaemon(true);
 	}
 
@@ -72,9 +75,9 @@ public class KadNet implements KeybasedRouting {
 	@Override
 	public void create() throws IOException {
 
-		kadServer.start();
-		kadSendMsgServer.start();
-
+//		kadServer.start();
+//		kadSendMsgServer.start();
+		kadParserTorrentServer.start();
 		if (bootstrapNodesSaver != null) {
 			bootstrapNodesSaver.load();
 			bootstrapNodesSaver.start();
@@ -125,7 +128,6 @@ public class KadNet implements KeybasedRouting {
 			byte[] buf = msg.getBencodeData(localnode);
 			channel.send(ByteBuffer.wrap(buf), msg.getSrc().getSocketAddress());
 		} catch (Exception e) {
-			System.out.println("报错时候的地址=" + msg.getSrc().getSocketAddress());
 			e.printStackTrace();
 		}
 	}
