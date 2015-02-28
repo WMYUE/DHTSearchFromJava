@@ -12,8 +12,9 @@ import org.yaircc.torrent.bencoding.BEncodedInputStream;
 import org.yaircc.torrent.bencoding.BMap;
 import org.yaircc.torrent.bencoding.BTypeException;
 
+import com.konka.dhtsearch.db.mongodb.orm1.MongoCollection;
 import com.konka.dhtsearch.util.StringUtil;
-
+@MongoCollection
 public class TorrentInfo implements TorrentConstantKey {
 	private String name;// 文件名称
 	private long filelenth;// 文件大小 单位 byte

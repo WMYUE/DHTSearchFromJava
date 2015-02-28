@@ -1,7 +1,5 @@
 package com.konka.dhtsearch.db.mongodb.orm1;
 
-import java.lang.reflect.InvocationTargetException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,14 +7,13 @@ import com.konka.dhtsearch.db.models.DhtInfo;
 import com.konka.dhtsearch.parser.MultiFile;
 import com.mongodb.DB;
 import com.mongodb.Mongo;
-import com.mongodb.MongoException;
 
 public class TestSave1 {
-	public static void main(String args[]) throws UnknownHostException, MongoException, IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException, ClassNotFoundException {
+	public static void main(String args[]) throws Exception {
 		Mongo m = new Mongo("localhost", 27017);
 		DB db = m.getDB("test");
-		
-		db.dropDatabase();
+
+//		db.dropDatabase();
 		MongodbUtil orm = new MongodbUtil(db);
 
 		List<MultiFile> lists = new ArrayList<>();

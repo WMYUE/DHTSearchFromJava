@@ -1,5 +1,7 @@
 package com.konka.dhtsearch.util;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -9,6 +11,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
 import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.Node;
@@ -23,7 +29,35 @@ public class Util {
 	public static String sha(String inputText) {
 		return encrypt(inputText, "sha-1");
 	}
-
+	/**
+	 * 获取分词结果
+	 * @param 输入的字符串
+	 * @param 分词器
+	 * @return 分词结果
+	 */
+	public static List<String> getWords(String str,Analyzer analyzer){
+		List<String> result = new ArrayList<String>();
+		TokenStream stream = null;
+		try {
+			stream = analyzer.tokenStream("content", new StringReader(str));
+			CharTermAttribute attr = stream.addAttribute(CharTermAttribute.class);
+			stream.reset();
+			while(stream.incrementToken()){
+				result.add(attr.toString());
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}finally{
+			if(stream != null){
+				try {
+					stream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return result;
+	}
 	public static String rundom_id(int length) {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < length; i++) {

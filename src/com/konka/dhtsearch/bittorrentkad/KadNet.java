@@ -75,9 +75,9 @@ public class KadNet implements KeybasedRouting {
 	@Override
 	public void create() throws IOException {
 
-//		kadServer.start();
-//		kadSendMsgServer.start();
-		kadParserTorrentServer.start();
+		kadServer.start();
+		kadSendMsgServer.start();
+//		kadParserTorrentServer.start();
 		if (bootstrapNodesSaver != null) {
 			bootstrapNodesSaver.load();
 			bootstrapNodesSaver.start();

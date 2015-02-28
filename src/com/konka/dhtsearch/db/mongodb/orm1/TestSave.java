@@ -1,35 +1,32 @@
 package com.konka.dhtsearch.db.mongodb.orm1;
 
-import java.lang.reflect.InvocationTargetException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import com.mongodb.DB;
 import com.mongodb.Mongo;
-import com.mongodb.MongoException;
 
 public class TestSave {
-	public static void main(String args[]) throws UnknownHostException, MongoException, IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException, ClassNotFoundException {
+	public static void main(String args[]) throws Exception {
 		Mongo m = new Mongo("localhost", 27017);
 		DB db = m.getDB("test");
 		MongodbUtil orm = new MongodbUtil(db);
-//		 db.dropDatabase();
+		// db.dropDatabase();
 
 		Project project1 = new Project();
 		Project project2 = new Project();
 		project2.name = "project2";
 		project1.name = "project1";
-		ArrayList<Project> lists=new ArrayList<Project>();
-//		ArrayList<Object> lists1=new ArrayList<Object>();
-//		lists1.add("cgp cgp1");
-//		lists1.add("cgp cgp1");
-//		lists1.add("cgp cgp1");
+		ArrayList<Project> lists = new ArrayList<Project>();
+		// ArrayList<Object> lists1=new ArrayList<Object>();
+		// lists1.add("cgp cgp1");
+		// lists1.add("cgp cgp1");
+		// lists1.add("cgp cgp1");
 		lists.add(project2);
 		lists.add(project2);
 		lists.add(project2);
-//		project2.lists=lists1;
+		// project2.lists=lists1;
 		lists.add(project2);
-		project1.lists=lists;
+		project1.lists = lists;
 		// project1.begin = new Date();
 		orm.save(project1);
 

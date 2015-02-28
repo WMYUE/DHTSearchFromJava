@@ -36,17 +36,17 @@ public class MongodbUtil {
 	 * @throws IllegalArgumentException
 	 * @throws InvocationTargetException
 	 */
-	public void save(Object object) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+	public void save(Object object) throws Exception {
 		DBCollection collection = getCollectionName(object.getClass());
-		DBObject dbobject = ObjectToDBObject(object);
+		DBObject dbobject = objectToDBObject(object);
 		collection.insert(dbobject);
 		DBCursor dbCursor = collection.find();
-		 System.out.println(dbobject);
+		System.out.println(dbobject);
 		for (; dbCursor.hasNext();) {
 			DBObject dbObject2 = dbCursor.next();
-//			if (dbObject2.containsField("lists")) {
-				System.out.println("是集合吗=" + dbObject2);
-//			}
+			// if (dbObject2.containsField("lists")) {
+			System.out.println("是集合吗=" + dbObject2);
+			// }
 		}
 	}
 
@@ -101,14 +101,11 @@ public class MongodbUtil {
 	 * 
 	 * @param object
 	 * @return
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 * @throws InvocationTargetException
 	 */
 	@SuppressWarnings("unchecked")
-	private Object valueSerial(Object object) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+	private Object valueSerial(Object object) throws Exception {
 		if (object.getClass().getAnnotation(MongoCollection.class) != null) {
-			DBObject dbObject = ObjectToDBObject(object);
+			DBObject dbObject = objectToDBObject(object);
 			return dbObject;
 		}
 		if (checkValidType(object.getClass())) {
@@ -131,20 +128,14 @@ public class MongodbUtil {
 	 * 
 	 * @param object
 	 * @return
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 * @throws InvocationTargetException
 	 */
-	private DBObject ObjectToDBObject(Object object) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+	private DBObject objectToDBObject(Object object) throws Exception {
 		Class<? extends Object> clazz = object.getClass();
 		List<Field> fields = getAllFields(clazz);
 		DBObject dbobject = new BasicDBObject();
 		for (Field f : fields) {
-			// MongoField mongoField = f.getAnnotation(MongoField.class);
 			Method get = DbUtil.getFieldGetMethod(clazz, f);
 			Object fieldobj = get.invoke(object);
-			// System.out.println(fieldobj);
-			// System.out.println(mongoField);
 			if (fieldobj == null) {
 				continue;
 			}
@@ -189,12 +180,23 @@ public class MongodbUtil {
 		return objList;
 	}
 
-	public <T> List<T> findByWhere(Class<T> clazz, int limit) throws Exception {
+	public <T> List<T> findAll(Class<T> clazz) throws Exception {
+
+		return findByLimit(clazz, 0);
+	}
+
+	public <T> List<T> findByLimit(Class<T> clazz, int limit) throws Exception {
+
+		return find(clazz, new BasicDBObject(), limit);
+	}
+
+	public <T> List<T> find(Class<T> clazz, BasicDBObject where, int limit) throws Exception {
 		DBCollection collection = getCollectionName(clazz);
 
 		List<T> objList = new ArrayList<T>();
-		// DBCursor curr = collection.find();
-		DBCursor curr = collection.find(new BasicDBObject("name", "project1")).limit(limit);
+		// DBCursor curr = collection.find().limit(limit);
+		DBCursor curr = collection.find(where).limit(limit);
+		// DBCursor curr = collection.find(new BasicDBObject()).limit(limit);
 		while (curr.hasNext()) {
 			DBObject dbo = curr.next();
 			T o = loadOne(clazz, dbo);
@@ -210,17 +212,26 @@ public class MongodbUtil {
 			String name = getAnnotationFieldName(f);// key
 			Object value = dbo.get(name);//
 			if (value != null) {
-				// System.out.println("=="+f);
 				Type type = f.getGenericType();
 				value = valueDeserial(type, value);// 解析得到真实值
 			}
 			Method set = DbUtil.getFieldSetMethod(clazz, f);
 			set.invoke(o, value);
-
 		}
 		return o;
 	}
 
+	/**
+	 * 将值翻译成为对象
+	 * 
+	 * @param type
+	 *            对象的类型
+	 * @param object
+	 *            mongodb的对象
+	 * 
+	 * @return 返回转换后的对象
+	 * @throws Exception
+	 */
 	private Object valueDeserial(Type type, Object object) throws Exception {
 		Class<?> clazz = object.getClass();
 
@@ -234,7 +245,7 @@ public class MongodbUtil {
 			}
 			return arrayList;
 		}
-		if (checkValidType(clazz)) {//如果是基本类型，直接返回
+		if (checkValidType(clazz)) {// 如果是基本类型，直接返回
 			return object;
 		}
 		if (clazz == BasicDBObject.class) {

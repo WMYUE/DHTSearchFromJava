@@ -16,7 +16,7 @@ public class DhtInfo {
 	private long fileSize;
 	private long createTime;// 种子创建时间
 	private List<MultiFile> fileList;
-//	private String fileList;// 多文件时候的file列表
+	// private String fileList;// 多文件时候的file列表
 	private long lastRequestsTime;// 最后请求时间
 	/**
 	 * @category 没有下载。

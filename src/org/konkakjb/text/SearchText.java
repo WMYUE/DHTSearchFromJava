@@ -25,25 +25,25 @@ public class SearchText {
 
 	public static void main(String[] args) throws DhtException {
 		int size = 3;
-//		try {
-//			for (int i = 0; i < size; i++) {
-//				AppManager.init();// 1---
-//				Key key = AppManager.getKeyFactory().generate();
-//				Node localNode = new Node(key).setInetAddress(InetAddress.getByName("0.0.0.0")).setPoint(20200 + i);// 这里注意InetAddress.getLocalHost();为空
-//				new KadNet(null, localNode).join(BOOTSTRAP_NODES).create();
-//			}
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
 		try {
-			text();
-		} catch (NoSuchFieldException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
+			for (int i = 0; i < size; i++) {
+				AppManager.init();// 1---
+				Key key = AppManager.getKeyFactory().generate();
+				Node localNode = new Node(key).setInetAddress(InetAddress.getByName("0.0.0.0")).setPoint(20200 + i);// 这里注意InetAddress.getLocalHost();为空
+				new KadNet(null, localNode).join(BOOTSTRAP_NODES).create();
+			}
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		// try {
+		// text();
+		// } catch (NoSuchFieldException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// } catch (SecurityException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
 		// DhtInfoDao dao = DaoFactory.getPersonaDao();
 		// DhtInfo dhtinfo = new DhtInfo();
 		// dhtinfo.setInfo_hash("dddddddddddddddddddddddddd");
@@ -59,33 +59,11 @@ public class SearchText {
 		// }
 	}
 
-	private  List<String> list = new LinkedList<String>();
+	private List<String> list = new LinkedList<String>();
+
 	public static void text() throws NoSuchFieldException, SecurityException {
 		ParameterizedType pt = (ParameterizedType) SearchText.class.getDeclaredField("list").getGenericType();
 		System.out.println(pt.getActualTypeArguments().length);
 		System.out.println(pt.getActualTypeArguments()[0]);
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
