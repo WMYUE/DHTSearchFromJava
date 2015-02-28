@@ -62,7 +62,7 @@ public class LuceneUtils {
 		 if (args[0].equals("index")) {
 			 createIndex(args[1], args[2]);
 		 } else {
-		 search(args[0]);
+		 search(args[0]);   
 		 }
 //		String str = "中华人民币汇改";
 //		List<String> lists = Util.getWords(str, new StandardAnalyzer(luceneVersion));
