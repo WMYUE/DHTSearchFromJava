@@ -1,5 +1,7 @@
 package com.konka.dhtsearch.parser;
 
+import com.konka.dhtsearch.db.mongodb.orm1.MongoCollection;
+
 /**
  * MultiFile类，用于定义一个多文件的结构，根据BT协议规范，多文件结果里每一个文件的结构是：
  * lenght 整数, 文件大小 
@@ -7,6 +9,7 @@ package com.konka.dhtsearch.parser;
  * path 路径，文件夹和文件名的 bencode 编码的列表 
  * 
  */
+@MongoCollection
 public class MultiFile {
 	private long singleFileLength;     //定义多文件里每个文件的长度
 	private String path;               //定义path

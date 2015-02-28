@@ -1,10 +1,10 @@
-package com.konka.dhtsearch.db.dao;
+package com.konka.dhtsearch.db.mysql.dao;
 
 import java.util.List;
 import java.util.Map;
 
-import com.konka.dhtsearch.db.exception.DhtException;
 import com.konka.dhtsearch.db.models.DhtInfo;
+import com.konka.dhtsearch.db.mysql.exception.DhtException;
 
 public interface DhtInfoDao {
 

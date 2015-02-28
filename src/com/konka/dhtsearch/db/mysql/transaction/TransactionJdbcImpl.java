@@ -1,10 +1,10 @@
-package com.konka.dhtsearch.db.transaction;
+package com.konka.dhtsearch.db.mysql.transaction;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import com.konka.dhtsearch.db.exception.DhtException;
-import com.konka.dhtsearch.db.jdbc.ConnectionProvider;
+import com.konka.dhtsearch.db.mysql.exception.DhtException;
+import com.konka.dhtsearch.db.mysql.jdbc.ConnectionProvider;
 
 public class TransactionJdbcImpl implements Transaction {
     

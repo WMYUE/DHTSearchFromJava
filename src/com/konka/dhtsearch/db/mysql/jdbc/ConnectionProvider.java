@@ -1,11 +1,11 @@
-package com.konka.dhtsearch.db.jdbc;
+package com.konka.dhtsearch.db.mysql.jdbc;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import com.konka.dhtsearch.db.exception.DhtException;
+import com.konka.dhtsearch.db.mysql.exception.DhtException;
 
 /**
  * @author 耳东 (cgp@0731life.com)

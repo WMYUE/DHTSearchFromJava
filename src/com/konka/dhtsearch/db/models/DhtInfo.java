@@ -1,7 +1,12 @@
 package com.konka.dhtsearch.db.models;
 
-import com.konka.dhtsearch.db.DhtInfoStateCode;
+import java.util.List;
 
+import com.konka.dhtsearch.db.mongodb.orm1.MongoCollection;
+import com.konka.dhtsearch.db.mysql.DhtInfoStateCode;
+import com.konka.dhtsearch.parser.MultiFile;
+
+@MongoCollection
 public class DhtInfo {
 	private long id;
 	private String info_hash;
@@ -10,7 +15,8 @@ public class DhtInfo {
 	private String torrentFilePath;
 	private long fileSize;
 	private long createTime;// 种子创建时间
-	private String fileList;// 多文件时候的file列表
+	private List<MultiFile> fileList;
+//	private String fileList;// 多文件时候的file列表
 	private long lastRequestsTime;// 最后请求时间
 	/**
 	 * @category 没有下载。
@@ -77,11 +83,11 @@ public class DhtInfo {
 		this.fileSize = fileSize;
 	}
 
-	public String getFileList() {
+	public List<MultiFile> getFileList() {
 		return fileList;
 	}
 
-	public void setFileList(String fileList) {
+	public void setFileList(List<MultiFile> fileList) {
 		this.fileList = fileList;
 	}
 

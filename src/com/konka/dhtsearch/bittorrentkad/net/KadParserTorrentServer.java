@@ -5,11 +5,11 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.konka.dhtsearch.db.DaoFactory;
-import com.konka.dhtsearch.db.DhtInfoStateCode;
-import com.konka.dhtsearch.db.dao.DhtInfoDao;
-import com.konka.dhtsearch.db.exception.DhtException;
 import com.konka.dhtsearch.db.models.DhtInfo;
+import com.konka.dhtsearch.db.mysql.DaoFactory;
+import com.konka.dhtsearch.db.mysql.DhtInfoStateCode;
+import com.konka.dhtsearch.db.mysql.dao.DhtInfoDao;
+import com.konka.dhtsearch.db.mysql.exception.DhtException;
 import com.konka.dhtsearch.parser.TorrentInfo;
 import com.konka.dhtsearch.util.ArrayUtils;
 import com.konka.dhtsearch.util.HttpUrlUtils;
@@ -74,7 +74,7 @@ public class KadParserTorrentServer implements Runnable {
 				dhtInfo.setFileSize(torrentInfo.getFilelenth());
 
 				if (!torrentInfo.isSingerFile()) {
-					dhtInfo.setFileList(torrentInfo.getMultiFiles().get(0).getPath());
+					dhtInfo.setFileList(torrentInfo.getMultiFiles());
 				}
 				// mDhtInfo.setTorrentFilePath(torrentFilePath);//种子保存地址
 				dhtInfo.setAnalysised(DhtInfoStateCode.DOWNLOADSUCCESS_AND_PARSING_SUCCESS);

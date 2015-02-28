@@ -36,10 +36,10 @@ import com.konka.dhtsearch.bittorrentkad.krpc.get_peers.GetPeersRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.get_peers.GetPeersResponse;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingResponse;
-import com.konka.dhtsearch.db.DaoFactory;
-import com.konka.dhtsearch.db.dao.DhtInfoDao;
-import com.konka.dhtsearch.db.exception.DhtException;
 import com.konka.dhtsearch.db.models.DhtInfo;
+import com.konka.dhtsearch.db.mysql.DaoFactory;
+import com.konka.dhtsearch.db.mysql.dao.DhtInfoDao;
+import com.konka.dhtsearch.db.mysql.exception.DhtException;
 import com.konka.dhtsearch.util.Util;
 
 /**

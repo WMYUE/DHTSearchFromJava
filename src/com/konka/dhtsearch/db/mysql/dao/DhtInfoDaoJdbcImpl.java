@@ -1,4 +1,4 @@
-package com.konka.dhtsearch.db.dao;
+package com.konka.dhtsearch.db.mysql.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,11 +9,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.konka.dhtsearch.db.exception.DhtException;
-import com.konka.dhtsearch.db.jdbc.ConnectionProvider;
 import com.konka.dhtsearch.db.models.DhtInfo;
-import com.konka.dhtsearch.db.transaction.Transaction;
-import com.konka.dhtsearch.db.transaction.TransactionJdbcImpl;
+import com.konka.dhtsearch.db.mysql.exception.DhtException;
+import com.konka.dhtsearch.db.mysql.jdbc.ConnectionProvider;
+import com.konka.dhtsearch.db.mysql.transaction.Transaction;
+import com.konka.dhtsearch.db.mysql.transaction.TransactionJdbcImpl;
 
 public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 
@@ -106,8 +106,8 @@ public class DhtInfoDaoJdbcImpl implements DhtInfoDao {
 			statement.setLong(2, dhtinfo.getFileSize());
 			statement.setLong(3, dhtinfo.getCreateTime());
 			statement.setInt(4, dhtinfo.getAnalysised());
-			String filelist = dhtinfo.getFileList();
-			statement.setString(5, filelist == null ? "" : filelist);
+//			String filelist = dhtinfo.getFileList();
+//			statement.setString(5, filelist == null ? "" : filelist);
 			statement.setLong(6, dhtinfo.getId());
 
 			statement.executeUpdate();

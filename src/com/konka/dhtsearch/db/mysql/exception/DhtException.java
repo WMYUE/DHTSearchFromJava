@@ -1,4 +1,4 @@
-package com.konka.dhtsearch.db.exception;
+package com.konka.dhtsearch.db.mysql.exception;
 
 public class DhtException extends Exception {
 

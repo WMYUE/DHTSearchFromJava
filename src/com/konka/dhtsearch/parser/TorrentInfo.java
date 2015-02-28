@@ -18,7 +18,6 @@ public class TorrentInfo implements TorrentConstantKey {
 	private String name;// 文件名称
 	private long filelenth;// 文件大小 单位 byte
 	private long creattime;// 创建时间 creation date
-	private String encoding = null;// 编码方式 utf-8
 	private List<MultiFile> multiFiles;
 	private boolean singerFile = true;// 是否是单文件 如果是多文件，文件放假multiFiles中
 
@@ -60,6 +59,7 @@ public class TorrentInfo implements TorrentConstantKey {
 	@SuppressWarnings("unchecked")
 	private void parser(BEncodedInputStream bEncodedInputStream) throws IOException, BDecodingException, BTypeException {
 		BMap bMap = (BMap) bEncodedInputStream.readElement();
+		String encoding = null;// 编码方式 utf-8
 		if (bMap.containsKey(ENCODING)) {
 			encoding = bMap.getString(ENCODING);
 			System.out.println("encoding======" + encoding);
