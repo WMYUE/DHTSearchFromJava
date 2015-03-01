@@ -32,9 +32,6 @@ public class MongodbUtil {
 	 * 保存对象到db
 	 * 
 	 * @param object
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 * @throws InvocationTargetException
 	 */
 	public void save(Object object) throws Exception {
 		DBCollection collection = getCollectionName(object.getClass());
