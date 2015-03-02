@@ -11,13 +11,13 @@ import java.util.Date;
 import java.util.List;
 
 import com.konka.dhtsearch.db.DbUtil;
+import com.konka.dhtsearch.db.models.DhtInfo_MongoDbPojo;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import com.mongodb.WriteResult;
 
 /**
  * @author 耳东 (cgp@0731life.com)
@@ -34,7 +34,7 @@ public class MongodbUtil {
 	 * 
 	 * @param object
 	 */
-	public void save(Object object) throws Exception {
+	public void save(Object object) throws  Exception {
 		DBCollection collection = getDBCollection(object.getClass());
 		DBObject dbobject = objectToDBObject(object);
 		collection.insert(dbobject);
@@ -131,7 +131,7 @@ public class MongodbUtil {
 	 * @param object
 	 * @return
 	 */
-	private DBObject objectToDBObject(Object object) throws Exception {
+	public DBObject objectToDBObject(Object object) throws Exception {
 		Class<? extends Object> clazz = object.getClass();
 		List<Field> fields = getAllFields(clazz);
 		DBObject dbobject = new BasicDBObject();
@@ -289,4 +289,13 @@ public class MongodbUtil {
 		}
 		return object;
 	}
+
+	public List<DhtInfo_MongoDbPojo> getNoAnalyticDhtInfos(int i) throws Exception {
+		BasicDBObject where = new BasicDBObject();
+		// hashMap.put("analysised", "0");
+		where.put("analysised", 200);
+		find(DhtInfo_MongoDbPojo.class, where, i);
+		return null;
+	}
+
 }
