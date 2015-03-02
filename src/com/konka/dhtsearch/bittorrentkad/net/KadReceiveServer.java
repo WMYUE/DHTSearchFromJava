@@ -36,9 +36,8 @@ import com.konka.dhtsearch.bittorrentkad.krpc.get_peers.GetPeersRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.get_peers.GetPeersResponse;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingResponse;
-import com.konka.dhtsearch.db.models.DhtInfo;
-import com.konka.dhtsearch.db.mysql.DaoFactory;
-import com.konka.dhtsearch.db.mysql.dao.DhtInfoDao;
+import com.konka.dhtsearch.db.models.DhtInfo_MongoDbPojo;
+import com.konka.dhtsearch.db.mongodb.MongodbFactroy;
 import com.konka.dhtsearch.db.mysql.exception.DhtException;
 import com.konka.dhtsearch.util.Util;
 
@@ -112,11 +111,16 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 	 */
 	private void saveInfoHash(String info_hash, Node src) {// TODO 保存磁力连接
 		try {
-			DhtInfo dhtInfo = new DhtInfo();
-			dhtInfo.setInfo_hash(info_hash);
-			dhtInfo.setPeerIp(src.getSocketAddress().toString());
-			DaoFactory.getDhtInfoDao().insert(dhtInfo);
-		} catch (DhtException e) {
+			DhtInfo_MongoDbPojo dhtInfo_MongoDbPojo=new DhtInfo_MongoDbPojo();
+			dhtInfo_MongoDbPojo.setInfo_hash(info_hash);
+			dhtInfo_MongoDbPojo.setPeerIp(src.getSocketAddress().toString());
+			
+//			DhtInfo dhtInfo = new DhtInfo();
+//			dhtInfo.setInfo_hash(info_hash);
+//			dhtInfo.setPeerIp(src.getSocketAddress().toString());
+			MongodbFactroy.getMongodbUtil().save(dhtInfo_MongoDbPojo);
+//			DaoFactory.getDhtInfoDao().insert(dhtInfo);
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 

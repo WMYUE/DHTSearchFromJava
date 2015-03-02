@@ -4,12 +4,12 @@ import com.konka.dhtsearch.db.mongodb.orm1.MongoCollection;
 import com.konka.dhtsearch.db.mysql.DhtInfoStateCode;
 import com.konka.dhtsearch.parser.TorrentInfo;
 
-@MongoCollection
-
+ 
 /**
  * 存储到数据库中的对象
  * @author 耳东 (cgp@0731life.com)
  */
+@MongoCollection
 public class DhtInfo_MongoDbPojo {
 	private String info_hash;
 	private String peerIp;
@@ -74,5 +74,6 @@ public class DhtInfo_MongoDbPojo {
 	public void setTag(String tag) {
 		this.tag = tag;
 	}
+
 
 }

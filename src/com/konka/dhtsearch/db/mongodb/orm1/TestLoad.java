@@ -1,7 +1,7 @@
 package com.konka.dhtsearch.db.mongodb.orm1;
 import java.util.List;
 
-import com.konka.dhtsearch.db.models.DhtInfo;
+import com.konka.dhtsearch.db.models.DhtInfo_MongoDbPojo;
 import com.mongodb.DB;
 import com.mongodb.Mongo;
 
@@ -15,8 +15,9 @@ public class TestLoad {
 		MongodbUtil orm = new MongodbUtil(db);
 		
 //		List<Employee> employee = orm.loadAll(Employee.class);
-		List<DhtInfo> project = orm.findAll(DhtInfo.class);
+		List<DhtInfo_MongoDbPojo> project = orm.findAll(DhtInfo_MongoDbPojo.class);
 //		List<Manager> manager = orm.loadAll(Manager.class);
-		System.out.println(project.size());
+		System.out.println(project.get(0).getTorrentInfo().getMultiFiles().get(0).getPath());
+		System.out.println(project.get(0).getTorrentInfo().getMultiFiles().get(0).getSingleFileLength());
 	}
 }

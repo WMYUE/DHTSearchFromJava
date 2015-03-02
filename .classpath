@@ -6,7 +6,9 @@
 	<classpathentry kind="lib" path="src/lib/mysql-connector-java-5.1.19-bin.jar"/>
 	<classpathentry kind="lib" path="src/lib/mongo-java-driver-2.9.3.jar" sourcepath="src/lib/mongo-java-driver-2.9.3-sources.jar"/>
 	<classpathentry kind="lib" path="src/lib/mongo-java-driver-2.9.3-sources.jar"/>
-	<classpathentry kind="lib" path="src/lib/MongoLucene-1.0-SNAPSHOT-jar-with-dependencies.jar"/>
+	<classpathentry kind="lib" path="src/lib/lucene-core-5.0.0.jar" sourcepath="C:/Documents and Settings/konka/桌面/lucene-5.0.0-src (1)/lucene-5.0.0"/>
+	<classpathentry kind="lib" path="src/lib/lucene-queryparser-5.0.0.jar"/>
+	<classpathentry kind="lib" path="src/lib/lucene-analyzers-common-5.0.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

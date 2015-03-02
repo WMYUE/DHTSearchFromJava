@@ -14,6 +14,7 @@ import org.yaircc.torrent.bencoding.BTypeException;
 
 import com.konka.dhtsearch.db.mongodb.orm1.MongoCollection;
 import com.konka.dhtsearch.util.StringUtil;
+
 @MongoCollection
 public class TorrentInfo implements TorrentConstantKey {
 	private String name;// 文件名称
@@ -93,25 +94,26 @@ public class TorrentInfo implements TorrentConstantKey {
 					for (Object multiFileobObject : filesMap) {
 						BMap multiFilemap = (BMap) multiFileobObject;
 						multiFile = new MultiFile();
-						if (!StringUtil.isEmpty(encoding) && multiFilemap.containsKey(PATH)) {
-							List<byte[]> pathListbytearray = (List<byte[]>) multiFilemap.get(PATH);
-							for (byte[] pathbytearray : pathListbytearray) {
-								String path = new String(pathbytearray, encoding);
+						// System.out.println(multiFilemap);
+
+						if (multiFilemap.containsKey(PATH_UTF_8)) {
+							List<byte[]> utf8_Path_Bytes_List = (List<byte[]>) multiFilemap.get(PATH_UTF_8);
+							for (byte[] utf8_Path_Bytes : utf8_Path_Bytes_List) {
+								String path = new String(utf8_Path_Bytes, UTF_8);
 								multiFile.setPath(path);
 							}
 						} else {
-							if (multiFilemap.containsKey(PATH_UTF_8)) {
-								List<byte[]> utf8_Path_Bytes_List = (List<byte[]>) multiFilemap.get(PATH_UTF_8);
-								for (byte[] utf8_Path_Bytes : utf8_Path_Bytes_List) {
-									String path = new String(utf8_Path_Bytes, UTF_8);
-									multiFile.setPath(path);
-								}
+							List<byte[]> pathListbytearray = (List<byte[]>) multiFilemap.get(PATH);
+							for (byte[] pathbytearray : pathListbytearray) {
+								String path = new String(pathbytearray, StringUtil.isEmpty(encoding) ? UTF_8 : encoding);
+								multiFile.setPath(path);
+								System.out.println("path=" + path);
 							}
 						}
 						if (multiFilemap.containsKey(LENGTH)) {
 							long length = multiFilemap.getLong(LENGTH);
 							multiFile.setSingleFileLength(length);
-							System.out.println("path=" + length);
+
 						}
 						multiFiles.add(multiFile);
 					}
@@ -123,6 +125,36 @@ public class TorrentInfo implements TorrentConstantKey {
 
 	}
 
+	/**
+	 * 反向构造时候用到
+	 */
+	// --------------------------------------------反向构造时候用到
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setFilelenth(long filelenth) {
+		this.filelenth = filelenth;
+	}
+
+	public void setCreattime(long creattime) {
+		this.creattime = creattime;
+	}
+
+	public void setMultiFiles(List<MultiFile> multiFiles) {
+		this.multiFiles = multiFiles;
+	}
+
+	public void setSingerFile(boolean singerFile) {
+		this.singerFile = singerFile;
+	}
+
+	public TorrentInfo() {
+		super();
+	}
+
+	// --------------------------------------------反向构造时候用到
+
 	public TorrentInfo(String filePath) throws IOException, BDecodingException, BTypeException {
 		this(new File(filePath));
 	}
@@ -131,4 +163,22 @@ public class TorrentInfo implements TorrentConstantKey {
 		this(new FileInputStream(file));
 	}
 
+	/**
+	 * 分词
+	 * 
+	 * @return
+	 */
+	public String getNeedSegmentationString() {
+		StringBuilder builder = new StringBuilder(name);
+		if (!isSingerFile()) {
+			List<MultiFile> multiFiles = getMultiFiles();
+			if (multiFiles != null && multiFiles.size() > 0) {
+				for (MultiFile multiFile : multiFiles) {
+					// System.out.println(multiFile.getPath());
+					builder.append(multiFile.getPath());
+				}
+			}
+		}
+		return builder.toString();
+	}
 }

@@ -43,6 +43,7 @@ public class Util {
 			CharTermAttribute attr = stream.addAttribute(CharTermAttribute.class);
 			stream.reset();
 			while(stream.incrementToken()){
+				System.out.println(attr.toString());
 				result.add(attr.toString());
 			}
 		} catch (IOException e) {
