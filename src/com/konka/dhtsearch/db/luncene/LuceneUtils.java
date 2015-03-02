@@ -50,15 +50,15 @@ public class LuceneUtils {
 
 	// DhtInfo_MongoDbPojo
 	public static void createIndex() throws Exception {
-		
+
 		MongodbUtil mongodbUtil = getMongodbUtil();
-		DBCursor cursor=mongodbUtil.findDBCursor(DhtInfo_MongoDbPojo.class);
-		
+		DBCursor cursor = mongodbUtil.findDBCursor(DhtInfo_MongoDbPojo.class);
+
 		Directory index = FSDirectory.open(new File(LUCENE_FILEPATH).toPath());
 		StandardAnalyzer analyzer = new StandardAnalyzer();// 这里要换成ik
 		IndexWriterConfig config = new IndexWriterConfig(analyzer);
 		IndexWriter indexWriter = new IndexWriter(index, config);
-		
+
 		System.out.println(cursor.count());
 		while (cursor.hasNext()) {
 			Document doc = new Document();
@@ -67,6 +67,7 @@ public class LuceneUtils {
 			DhtInfo_MongoDbPojo dhtInfo_MongoDbPojo = mongodbUtil.loadOne(DhtInfo_MongoDbPojo.class, object);
 
 			doc.add(new StringField(INFO_HASH_FIELD, dhtInfo_MongoDbPojo.getInfo_hash(), Field.Store.YES));// StringField不参加分词
+			doc.add(new StringField(TORRENTINFO_FIELD, object.get(TORRENTINFO_FIELD).toString(), Field.Store.YES));// StringField不参加分词
 			TorrentInfo torrentInfo = dhtInfo_MongoDbPojo.getTorrentInfo();
 			if (torrentInfo == null) {
 				continue;
@@ -115,18 +116,19 @@ public class LuceneUtils {
 
 		List<DhtInfo_MongoDbPojo> dhtInfo_MongoDbPojos = new ArrayList<>();
 		for (int i = 0; i < hits.length; ++i) {
-			Document d = searcher.doc(hits[i].doc);
-
-			DBObject object = (DBObject) JSON.parse(d.get(TORRENTINFO_FIELD));
+			Document document = searcher.doc(hits[i].doc);
+			DBObject object = (DBObject) JSON.parse(document.get(TORRENTINFO_FIELD));
+			System.out.println(object);
 			if (object == null)
 				continue;
 
 			TorrentInfo torrentInfo = getMongodbUtil().loadOne(TorrentInfo.class, object);
 			DhtInfo_MongoDbPojo dhtInfo_MongoDbPojo = new DhtInfo_MongoDbPojo();
-			dhtInfo_MongoDbPojo.setInfo_hash(d.get(INFO_HASH_FIELD));
+			dhtInfo_MongoDbPojo.setInfo_hash(document.get(INFO_HASH_FIELD));
 			dhtInfo_MongoDbPojo.setTorrentInfo(torrentInfo);
 
 			dhtInfo_MongoDbPojos.add(dhtInfo_MongoDbPojo);
+			System.out.println(object);
 
 		}
 		reader.close();
@@ -136,7 +138,7 @@ public class LuceneUtils {
 
 	public static void main(String[] args) throws Exception {
 		args = new String[] { "index", "com_konka_dhtsearch_db_models_DhtInfo_MongoDbPojo", "fileName" };
-		args = new String[] { "planche" };
+		args = new String[] { "偷拍" };
 		if (args[0].equals("index")) {
 			createIndex();
 		} else {

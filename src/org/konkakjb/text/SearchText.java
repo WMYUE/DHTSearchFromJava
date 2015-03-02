@@ -1,21 +1,16 @@
 package org.konkakjb.text;
 
-import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.yaircc.torrent.bencoding.BDecodingException;
-import org.yaircc.torrent.bencoding.BTypeException;
-
 import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.KadNet;
 import com.konka.dhtsearch.db.mysql.exception.DhtException;
-import com.konka.dhtsearch.parser.TorrentInfo;
 
 public class SearchText {
 	private static final InetSocketAddress[] BOOTSTRAP_NODES = { //
