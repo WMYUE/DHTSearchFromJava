@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.konka.dhtsearch.db.models.DhtInfo_MongoDbPojo;
 import com.konka.dhtsearch.db.mongodb.MongodbFactroy;
-import com.konka.dhtsearch.db.mongodb.orm1.MongodbUtil;
+import com.konka.dhtsearch.db.mongodb.orm.MongodbUtil;
 import com.konka.dhtsearch.db.mysql.DhtInfoStateCode;
 import com.konka.dhtsearch.db.mysql.exception.DhtException;
 import com.konka.dhtsearch.parser.TorrentInfo;

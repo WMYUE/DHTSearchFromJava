@@ -1,6 +1,6 @@
 package com.konka.dhtsearch.db.models;
 
-import com.konka.dhtsearch.db.mongodb.orm1.MongoCollection;
+import com.konka.dhtsearch.db.mongodb.orm.MongoCollection;
 import com.konka.dhtsearch.db.mysql.DhtInfoStateCode;
 import com.konka.dhtsearch.parser.TorrentInfo;
 

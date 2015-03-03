@@ -12,7 +12,7 @@ import org.yaircc.torrent.bencoding.BEncodedInputStream;
 import org.yaircc.torrent.bencoding.BMap;
 import org.yaircc.torrent.bencoding.BTypeException;
 
-import com.konka.dhtsearch.db.mongodb.orm1.MongoCollection;
+import com.konka.dhtsearch.db.mongodb.orm.MongoCollection;
 import com.konka.dhtsearch.util.StringUtil;
 
 @MongoCollection

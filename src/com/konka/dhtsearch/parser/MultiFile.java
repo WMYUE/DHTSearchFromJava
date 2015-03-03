@@ -1,6 +1,6 @@
 package com.konka.dhtsearch.parser;
 
-import com.konka.dhtsearch.db.mongodb.orm1.MongoCollection;
+import com.konka.dhtsearch.db.mongodb.orm.MongoCollection;
 
 /**
  * MultiFile类，用于定义一个多文件的结构，根据BT协议规范，多文件结果里每一个文件的结构是：

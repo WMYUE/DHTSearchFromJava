@@ -24,7 +24,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 import com.konka.dhtsearch.db.models.DhtInfo_MongoDbPojo;
-import com.konka.dhtsearch.db.mongodb.orm1.MongodbUtil;
+import com.konka.dhtsearch.db.mongodb.orm.MongodbUtil;
 import com.konka.dhtsearch.parser.TorrentInfo;
 import com.mongodb.DB;
 import com.mongodb.DBCursor;

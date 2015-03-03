@@ -1,4 +1,4 @@
-package com.konka.dhtsearch.db.mongodb.orm1;
+package com.konka.dhtsearch.db.mongodb.orm;
 
 import java.util.List;
 

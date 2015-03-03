@@ -2,7 +2,7 @@ package com.konka.dhtsearch.db.mongodb;
 
 import java.net.UnknownHostException;
 
-import com.konka.dhtsearch.db.mongodb.orm1.MongodbUtil;
+import com.konka.dhtsearch.db.mongodb.orm.MongodbUtil;
 import com.mongodb.DB;
 import com.mongodb.Mongo;
 

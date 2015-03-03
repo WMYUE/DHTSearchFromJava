@@ -38,7 +38,6 @@ import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingResponse;
 import com.konka.dhtsearch.db.models.DhtInfo_MongoDbPojo;
 import com.konka.dhtsearch.db.mongodb.MongodbFactroy;
-import com.konka.dhtsearch.db.mysql.exception.DhtException;
 import com.konka.dhtsearch.util.Util;
 
 /**
