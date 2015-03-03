@@ -37,7 +37,7 @@ import com.konka.dhtsearch.bittorrentkad.krpc.get_peers.GetPeersResponse;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingRequest;
 import com.konka.dhtsearch.bittorrentkad.krpc.ping.PingResponse;
 import com.konka.dhtsearch.db.models.DhtInfo_MongoDbPojo;
-import com.konka.dhtsearch.db.mongodb.MongodbFactroy;
+import com.konka.dhtsearch.db.mongodb.MongodbUtilProvider;
 import com.konka.dhtsearch.util.Util;
 
 /**
@@ -117,7 +117,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 //			DhtInfo dhtInfo = new DhtInfo();
 //			dhtInfo.setInfo_hash(info_hash);
 //			dhtInfo.setPeerIp(src.getSocketAddress().toString());
-			MongodbFactroy.getMongodbUtil().save(dhtInfo_MongoDbPojo);
+			MongodbUtilProvider.getMongodbUtil().save(dhtInfo_MongoDbPojo);
 //			DaoFactory.getDhtInfoDao().insert(dhtInfo);
 		} catch (Exception e) {
 			e.printStackTrace();

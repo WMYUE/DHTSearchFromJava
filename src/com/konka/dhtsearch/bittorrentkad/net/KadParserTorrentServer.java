@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.konka.dhtsearch.db.models.DhtInfo_MongoDbPojo;
-import com.konka.dhtsearch.db.mongodb.MongodbFactroy;
+import com.konka.dhtsearch.db.mongodb.MongodbUtilProvider;
 import com.konka.dhtsearch.db.mongodb.orm.MongodbUtil;
 import com.konka.dhtsearch.db.mysql.DhtInfoStateCode;
 import com.konka.dhtsearch.db.mysql.exception.DhtException;
@@ -28,7 +28,7 @@ public class KadParserTorrentServer implements Runnable {
 	private final AtomicBoolean isActive = new AtomicBoolean(false);
 	private final Thread startThread;
 	private final HttpUrlUtils httpUrlUtils = new HttpUrlUtils();
-	private final MongodbUtil dhtInfoDao = MongodbFactroy.getMongodbUtil();
+	private final MongodbUtil dhtInfoDao = MongodbUtilProvider.getMongodbUtil();
 	private final String baseurl = "http://bt.box.n0808.com/%1$s/%2$s/%3$s.torrent";
 
 	public KadParserTorrentServer() {

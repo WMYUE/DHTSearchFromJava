@@ -6,7 +6,7 @@ import com.konka.dhtsearch.db.mongodb.orm.MongodbUtil;
 import com.mongodb.DB;
 import com.mongodb.Mongo;
 
-public class MongodbFactroy {
+public class MongodbUtilProvider {
 	public static MongodbUtil mongodbUtil;
 
 	public static MongodbUtil getMongodbUtil() {
