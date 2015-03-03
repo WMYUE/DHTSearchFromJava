@@ -5,7 +5,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
@@ -22,6 +22,8 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.Version;
+import org.wltea.analyzer.lucene.IKAnalyzer;
 
 import com.konka.dhtsearch.db.models.DhtInfo_MongoDbPojo;
 import com.konka.dhtsearch.db.mongodb.orm.MongodbUtil;
@@ -37,7 +39,7 @@ public class LuceneUtils {
 	/**
 	 * lucene保存的路径
 	 */
-	public static final String LUCENE_FILEPATH = "lucene.index";
+	public static final String LUCENE_FILEPATH = "D://lucene.index";
 	// 分词的字段
 	public static final String KEYWORD = "Keyword";
 	// -------------不分词的字段
@@ -55,22 +57,25 @@ public class LuceneUtils {
 		MongodbUtil mongodbUtil = getMongodbUtil();
 		DBCursor cursor = mongodbUtil.findDBCursor(DhtInfo_MongoDbPojo.class);
 
-		Directory index = FSDirectory.open(new File(LUCENE_FILEPATH).toPath());
-		StandardAnalyzer analyzer = new StandardAnalyzer();// 这里要换成ik
-		IndexWriterConfig config = new IndexWriterConfig(analyzer);
-		IndexWriter indexWriter = new IndexWriter(index, config);
+		Directory index = FSDirectory.open(new File(LUCENE_FILEPATH));
 
+		Analyzer analyzer = new IKAnalyzer();// 这里要换成ik
+		// StandardAnalyzer analyzer = new StandardAnalyzer();// 这里要换成ik
+		IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_9, analyzer);
+		IndexWriter indexWriter = new IndexWriter(index, config);
+		indexWriter.deleteAll();
 		System.out.println(cursor.count());
 		while (cursor.hasNext()) {
 			Document doc = new Document();
 
 			DBObject object = cursor.next();
+			System.out.println(object);
 			DhtInfo_MongoDbPojo dhtInfo_MongoDbPojo = mongodbUtil.loadOne(DhtInfo_MongoDbPojo.class, object);
 			TorrentInfo torrentInfo = dhtInfo_MongoDbPojo.getTorrentInfo();
 			if (torrentInfo == null || FilterUtil.checkVideoType(torrentInfo)) {// 检测文件类型
 				continue;
 			}
-			
+
 			doc.add(new StringField(INFO_HASH_FIELD, dhtInfo_MongoDbPojo.getInfo_hash(), Field.Store.YES));// StringField不参加分词
 			doc.add(new StringField(TORRENTINFO_FIELD, object.get(TORRENTINFO_FIELD).toString(), Field.Store.YES));// StringField不参加分词
 			doc.add(new TextField(KEYWORD, torrentInfo.getNeedSegmentationString(), Field.Store.YES));// 多文件的文件名
@@ -99,15 +104,20 @@ public class LuceneUtils {
 	 * @throws Exception
 	 */
 	public static List<DhtInfo_MongoDbPojo> search(String searchString, int page) throws Exception {
-		Directory index = FSDirectory.open(new File(LUCENE_FILEPATH).toPath());
+		Directory index = FSDirectory.open(new File(LUCENE_FILEPATH));
 
 		BooleanClause.Occur[] clauses = { BooleanClause.Occur.SHOULD };
 		String[] searchFields = { KEYWORD };
-		Query query = MultiFieldQueryParser.parse(searchString, searchFields, clauses, new StandardAnalyzer());
+		String[] searchFields11 = { searchString };
+		// new QueryParser
+		// QueryParser qp = new QueryParser(Version.LUCENE_40, fieldName, analyzer);
+		// Query qp = new QueryParser(Version.LUCENE_34, fieldName, analyzer);
+		Query query = MultiFieldQueryParser.parse(Version.LUCENE_4_9,searchFields11, searchFields, clauses, new IKAnalyzer());
+		// IKAnalyzer.
 		IndexReader reader = DirectoryReader.open(index);
 		IndexSearcher searcher = new IndexSearcher(reader);
 		// TopScoreDocCollector.
-		TopScoreDocCollector collector = TopScoreDocCollector.create(HITSPERPAGE_COUNT);
+		TopScoreDocCollector collector = TopScoreDocCollector.create(HITSPERPAGE_COUNT,true);
 		searcher.search(query, collector);
 
 		ScoreDoc[] hits = collector.topDocs((page - 1) * PAGE_COUNT, PAGE_COUNT).scoreDocs; // 进行分页过滤
@@ -118,7 +128,7 @@ public class LuceneUtils {
 		for (int i = 0; i < hits.length; ++i) {
 			Document document = searcher.doc(hits[i].doc);
 			DBObject object = (DBObject) JSON.parse(document.get(TORRENTINFO_FIELD));
-			// System.out.println(object);
+			 System.out.println(object);
 			if (object == null)
 				continue;
 
@@ -138,7 +148,7 @@ public class LuceneUtils {
 
 	public static void main(String[] args) throws Exception {
 		args = new String[] { "index", "com_konka_dhtsearch_db_models_DhtInfo_MongoDbPojo", "fileName" };
-		args = new String[] { "偷拍" };
+		 args = new String[] { "Femme" };
 		if (args[0].equals("index")) {
 			createIndex();
 		} else {
