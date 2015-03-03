@@ -1,4 +1,4 @@
-package com.konka.dhtsearch.db.mongodb.orm;
+package com.konka.dhtsearch.db.mongodb;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -11,8 +11,8 @@ import java.util.Date;
 import java.util.List;
 
 import com.konka.dhtsearch.db.DbUtil;
+import com.konka.dhtsearch.db.models.DhtInfoStateCode;
 import com.konka.dhtsearch.db.models.DhtInfo_MongoDbPojo;
-import com.konka.dhtsearch.db.mysql.DhtInfoStateCode;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;

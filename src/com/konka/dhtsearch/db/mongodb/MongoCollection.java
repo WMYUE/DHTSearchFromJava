@@ -1,4 +1,4 @@
-package com.konka.dhtsearch.db.mongodb.orm;
+package com.konka.dhtsearch.db.mongodb;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 

@@ -26,7 +26,7 @@ import org.apache.lucene.util.Version;
 import org.wltea.analyzer.lucene.IKAnalyzer;
 
 import com.konka.dhtsearch.db.models.DhtInfo_MongoDbPojo;
-import com.konka.dhtsearch.db.mongodb.orm.MongodbUtil;
+import com.konka.dhtsearch.db.mongodb.MongodbUtil;
 import com.konka.dhtsearch.parser.TorrentInfo;
 import com.konka.dhtsearch.util.FilterUtil;
 import com.mongodb.DB;
@@ -112,12 +112,12 @@ public class LuceneUtils {
 		// new QueryParser
 		// QueryParser qp = new QueryParser(Version.LUCENE_40, fieldName, analyzer);
 		// Query qp = new QueryParser(Version.LUCENE_34, fieldName, analyzer);
-		Query query = MultiFieldQueryParser.parse(Version.LUCENE_4_9,searchFields11, searchFields, clauses, new IKAnalyzer());
+		Query query = MultiFieldQueryParser.parse(Version.LUCENE_4_9, searchFields11, searchFields, clauses, new IKAnalyzer());
 		// IKAnalyzer.
 		IndexReader reader = DirectoryReader.open(index);
 		IndexSearcher searcher = new IndexSearcher(reader);
 		// TopScoreDocCollector.
-		TopScoreDocCollector collector = TopScoreDocCollector.create(HITSPERPAGE_COUNT,true);
+		TopScoreDocCollector collector = TopScoreDocCollector.create(HITSPERPAGE_COUNT, true);
 		searcher.search(query, collector);
 
 		ScoreDoc[] hits = collector.topDocs((page - 1) * PAGE_COUNT, PAGE_COUNT).scoreDocs; // 进行分页过滤
@@ -128,7 +128,7 @@ public class LuceneUtils {
 		for (int i = 0; i < hits.length; ++i) {
 			Document document = searcher.doc(hits[i].doc);
 			DBObject object = (DBObject) JSON.parse(document.get(TORRENTINFO_FIELD));
-			 System.out.println(object);
+			System.out.println(object);
 			if (object == null)
 				continue;
 
@@ -148,7 +148,7 @@ public class LuceneUtils {
 
 	public static void main(String[] args) throws Exception {
 		args = new String[] { "index", "com_konka_dhtsearch_db_models_DhtInfo_MongoDbPojo", "fileName" };
-		 args = new String[] { "Femme" };
+		args = new String[] { "Femme" };
 		if (args[0].equals("index")) {
 			createIndex();
 		} else {

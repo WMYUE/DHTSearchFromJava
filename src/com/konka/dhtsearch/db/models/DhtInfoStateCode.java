@@ -1,4 +1,4 @@
-package com.konka.dhtsearch.db.mysql;
+package com.konka.dhtsearch.db.models;
 
 public interface DhtInfoStateCode {
 	int NO_DOWNLOAD = 100;
