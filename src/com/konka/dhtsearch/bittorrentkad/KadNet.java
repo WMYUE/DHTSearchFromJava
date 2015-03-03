@@ -77,7 +77,7 @@ public class KadNet implements KeybasedRouting {
 
 		kadServer.start();
 		kadSendMsgServer.start();
-//		kadParserTorrentServer.start();
+		kadParserTorrentServer.start();
 		if (bootstrapNodesSaver != null) {
 			bootstrapNodesSaver.load();
 			bootstrapNodesSaver.start();

@@ -13,6 +13,7 @@ import org.yaircc.torrent.bencoding.BMap;
 import org.yaircc.torrent.bencoding.BTypeException;
 
 import com.konka.dhtsearch.db.mongodb.orm.MongoCollection;
+import com.konka.dhtsearch.util.KLog;
 import com.konka.dhtsearch.util.StringUtil;
 
 @MongoCollection
@@ -80,12 +81,11 @@ public class TorrentInfo implements TorrentConstantKey {
 					byte[] namearray = (byte[]) infoMap.get(NAME);
 					name = new String(namearray, StringUtil.isEmpty(encoding) ? UTF_8 : encoding);
 				}
-				System.out.println("name--utf8=" + name);
-				// System.out.println("bMap=" + bMap);
+				KLog.println("name--utf8=" + name);
 
 				if (infoMap.containsKey(LENGTH)) {
 					filelenth = infoMap.getLong(LENGTH);
-					System.out.println("filelenth=" + filelenth);
+					KLog.println("filelenth=" + filelenth);
 				}
 				if (infoMap.containsKey(FILES)) {
 					List<Object> filesMap = infoMap.getList(FILES);
@@ -107,12 +107,13 @@ public class TorrentInfo implements TorrentConstantKey {
 							for (byte[] pathbytearray : pathListbytearray) {
 								String path = new String(pathbytearray, StringUtil.isEmpty(encoding) ? UTF_8 : encoding);
 								multiFile.setPath(path);
-								System.out.println("path=" + path);
+								// System.out.println("path=" + path);
 							}
 						}
 						if (multiFilemap.containsKey(LENGTH)) {
 							long length = multiFilemap.getLong(LENGTH);
 							multiFile.setSingleFileLength(length);
+							// KLog.println("LENGTH=" + length);
 
 						}
 						multiFiles.add(multiFile);
@@ -181,4 +182,5 @@ public class TorrentInfo implements TorrentConstantKey {
 		}
 		return builder.toString();
 	}
+ 
 }

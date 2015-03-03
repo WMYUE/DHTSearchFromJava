@@ -9,7 +9,7 @@ import com.konka.dhtsearch.parser.TorrentInfo;
  * 存储到数据库中的对象
  * @author 耳东 (cgp@0731life.com)
  */
-@MongoCollection
+@MongoCollection(value="dht")
 public class DhtInfo_MongoDbPojo {
 	private String info_hash;
 	private String peerIp;

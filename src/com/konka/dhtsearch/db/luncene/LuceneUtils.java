@@ -26,6 +26,7 @@ import org.apache.lucene.store.FSDirectory;
 import com.konka.dhtsearch.db.models.DhtInfo_MongoDbPojo;
 import com.konka.dhtsearch.db.mongodb.orm.MongodbUtil;
 import com.konka.dhtsearch.parser.TorrentInfo;
+import com.konka.dhtsearch.util.FilterUtil;
 import com.mongodb.DB;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -65,15 +66,14 @@ public class LuceneUtils {
 
 			DBObject object = cursor.next();
 			DhtInfo_MongoDbPojo dhtInfo_MongoDbPojo = mongodbUtil.loadOne(DhtInfo_MongoDbPojo.class, object);
-
-			doc.add(new StringField(INFO_HASH_FIELD, dhtInfo_MongoDbPojo.getInfo_hash(), Field.Store.YES));// StringField不参加分词
-			doc.add(new StringField(TORRENTINFO_FIELD, object.get(TORRENTINFO_FIELD).toString(), Field.Store.YES));// StringField不参加分词
 			TorrentInfo torrentInfo = dhtInfo_MongoDbPojo.getTorrentInfo();
-			if (torrentInfo == null) {
+			if (torrentInfo == null || FilterUtil.checkVideoType(torrentInfo)) {// 检测文件类型
 				continue;
 			}
-			doc.add(new TextField(KEYWORD, torrentInfo.getNeedSegmentationString(),//
-					Field.Store.YES));// 多文件的文件名
+			
+			doc.add(new StringField(INFO_HASH_FIELD, dhtInfo_MongoDbPojo.getInfo_hash(), Field.Store.YES));// StringField不参加分词
+			doc.add(new StringField(TORRENTINFO_FIELD, object.get(TORRENTINFO_FIELD).toString(), Field.Store.YES));// StringField不参加分词
+			doc.add(new TextField(KEYWORD, torrentInfo.getNeedSegmentationString(), Field.Store.YES));// 多文件的文件名
 
 			indexWriter.addDocument(doc);
 			System.out.println("ok");
@@ -118,7 +118,7 @@ public class LuceneUtils {
 		for (int i = 0; i < hits.length; ++i) {
 			Document document = searcher.doc(hits[i].doc);
 			DBObject object = (DBObject) JSON.parse(document.get(TORRENTINFO_FIELD));
-			System.out.println(object);
+			// System.out.println(object);
 			if (object == null)
 				continue;
 
@@ -128,7 +128,7 @@ public class LuceneUtils {
 			dhtInfo_MongoDbPojo.setTorrentInfo(torrentInfo);
 
 			dhtInfo_MongoDbPojos.add(dhtInfo_MongoDbPojo);
-			System.out.println(object);
+			// System.out.println(object);
 
 		}
 		reader.close();

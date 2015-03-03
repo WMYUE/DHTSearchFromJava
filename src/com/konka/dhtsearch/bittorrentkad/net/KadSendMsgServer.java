@@ -10,6 +10,7 @@ import com.konka.dhtsearch.bittorrentkad.KadNet;
 import com.konka.dhtsearch.bittorrentkad.KadNode;
 import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.krpc.find_node.FindNodeRequest;
+import com.konka.dhtsearch.util.ThreadUtil;
 
 /**
  * 发送消息查找node
@@ -50,9 +51,9 @@ public class KadSendMsgServer implements Runnable {
 		while (this.isActive.get()) {
 			try {
 				displayAvailableMemory();
-				Thread.sleep(1000);
+				ThreadUtil.sleep(1000);
 				List<KadNode> nodes = kadNet.getAllNodes();
-//				 System.out.println(nodes.size());
+				 System.out.println(nodes.size());
 				for (int i = 0; i < nodes.size(); i++) {
 					KadNode node = nodes.get(i);
 					send(node.getNode());

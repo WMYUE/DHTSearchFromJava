@@ -14,14 +14,12 @@ import com.konka.dhtsearch.parser.TorrentInfo;
 import com.konka.dhtsearch.util.ArrayUtils;
 import com.konka.dhtsearch.util.HttpUrlUtils;
 import com.konka.dhtsearch.util.Request;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import com.konka.dhtsearch.util.ThreadUtil;
 
 /**
  * 发送消息查找node
  * 
  * @author 耳东 (cgp@0731life.com)
- *
  */
 public class KadParserTorrentServer implements Runnable {
 
@@ -57,11 +55,13 @@ public class KadParserTorrentServer implements Runnable {
 					parseDhtInfo(dhtInfo);
 				}
 			}
+			ThreadUtil.sleep(5 * 1000);
 
 		}
 	}
 
 	private void parseDhtInfo(DhtInfo_MongoDbPojo dhtInfo) {
+		System.out.println("parseDhtInfo");
 		String info_hash = dhtInfo.getInfo_hash().trim().toUpperCase();
 		String url = String.format(baseurl, info_hash.substring(0, 2), info_hash.substring(info_hash.length() - 2, info_hash.length()), info_hash);
 		InputStream inputStream = null;
@@ -70,27 +70,18 @@ public class KadParserTorrentServer implements Runnable {
 			inputStream = httpUrlUtils.performRequest(request);
 			try {
 				TorrentInfo torrentInfo = new TorrentInfo(inputStream);
-				// dhtInfo.setCreateTime(torrentInfo.getCreattime());
-
-				// dhtInfo.setFileName(torrentInfo.getName());
-				// dhtInfo.setFileSize(torrentInfo.getFilelenth());
-
-				// if (!torrentInfo.isSingerFile()) {
-				// dhtInfo.setFileList(torrentInfo.getMultiFiles());
-				// }
-				// mDhtInfo.setTorrentFilePath(torrentFilePath);//种子保存地址
 				dhtInfo.setAnalysised(DhtInfoStateCode.DOWNLOADSUCCESS_AND_PARSING_SUCCESS);
 				dhtInfo.setTorrentInfo(torrentInfo);
 
-				update(dhtInfo);
-
+				dhtInfoDao.update(dhtInfo);
+				System.out.println("解析成功200");
 				// DaoFactory.getDhtInfoDao().update(dhtInfo);
 			} catch (Exception e) {// 解析出错
 				try {
 					dhtInfo.setAnalysised(DhtInfoStateCode.DOWNLOAD_SUCCESS_BUT_PARSING_FAILED);
 
-					update(dhtInfo);
-
+					dhtInfoDao.update(dhtInfo);
+					System.out.println("解析出错400");
 					// DaoFactory.getDhtInfoDao().update(dhtInfo);
 				} catch (DhtException e1) {
 					e1.printStackTrace();
@@ -99,7 +90,8 @@ public class KadParserTorrentServer implements Runnable {
 		} catch (Exception e2) {// 下载出错
 			dhtInfo.setAnalysised(DhtInfoStateCode.DOWNLOAD_FAILED);
 			try {
-				update(dhtInfo);
+				dhtInfoDao.update(dhtInfo);
+				System.out.println("下载出错1");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -112,12 +104,6 @@ public class KadParserTorrentServer implements Runnable {
 				}
 			}
 		}
-	}
-
-	private void update(DhtInfo_MongoDbPojo dhtInfo) throws Exception {
-		DBObject q = new BasicDBObject("info_hash", dhtInfo.getInfo_hash());
-		DBObject v = dhtInfoDao.objectToDBObject(dhtInfo);
-		dhtInfoDao.update(dhtInfo.getClass(), q, v, false);
 	}
 
 	/**

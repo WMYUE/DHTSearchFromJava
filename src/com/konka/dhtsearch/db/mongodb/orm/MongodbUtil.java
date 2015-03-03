@@ -12,6 +12,7 @@ import java.util.List;
 
 import com.konka.dhtsearch.db.DbUtil;
 import com.konka.dhtsearch.db.models.DhtInfo_MongoDbPojo;
+import com.konka.dhtsearch.db.mysql.DhtInfoStateCode;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -27,6 +28,9 @@ public class MongodbUtil {
 
 	public MongodbUtil(DB db) {
 		this.db = db;
+
+		// db.c
+		// db.test.ensureIndex({"userid":1},{"unique":true})
 	}
 
 	/**
@@ -34,18 +38,18 @@ public class MongodbUtil {
 	 * 
 	 * @param object
 	 */
-	public void save(Object object) throws  Exception {
+	public void save(Object object) throws Exception {
 		DBCollection collection = getDBCollection(object.getClass());
 		DBObject dbobject = objectToDBObject(object);
 		collection.insert(dbobject);
-		DBCursor dbCursor = collection.find();
+		// DBCursor dbCursor = collection.find();
 		// System.out.println(dbobject);
-		for (; dbCursor.hasNext();) {
-			DBObject dbObject2 = dbCursor.next();
-			// if (dbObject2.containsField("lists")) {
-			System.out.println("是集合吗=" + dbObject2);
-			// }
-		}
+		// for (; dbCursor.hasNext();) {
+		// DBObject dbObject2 = dbCursor.next();
+		// if (dbObject2.containsField("lists")) {
+		// System.out.println("是集合吗=" + dbObject2);
+		// }
+		// }
 	}
 
 	/**
@@ -54,7 +58,7 @@ public class MongodbUtil {
 	 * @param clazz
 	 * @return
 	 */
-	private DBCollection getDBCollection(Class<?> clazz) {
+	public DBCollection getDBCollection(Class<?> clazz) {
 		DBCollection collection = db.getCollection(getDBCollectionName(clazz));
 
 		return collection;
@@ -183,7 +187,12 @@ public class MongodbUtil {
 			DBObject updateSetValue = new BasicDBObject("$set", v);
 			collection.update(q, updateSetValue);
 		}
+	}
 
+	public void update(DhtInfo_MongoDbPojo dhtInfo) throws Exception {
+		DBObject q = new BasicDBObject("info_hash", dhtInfo.getInfo_hash());
+		DBObject v = objectToDBObject(dhtInfo);
+		update(dhtInfo.getClass(), q, v, false);
 	}
 
 	// ----- load -----
@@ -220,11 +229,13 @@ public class MongodbUtil {
 	public <T> List<T> find(Class<T> clazz, BasicDBObject where, int limit) throws Exception {
 		List<T> objList = new ArrayList<T>();
 		DBCursor curr = findDBCursor(clazz, where, limit);
+		System.out.println(curr.count() + "：项");
 		while (curr.hasNext()) {
 			DBObject dbo = curr.next();
 			T o = loadOne(clazz, dbo);
 			objList.add(o);
 		}
+		System.out.println(objList.size());
 		return objList;
 	}
 
@@ -290,12 +301,10 @@ public class MongodbUtil {
 		return object;
 	}
 
-	public List<DhtInfo_MongoDbPojo> getNoAnalyticDhtInfos(int i) throws Exception {
-		BasicDBObject where = new BasicDBObject();
-		// hashMap.put("analysised", "0");
-		where.put("analysised", 200);
-		find(DhtInfo_MongoDbPojo.class, where, i);
-		return null;
+	public List<DhtInfo_MongoDbPojo> getNoAnalyticDhtInfos(int limit) throws Exception {
+		BasicDBObject where = new BasicDBObject("analysised", DhtInfoStateCode.NO_DOWNLOAD);
+
+		return find(DhtInfo_MongoDbPojo.class, where, limit);
 	}
 
 }
