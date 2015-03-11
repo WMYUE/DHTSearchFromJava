@@ -23,7 +23,8 @@ public class TransactionJdbcImpl implements Transaction {
         return TransactionJdbcImpl.instance;
     }
     
-    public Connection getConnection() throws DhtException {
+    @Override
+	public Connection getConnection() throws DhtException {
         try {
             if(this.connection == null || this.connection.isClosed()) {
                 this.connection = ConnectionProvider.getInstance().getConnection();

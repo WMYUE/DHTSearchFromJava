@@ -1,6 +1,5 @@
 package com.konka.dhtsearch.bittorrentkad.bucket;
 
-import java.util.Collection;
 import java.util.List;
 
 import com.konka.dhtsearch.Key;

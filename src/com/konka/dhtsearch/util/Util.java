@@ -7,9 +7,12 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -29,27 +32,29 @@ public class Util {
 	public static String sha(String inputText) {
 		return encrypt(inputText, "sha-1");
 	}
+
 	/**
 	 * 获取分词结果
+	 * 
 	 * @param 输入的字符串
 	 * @param 分词器
 	 * @return 分词结果
 	 */
-	public static List<String> getWords(String str,Analyzer analyzer){
+	public static List<String> getWords(String str, Analyzer analyzer) {
 		List<String> result = new ArrayList<String>();
 		TokenStream stream = null;
 		try {
 			stream = analyzer.tokenStream("content", new StringReader(str));
 			CharTermAttribute attr = stream.addAttribute(CharTermAttribute.class);
 			stream.reset();
-			while(stream.incrementToken()){
+			while (stream.incrementToken()) {
 				System.out.println(attr.toString());
 				result.add(attr.toString());
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-		}finally{
-			if(stream != null){
+		} finally {
+			if (stream != null) {
 				try {
 					stream.close();
 				} catch (IOException e) {
@@ -59,6 +64,7 @@ public class Util {
 		}
 		return result;
 	}
+
 	public static String rundom_id(int length) {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < length; i++) {
@@ -90,6 +96,33 @@ public class Util {
 			System.arraycopy(port, 0, nodesbyte, 0 + i * 26 + id.length + address.length, port.length);
 		}
 		return nodesbyte;
+	}
+
+	public static String getFormatSize(long size) {
+		DecimalFormat formater = new DecimalFormat("####.0");
+		if (size < 1024) {
+			return size + "byte";
+		} else if (size < 1024l * 1024l) {
+			float kbsize = size / 1024f;
+			return formater.format(kbsize) + "KB";
+		} else if (size < 1024l * 1024l * 1024l) {
+			float mbsize = size / 1024f / 1024f;
+			return formater.format(mbsize) + "MB";
+		} else if (size < (1024l * 1024l * 1024l * 1024l)) {
+			float gbsize = size / 1024f / 1024f / 1024f;
+			return formater.format(gbsize) + "GB";
+		} else if (size < 1024 * 1024 * 1024 * 1024 * 1024) {
+			float gbsize = size / 1024f / 1024f / 1024f / 1024f;
+			return formater.format(gbsize) + "TB";
+		} else {
+			return "未知";
+		}
+	}
+
+	public static String getFormatCreatTime(long time) {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.SIMPLIFIED_CHINESE);
+		String ctime = formatter.format(time);
+		return ctime;
 	}
 
 	public static List<Node> passNodes(byte[] nodesbyteArray) throws UnknownHostException {
@@ -209,7 +242,7 @@ public class Util {
 	 */
 	public static int bytesToInt2(byte[] src, int offset) {
 		int value;
-		value = (int) (((src[offset] & 0xFF) << 24) //
+		value = (((src[offset] & 0xFF) << 24) //
 				| ((src[offset + 1] & 0xFF) << 16) //
 				| ((src[offset + 2] & 0xFF) << 8) //
 		| (src[offset + 3] & 0xFF));

@@ -4,10 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import org.yaircc.torrent.bencoding.BDecodingException;
 import org.yaircc.torrent.bencoding.BEncodedInputStream;
@@ -17,15 +15,26 @@ import org.yaircc.torrent.bencoding.BTypeException;
 import com.konka.dhtsearch.db.mongodb.MongoCollection;
 import com.konka.dhtsearch.util.KLog;
 import com.konka.dhtsearch.util.StringUtil;
+import com.konka.dhtsearch.util.Util;
 
 @MongoCollection
 public class TorrentInfo implements TorrentConstantKey {
 	private String name;// 文件名称
-	private long filelenth;// 文件大小 单位 byte
+	private long filelenth;// 文件大小 单位 byte(总文件大小)
 	private long creattime;// 创建时间 creation date
 	private List<MultiFile> multiFiles;
 	private boolean singerFile = true;// 是否是单文件 如果是多文件，文件放假multiFiles中
 
+	
+	public String getFormatSize(){
+		return Util.getFormatSize(filelenth);
+	}
+//	public String getHighlighterName(){
+//		return getName().replace("", newChar)
+//	}
+	public String getFormatCreatTime(){
+		return Util.getFormatCreatTime(creattime*1000);
+	}
 	public String getName() {
 		return name;
 	}
@@ -64,7 +73,7 @@ public class TorrentInfo implements TorrentConstantKey {
 	@SuppressWarnings("unchecked")
 	private void parser(BEncodedInputStream bEncodedInputStream) throws IOException, BDecodingException, BTypeException {
 		BMap bMap = (BMap) bEncodedInputStream.readElement();
-		System.out.println(bMap);
+		KLog.println(bMap);
 		String encoding = null;// 编码方式 utf-8
 		if (bMap.containsKey(ENCODING)) {
 			encoding = bMap.getString(ENCODING);
@@ -72,7 +81,7 @@ public class TorrentInfo implements TorrentConstantKey {
 		}
 		if (bMap.containsKey(CREATION_DATE)) {
 			creattime = bMap.getLong(CREATION_DATE);
-			System.out.println("creattime=====" + getFormatCreatTime(creattime*1000));
+			System.out.println("creattime=====" + creattime);
 		}
 		if (bMap.containsKey(INFO)) {
 			BMap infoMap = bMap.getMap(INFO);
@@ -116,8 +125,7 @@ public class TorrentInfo implements TorrentConstantKey {
 						if (multiFilemap.containsKey(LENGTH)) {
 							long length = multiFilemap.getLong(LENGTH);
 							multiFile.setSingleFileLength(length);
-							// KLog.println("LENGTH=" + length);
-
+							filelenth += length;
 						}
 						multiFiles.add(multiFile);
 					}
@@ -128,11 +136,7 @@ public class TorrentInfo implements TorrentConstantKey {
 		}
 
 	}
-	public static String getFormatCreatTime(long time) {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.SIMPLIFIED_CHINESE);
-		String ctime = formatter.format(time);
-		return ctime;
-	}
+
 	/**
 	 * 反向构造时候用到
 	 */
@@ -189,5 +193,5 @@ public class TorrentInfo implements TorrentConstantKey {
 		}
 		return builder.toString();
 	}
- 
+
 }

@@ -1,6 +1,7 @@
 package com.konka.dhtsearch.parser;
 
 import com.konka.dhtsearch.db.mongodb.MongoCollection;
+import com.konka.dhtsearch.util.Util;
 
 /**
  * MultiFile类，用于定义一个多文件的结构，根据BT协议规范，多文件结果里每一个文件的结构是：
@@ -28,5 +29,8 @@ public class MultiFile {
 	}
 	public void setPath(String path) {
 		this.path = path;
+	}
+	public String getFormatSize(){
+		return Util.getFormatSize(singleFileLength);
 	}
 }

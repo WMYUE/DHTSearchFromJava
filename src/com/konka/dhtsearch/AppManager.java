@@ -16,7 +16,7 @@ public class AppManager {
 
 	public static KeyFactory getKeyFactory() {
 		return keyFactory;
-	}   
+	}
 
 	private AppManager() {
 		super();
@@ -26,7 +26,7 @@ public class AppManager {
 			e.printStackTrace();
 		}
 	}
-//
+
 	public static void init() {
 		appManager = new AppManager();
 	}
