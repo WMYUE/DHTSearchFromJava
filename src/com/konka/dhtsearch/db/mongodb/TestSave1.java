@@ -2,8 +2,6 @@ package com.konka.dhtsearch.db.mongodb;
 
 import com.konka.dhtsearch.db.models.DhtInfo_MongoDbPojo;
 import com.konka.dhtsearch.parser.TorrentInfo;
-import com.mongodb.DB;
-import com.mongodb.Mongo;
 
 public class TestSave1 {
 	public static void main(String args[]) throws Exception {
