@@ -26,7 +26,7 @@ public class AppManager {
 			e.printStackTrace();
 		}
 	}
-
+//
 	public static void init() {
 		appManager = new AppManager();
 	}
