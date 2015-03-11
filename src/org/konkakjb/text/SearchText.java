@@ -11,6 +11,7 @@ import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.KadNet;
 import com.konka.dhtsearch.db.mysql.exception.DhtException;
+import com.konka.dhtsearch.parser.TorrentInfo;
 
 public class SearchText {
 	private static final InetSocketAddress[] BOOTSTRAP_NODES = { //
@@ -20,16 +21,18 @@ public class SearchText {
 
 	public static void main(String[] args) throws DhtException {
 		int size = 3;
-		try {
-			for (int i = 0; i < size; i++) {
-				AppManager.init();// 1---
-				Key key = AppManager.getKeyFactory().generate();
-				Node localNode = new Node(key).setInetAddress(InetAddress.getByName("0.0.0.0")).setPoint(20200 + i);// 这里注意InetAddress.getLocalHost();为空
-				new KadNet(null, localNode).join(BOOTSTRAP_NODES).create();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//		try {
+//			for (int i = 0; i < size; i++) {
+//				AppManager.init();// 1---
+//				Key key = AppManager.getKeyFactory().generate();
+//				Node localNode = new Node(key).setInetAddress(InetAddress.getByName("0.0.0.0")).setPoint(20200 + i);// 这里注意InetAddress.getLocalHost();为空
+//				new KadNet(null, localNode).join(BOOTSTRAP_NODES).create();
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		Textu
+		
 		// try {
 		// text();
 		// } catch (NoSuchFieldException e) {
@@ -46,12 +49,12 @@ public class SearchText {
 		// dao.insert(dhtinfo);
 		// }
 
-		// try {
-		// TorrentInfo torrentInfo = new TorrentInfo("D:/a3.torrent");
-		// } catch (Exception e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
+		 try {
+		 TorrentInfo torrentInfo = new TorrentInfo("D:/a3.torrent");
+		 } catch (Exception e) {
+		 // TODO Auto-generated catch block
+		 e.printStackTrace();
+		 }
 	}
 
 	private List<String> list = new LinkedList<String>();

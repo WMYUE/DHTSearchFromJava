@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.yaircc.torrent.bencoding.BDecodingException;
 import org.yaircc.torrent.bencoding.BEncodedInputStream;
@@ -62,6 +64,7 @@ public class TorrentInfo implements TorrentConstantKey {
 	@SuppressWarnings("unchecked")
 	private void parser(BEncodedInputStream bEncodedInputStream) throws IOException, BDecodingException, BTypeException {
 		BMap bMap = (BMap) bEncodedInputStream.readElement();
+		System.out.println(bMap);
 		String encoding = null;// 编码方式 utf-8
 		if (bMap.containsKey(ENCODING)) {
 			encoding = bMap.getString(ENCODING);
@@ -69,7 +72,7 @@ public class TorrentInfo implements TorrentConstantKey {
 		}
 		if (bMap.containsKey(CREATION_DATE)) {
 			creattime = bMap.getLong(CREATION_DATE);
-			System.out.println("creattime=====" + creattime);
+			System.out.println("creattime=====" + getFormatCreatTime(creattime*1000));
 		}
 		if (bMap.containsKey(INFO)) {
 			BMap infoMap = bMap.getMap(INFO);
@@ -125,7 +128,11 @@ public class TorrentInfo implements TorrentConstantKey {
 		}
 
 	}
-
+	public static String getFormatCreatTime(long time) {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.SIMPLIFIED_CHINESE);
+		String ctime = formatter.format(time);
+		return ctime;
+	}
 	/**
 	 * 反向构造时候用到
 	 */
