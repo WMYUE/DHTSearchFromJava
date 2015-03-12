@@ -20,7 +20,7 @@ public class SearchText {
 			new InetSocketAddress("router.utorrent.com", 6881), };
 
 	public static void main(String[] args) throws DhtException {
-		int size = 3;
+		int size = 6;
 		try {
 			for (int i = 0; i < size; i++) {
 				AppManager.init();// 1---

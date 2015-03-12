@@ -32,6 +32,7 @@ import com.konka.dhtsearch.db.mongodb.MongodbUtil;
 import com.konka.dhtsearch.db.mongodb.MongodbUtilProvider;
 import com.konka.dhtsearch.parser.TorrentInfo;
 import com.konka.dhtsearch.util.FilterUtil;
+import com.konka.dhtsearch.util.KLog;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
@@ -51,7 +52,7 @@ public class LuceneUtils {
 	public static final int PAGE_COUNT = 10;// 每页显示的数
 
 	public static final int HITSPERPAGE_COUNT = 20000;// 查询结构总数
-//	private static final String NAME_FIELD = "name";
+	// private static final String NAME_FIELD = "name";
 	static int count = 0;
 
 	// DhtInfo_MongoDbPojo
@@ -66,11 +67,11 @@ public class LuceneUtils {
 		// StandardAnalyzer analyzer = new StandardAnalyzer();// 这里要换成ik
 		IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_9, analyzer);
 		IndexWriter indexWriter = new IndexWriter(index, config);
-		 indexWriter.deleteAll();
+		indexWriter.deleteAll();
 		System.out.println(cursor.count());
 		while (cursor.hasNext()) {
 			Document doc = new Document();
-   
+
 			DBObject object = cursor.next();
 			// System.out.println(object);
 			DhtInfo_MongoDbPojo dhtInfo_MongoDbPojo = mongodbUtil.loadOne(DhtInfo_MongoDbPojo.class, object);
@@ -80,7 +81,7 @@ public class LuceneUtils {
 			}
 			System.out.println(object.get(TORRENTINFO_FIELD).toString());
 			doc.add(new StringField(INFO_HASH_FIELD, dhtInfo_MongoDbPojo.getInfo_hash(), Field.Store.YES));// StringField不参加分词
-//			doc.add(new StoredField(NAME_FIELD, ((BasicDBObject)object.get(TORRENTINFO_FIELD)).getString("name","_").toString()));// StringField不参加分词
+			// doc.add(new StoredField(NAME_FIELD, ((BasicDBObject)object.get(TORRENTINFO_FIELD)).getString("name","_").toString()));// StringField不参加分词
 			doc.add(new StoredField(TORRENTINFO_FIELD, object.get(TORRENTINFO_FIELD).toString()));// StringField不参加分词
 			doc.add(new TextField(KEYWORD, torrentInfo.getNeedSegmentationString(), Field.Store.NO));// 多文件的文件名
 
@@ -153,11 +154,11 @@ public class LuceneUtils {
 		List<DhtInfo_MongoDbPojo> dhtInfo_MongoDbPojos = new ArrayList<DhtInfo_MongoDbPojo>();
 		for (int i = 0; i < hits.length; ++i) {
 			Document document = searcher.doc(hits[i].doc);
-//			System.out.println(document.get(TORRENTINFO_FIELD));
-//			System.out.println(document.get(INFO_HASH_FIELD));
-//			String ss = toHighlighter(query, document, TORRENTINFO_FIELD);
-//			System.out.println(ss);
-//			DBObject object = (DBObject) JSON.parse(ss);
+			// System.out.println(document.get(TORRENTINFO_FIELD));
+			// System.out.println(document.get(INFO_HASH_FIELD));
+			// String ss = toHighlighter(query, document, TORRENTINFO_FIELD);
+			// System.out.println(ss);
+			// DBObject object = (DBObject) JSON.parse(ss);
 			DBObject object = (DBObject) JSON.parse(document.get(TORRENTINFO_FIELD));
 			System.out.println(object);
 			if (object == null)
@@ -167,9 +168,9 @@ public class LuceneUtils {
 			DhtInfo_MongoDbPojo dhtInfo_MongoDbPojo = new DhtInfo_MongoDbPojo();
 
 			dhtInfo_MongoDbPojo.setInfo_hash(document.get(INFO_HASH_FIELD));
-//			System.out.println(document.get(NAME_FIELD));
-//			String name=toHighlighter(query, document, NAME_FIELD);
-//			torrentInfo.setName(name);
+			// System.out.println(document.get(NAME_FIELD));
+			// String name=toHighlighter(query, document, NAME_FIELD);
+			// torrentInfo.setName(name);
 			dhtInfo_MongoDbPojo.setTorrentInfo(torrentInfo);
 
 			dhtInfo_MongoDbPojos.add(dhtInfo_MongoDbPojo);
@@ -180,6 +181,13 @@ public class LuceneUtils {
 		return luceneSearchInfo;
 	}
 
+	/**
+	 * 根据infohash 查找
+	 * 
+	 * @param info_hash
+	 * @return
+	 * @throws Exception
+	 */
 	public static DhtInfo_MongoDbPojo searchByInfoHash(String info_hash) throws Exception {
 		Directory index = FSDirectory.open(new File(LUCENE_FILEPATH));
 
@@ -220,21 +228,62 @@ public class LuceneUtils {
 		return null;
 	}
 
-//	private static String toHighlighter(Query query, Document doc, String field) {
-//		try {
-//			SimpleHTMLFormatter simpleHtmlFormatter = new SimpleHTMLFormatter("_","_");
-////			SimpleHTMLFormatter simpleHtmlFormatter = new SimpleHTMLFormatter("<font color\\=\"red\">", "</font>");
-//			Highlighter highlighter = new Highlighter(simpleHtmlFormatter, new QueryScorer(query));
-////			System.out.println("doc.get(NAME_FIELD)="+doc.get(NAME_FIELD));
-////			TokenStream tokenStream1 = new IKAnalyzer().tokenStream(NAME_FIELD, new StringReader(doc.get(NAME_FIELD)));
-////			String highlighterStr = highlighter.getBestFragment(tokenStream1, doc.get(field));
-////			return highlighterStr == null ? doc.get(field) : highlighterStr;
-//		} catch ( Exception e) {
-//			// TODO Auto-generated catch block
-//			// logger.error(e.getMessage());
-//		}  
-//		return null;
-//	}
+	// private static String toHighlighter(Query query, Document doc, String field) {
+	// try {
+	// SimpleHTMLFormatter simpleHtmlFormatter = new SimpleHTMLFormatter("_","_");
+	// // SimpleHTMLFormatter simpleHtmlFormatter = new SimpleHTMLFormatter("<font color\\=\"red\">", "</font>");
+	// Highlighter highlighter = new Highlighter(simpleHtmlFormatter, new QueryScorer(query));
+	// // System.out.println("doc.get(NAME_FIELD)="+doc.get(NAME_FIELD));
+	// // TokenStream tokenStream1 = new IKAnalyzer().tokenStream(NAME_FIELD, new StringReader(doc.get(NAME_FIELD)));
+	// // String highlighterStr = highlighter.getBestFragment(tokenStream1, doc.get(field));
+	// // return highlighterStr == null ? doc.get(field) : highlighterStr;
+	// } catch ( Exception e) {
+	// // TODO Auto-generated catch block
+	// // logger.error(e.getMessage());
+	// }
+	// return null;
+	// }
+	public static List<LuceneAndroidSearchResult> androidSearch(String searchString, int page) throws Exception {
+		List<LuceneAndroidSearchResult> androidSearchResults = new ArrayList<LuceneAndroidSearchResult>();
+
+		LuceneSearchResult luceneSearchInfo = new LuceneSearchResult();
+		Directory index = FSDirectory.open(new File(LUCENE_FILEPATH));
+		IndexReader reader = DirectoryReader.open(index);
+		IndexSearcher searcher = new IndexSearcher(reader);
+		TopScoreDocCollector collector = TopScoreDocCollector.create(HITSPERPAGE_COUNT, true);
+
+		QueryParser qp = new QueryParser(Version.LUCENE_4_9, KEYWORD, new IKAnalyzer());
+		Query query = qp.createBooleanQuery(KEYWORD, searchString, BooleanClause.Occur.MUST);// 搜索的字段 关键字 String searchString, int page必须要
+
+		searcher.search(query, collector);
+		
+		//
+		
+		luceneSearchInfo.setTotal(collector.getTotalHits());
+
+		ScoreDoc[] hits = collector.topDocs((page - 1) * PAGE_COUNT, PAGE_COUNT).scoreDocs; // 进行分页过滤
+
+		KLog.println("Found " + hits.length + " hits.");// 打印搜到的数量
+
+		for (int i = 0; i < hits.length; ++i) {
+			Document document = searcher.doc(hits[i].doc);
+
+			DBObject object = (DBObject) JSON.parse(document.get(TORRENTINFO_FIELD));
+			System.out.println(object);
+			if (object == null)
+				continue;
+
+			TorrentInfo torrentInfo = getMongodbUtil().loadOne(TorrentInfo.class, object);
+
+			LuceneAndroidSearchResult androidSearchResult = new LuceneAndroidSearchResult();
+			androidSearchResult.setName(torrentInfo.getName());
+			androidSearchResult.setMagnet(document.get(INFO_HASH_FIELD));
+			androidSearchResult.setSize(torrentInfo.getFilelenth());
+			androidSearchResults.add(androidSearchResult);
+		}
+		reader.close();
+		return androidSearchResults;
+	}
 
 	public static void main(String[] args) throws Exception {
 		args = new String[] { "index", "com_konka_dhtsearch_db_models_DhtInfo_MongoDbPojo", "fileName" };

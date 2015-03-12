@@ -44,8 +44,7 @@ public class KadNet implements KeybasedRouting {
 	 * @throws NoSuchAlgorithmException
 	 * @throws IOException
 	 */
-	public KadNet(BootstrapNodesSaver bootstrapNodesSaver, Node localnode)
-			throws NoSuchAlgorithmException, IOException {
+	public KadNet(BootstrapNodesSaver bootstrapNodesSaver, Node localnode) throws NoSuchAlgorithmException, IOException {
 		this.bootstrapNodesSaver = bootstrapNodesSaver;
 		DatagramSocket socket = null;
 		Selector selector = null;
@@ -69,8 +68,7 @@ public class KadNet implements KeybasedRouting {
 
 	public void addNodeToBuckets(Node node) {
 		if (!node.equals(localnode)) {
-			kadBuckets
-					.insert(new KadNode().setNode(node).setNodeWasContacted());// 插入一个节点
+			kadBuckets.insert(new KadNode().setNode(node).setNodeWasContacted());// 插入一个节点
 		}
 	}
 
@@ -79,15 +77,15 @@ public class KadNet implements KeybasedRouting {
 
 		kadServer.start();
 		kadSendMsgServer.start();
-		kadParserTorrentServer.start();
+		// kadParserTorrentServer.start();
 		if (bootstrapNodesSaver != null) {
 			bootstrapNodesSaver.load();
 			bootstrapNodesSaver.start();
 		}
-		starting=true;
+		starting = true;
 	}
 
-	private boolean starting=false;
+	private boolean starting = false;
 
 	public boolean isStarting() {
 
@@ -137,6 +135,7 @@ public class KadNet implements KeybasedRouting {
 		try {
 			byte[] buf = msg.getBencodeData(localnode);
 			channel.send(ByteBuffer.wrap(buf), msg.getSrc().getSocketAddress());
+			buf = null;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -154,6 +153,6 @@ public class KadNet implements KeybasedRouting {
 		kadServer.shutdown();
 		kadSendMsgServer.shutdown();
 		kadParserTorrentServer.shutdown();
-		starting=false;
+		starting = false;
 	}
 }

@@ -170,7 +170,6 @@ public class MongodbUtil {
 	// 加上set 至修改添加的部分，其他数据不变，
 	/**
 	 * 跟新
-	 * 
 	 * @param clazz
 	 * @param q
 	 *            跟新条件

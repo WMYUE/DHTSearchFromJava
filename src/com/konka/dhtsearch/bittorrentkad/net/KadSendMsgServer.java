@@ -83,8 +83,8 @@ public class KadSendMsgServer implements Runnable {
 //		System.out.println("空闲内存-----"+(df.format(freeMem/(1024F*1024F)) + "MB"));
 //		Runtime.getRuntime().
 		Runtime.getRuntime().gc();
-//		long freeMem1 = Runtime.getRuntime().freeMemory();
-//		System.out.println("-----"+(df.format(freeMem1/(1024F*1024F)) + "MB"));
+		long freeMem1 = Runtime.getRuntime().freeMemory();
+		System.out.println("-----"+(df.format(freeMem1/(1024F*1024F)) + "MB"));
 		
 //		int size=Thread.getAllStackTraces().size();
 //		System.out.println("系统中的线程数="+size);
