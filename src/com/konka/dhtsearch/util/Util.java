@@ -75,7 +75,7 @@ public class Util {
 	}
 
 	public static String random_tranctionId(int size) {
-		final byte[] b = new byte[size];
+		byte[] b = new byte[size];
 		Random rnd = new Random();
 		rnd.nextBytes(b);
 		return hex(b);
