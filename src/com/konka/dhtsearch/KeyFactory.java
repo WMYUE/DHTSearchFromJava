@@ -11,7 +11,7 @@ public interface KeyFactory {
 	 */
 	public Key getZeroKey();
 	
-	/**
+	/**  
 	 * 
 	 * @return a new random generated key
 	 */
