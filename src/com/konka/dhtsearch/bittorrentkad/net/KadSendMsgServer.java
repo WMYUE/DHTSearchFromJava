@@ -50,8 +50,7 @@ public class KadSendMsgServer implements Runnable {
 		this.isActive.set(true);
 		while (this.isActive.get()) {
 			try {
-				displayAvailableMemory();
-				ThreadUtil.sleep(1000);
+			
 				List<KadNode> nodes = kadNet.getAllNodes();
 				 System.out.println(nodes.size());
 				for (int i = 0; i < nodes.size(); i++) {
@@ -59,6 +58,10 @@ public class KadSendMsgServer implements Runnable {
 					send(node.getNode());
 //					 System.out.println(node.getNode().getKey().toString()+"--"+node.getNode().getSocketAddress());
 				}
+				ThreadUtil.sleep(1500);
+//				nodes.removeAll(nodes);
+				nodes=null;
+				displayAvailableMemory();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

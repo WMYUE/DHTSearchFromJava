@@ -10,11 +10,11 @@ import com.konka.dhtsearch.bittorrentkad.KadNode;
 
 /**
  * A bucket with the following policy: Any new node is inserted, if the bucket has reached its max size the oldest node in the bucket is removed.
- *
+ * 
  */
 public class SlackBucket implements Bucket {
 
-	private  final   List<KadNode> bucket;
+	private final List<KadNode> bucket;
 	private final int maxSize;
 
 	public SlackBucket(int maxSize) {
@@ -44,7 +44,7 @@ public class SlackBucket implements Bucket {
 
 	@Override
 	public List<KadNode> getAllNodes() {
-		
+
 		return bucket;
 	}
 

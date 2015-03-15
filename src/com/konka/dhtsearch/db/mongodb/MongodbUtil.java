@@ -13,6 +13,7 @@ import java.util.List;
 import com.konka.dhtsearch.db.DbUtil;
 import com.konka.dhtsearch.db.models.DhtInfoStateCode;
 import com.konka.dhtsearch.db.models.DhtInfo_MongoDbPojo;
+import com.konka.dhtsearch.db.models.PeerInfo;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -43,7 +44,7 @@ public class MongodbUtil {
 		DBObject dbobject = objectToDBObject(object);
 		collection.insert(dbobject);
 		DBCursor dbCursor = collection.find();
-		System.out.println(dbobject);
+//		System.out.println(dbobject);
 		for (; dbCursor.hasNext();) {
 			DBObject dbObject2 = dbCursor.next();
 			if (dbObject2.containsField("lists")) {
@@ -170,6 +171,7 @@ public class MongodbUtil {
 	// 加上set 至修改添加的部分，其他数据不变，
 	/**
 	 * 跟新
+	 * 
 	 * @param clazz
 	 * @param q
 	 *            跟新条件
@@ -221,19 +223,20 @@ public class MongodbUtil {
 	}
 
 	public <T> List<T> findByLimit(Class<T> clazz, int limit) throws Exception {
-
 		return find(clazz, new BasicDBObject(), limit);
 	}
 
 	public <T> List<T> find(Class<T> clazz, BasicDBObject where, int limit) throws Exception {
 		List<T> objList = new ArrayList<T>();
 		DBCursor curr = findDBCursor(clazz, where, limit);
+
 		System.out.println(curr.count() + "：项");
 		while (curr.hasNext()) {
 			DBObject dbo = curr.next();
 			T o = loadOne(clazz, dbo);
 			objList.add(o);
 		}
+
 		System.out.println(objList.size());
 		return objList;
 	}
@@ -241,7 +244,56 @@ public class MongodbUtil {
 	public <T> DBCursor findDBCursor(Class<T> clazz, BasicDBObject where, int limit) {
 		DBCollection collection = getDBCollection(clazz);
 		DBCursor curr = collection.find(where).limit(limit);
+		// collection.u
 		return curr;
+	}
+
+
+	/**
+	 * 查找并更新数据
+	 * 
+	 * @param clazz
+	 * @param where
+	 * @param limit
+	 * @return
+	 * @throws Exception
+	 */
+	public <T> List<T> findAndUpdate(Class<T> clazz, BasicDBObject where, int limit) throws Exception {
+		List<T> objList = new ArrayList<T>();
+		DBCursor curr = findDBCursor(clazz, where, limit);
+
+		System.out.println(curr.count() + "：项");
+		BasicDBList whereList = new BasicDBList();
+		while (curr.hasNext()) {
+			DBObject dbo = curr.next();
+			T o = loadOne(clazz, dbo);
+			objList.add(o);
+			whereList.add(dbo);
+		}
+		BasicDBObject update = new BasicDBObject();
+		updateOr(clazz, whereList, update);
+		whereList.clear();
+		whereList = null;
+		System.out.println(objList.size());
+		return objList;
+	}
+
+	/**
+	 * 更新 or 操作
+	 * 
+	 * @param clazz
+	 *            要操作的类
+	 * @param whereList
+	 *            条件 集合
+	 * @param update
+	 *            要改成什么值
+	 */
+	private <T> void updateOr(Class<T> clazz, BasicDBList whereList, BasicDBObject update) {
+		DBCollection collection = getDBCollection(clazz);
+		BasicDBObject queryCondition = new BasicDBObject();
+		queryCondition.put("$or", whereList);
+		DBObject updateSetValue = new BasicDBObject("$set", update);
+		collection.update(queryCondition, updateSetValue, false, true);
 	}
 
 	public <T> DBCursor findDBCursor(Class<T> clazz) {
@@ -300,6 +352,7 @@ public class MongodbUtil {
 		return object;
 	}
 
+	// ----------------------------------
 	public List<DhtInfo_MongoDbPojo> getNoAnalyticDhtInfos(int limit) throws Exception {
 		BasicDBObject where = new BasicDBObject("analysised", DhtInfoStateCode.NO_DOWNLOAD);
 
@@ -316,6 +369,18 @@ public class MongodbUtil {
 		BasicDBObject where = new BasicDBObject("analysised", DhtInfoStateCode.DOWNLOADSUCCESS_AND_PARSING_SUCCESS);
 
 		return findDBCursor(DhtInfo_MongoDbPojo.class, where, 0);
+	}
+
+	// -----------------------------------------
+	public List<PeerInfo> getPeerInfos(BasicDBObject where, int limit) {
+		List<PeerInfo> PeerInfos = null;
+		try {
+			PeerInfos = findAndUpdate(PeerInfo.class, where, limit);
+			return PeerInfos;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 }
