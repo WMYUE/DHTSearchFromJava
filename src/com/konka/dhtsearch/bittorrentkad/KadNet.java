@@ -32,7 +32,9 @@ public class KadNet implements KeybasedRouting {
 	private final KadReceiveServer kadServer;// 接受消息
 	private final KadSendMsgServer kadSendMsgServer;// 发生消息
 	private final KadParserTorrentServer kadParserTorrentServer;// 解析种子
-	private final Bucket kadBuckets;// = AppManager.getKadBuckets();// 路由表
+	private final static Bucket kadBuckets = new SlackBucket(10000);// =
+																	// AppManager.getKadBuckets();//
+																	// 路由表
 	private final int BUCKETSIZE = 8;// 一个k桶大小
 	private final BootstrapNodesSaver bootstrapNodesSaver;// 关机后保存到本地，启动时候从本地文件中加载
 	private final DatagramChannel channel;
@@ -44,7 +46,8 @@ public class KadNet implements KeybasedRouting {
 	 * @throws NoSuchAlgorithmException
 	 * @throws IOException
 	 */
-	public KadNet(BootstrapNodesSaver bootstrapNodesSaver, Node localnode) throws NoSuchAlgorithmException, IOException {
+	public KadNet(BootstrapNodesSaver bootstrapNodesSaver, Node localnode)
+			throws NoSuchAlgorithmException, IOException {
 		this.bootstrapNodesSaver = bootstrapNodesSaver;
 		DatagramSocket socket = null;
 		Selector selector = null;
@@ -58,7 +61,7 @@ public class KadNet implements KeybasedRouting {
 		channel.register(selector, SelectionKey.OP_READ);
 		// -----------------------------------------------------------------------
 
-		this.kadBuckets = new SlackBucket(1000);
+		// this.kadBuckets = new SlackBucket(1000);
 
 		this.kadSendMsgServer = new KadSendMsgServer(this);
 		this.kadServer = new KadReceiveServer(selector, this);
@@ -68,7 +71,8 @@ public class KadNet implements KeybasedRouting {
 
 	public void addNodeToBuckets(Node node) {
 		if (!node.equals(localnode)) {
-			kadBuckets.insert(new KadNode().setNode(node).setNodeWasContacted());// 插入一个节点
+			kadBuckets
+					.insert(new KadNode().setNode(node).setNodeWasContacted());// 插入一个节点
 		}
 	}
 
