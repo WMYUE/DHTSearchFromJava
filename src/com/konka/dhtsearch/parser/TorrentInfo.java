@@ -2,6 +2,7 @@ package com.konka.dhtsearch.parser;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -13,6 +14,8 @@ import org.yaircc.torrent.bencoding.BMap;
 import org.yaircc.torrent.bencoding.BTypeException;
 
 import com.konka.dhtsearch.db.mongodb.MongoCollection;
+import com.konka.dhtsearch.exception.DownLoadException;
+import com.konka.dhtsearch.exception.ParseException;
 import com.konka.dhtsearch.util.KLog;
 import com.konka.dhtsearch.util.StringUtil;
 import com.konka.dhtsearch.util.Util;
@@ -25,16 +28,17 @@ public class TorrentInfo implements TorrentConstantKey {
 	private List<MultiFile> multiFiles;
 	private boolean singerFile = true;// 是否是单文件 如果是多文件，文件放假multiFiles中
 
-	
-	public String getFormatSize(){
+	public String getFormatSize() {
 		return Util.getFormatSize(filelenth);
 	}
-//	public String getHighlighterName(){
-//		return getName().replace("", newChar)
-//	}
-	public String getFormatCreatTime(){
-		return Util.getFormatCreatTime(creattime*1000);
+
+	// public String getHighlighterName(){
+	// return getName().replace("", newChar)
+	// }
+	public String getFormatCreatTime() {
+		return Util.getFormatCreatTime(creattime * 1000);
 	}
+
 	public String getName() {
 		return name;
 	}
@@ -55,10 +59,14 @@ public class TorrentInfo implements TorrentConstantKey {
 		return singerFile;
 	}
 
-	public TorrentInfo(InputStream in) throws IOException, BDecodingException, BTypeException {
+	public TorrentInfo(InputStream in) throws ParseException {
 		BEncodedInputStream bEncodedInputStream = new BEncodedInputStream(in);
 		try {
-			parser(bEncodedInputStream);
+			try {
+				parser(bEncodedInputStream);
+			} catch (Exception e) {
+				throw new ParseException("download is fails");
+			}
 		} finally {
 			try {
 				if (bEncodedInputStream != null) {
@@ -167,11 +175,11 @@ public class TorrentInfo implements TorrentConstantKey {
 
 	// --------------------------------------------反向构造时候用到
 
-	public TorrentInfo(String filePath) throws IOException, BDecodingException, BTypeException {
+	public TorrentInfo(String filePath) throws FileNotFoundException, ParseException   {
 		this(new File(filePath));
 	}
 
-	public TorrentInfo(File file) throws IOException, BDecodingException, BTypeException {
+	public TorrentInfo(File file) throws FileNotFoundException, ParseException    {
 		this(new FileInputStream(file));
 	}
 

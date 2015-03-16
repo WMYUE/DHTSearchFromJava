@@ -10,6 +10,7 @@ import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Key;
 import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.KadNet;
+import com.konka.dhtsearch.bittorrentkad.net.KadParserTorrentServer;
 import com.konka.dhtsearch.db.models.PeerInfo;
 import com.konka.dhtsearch.db.mongodb.MongodbUtilProvider;
 import com.konka.dhtsearch.db.mysql.exception.DhtException;
@@ -22,30 +23,32 @@ public class SearchText {
 
 	public static void main(String[] args) throws DhtException {
 
-//		PeerInfo peerInfo1 = new PeerInfo("router.bittorrent.com", 6881, false);
-//		PeerInfo peerInfo2 = new PeerInfo("dht.transmissionbt.com", 6881, false);
-//		PeerInfo peerInfo3 = new PeerInfo("router.utorrent.com", 6881, false);
-//
-//		try {
-//			MongodbUtilProvider.getMongodbUtil().save(peerInfo1);
-//			MongodbUtilProvider.getMongodbUtil().save(peerInfo2);
-//			MongodbUtilProvider.getMongodbUtil().save(peerInfo3);
-//		} catch (Exception e1) {
-//			e1.printStackTrace();
-//		}
-		int size = 5;
+		// PeerInfo peerInfo1 = new PeerInfo("router.bittorrent.com", 6881, false);
+		// PeerInfo peerInfo2 = new PeerInfo("dht.transmissionbt.com", 6881, false);
+		// PeerInfo peerInfo3 = new PeerInfo("router.utorrent.com", 6881, false);
+		//
+		// try {
+		// MongodbUtilProvider.getMongodbUtil().save(peerInfo1);
+		// MongodbUtilProvider.getMongodbUtil().save(peerInfo2);
+		// MongodbUtilProvider.getMongodbUtil().save(peerInfo3);
+		// } catch (Exception e1) {
+		// e1.printStackTrace();
+		// }
+		int size = 1;
 		try {
 			for (int i = 0; i < size; i++) {
 				AppManager.init();// 1---
 				Key key = AppManager.getKeyFactory().generate();
 				Node localNode = new Node(key).setInetAddress(InetAddress.getByName("0.0.0.0")).setPoint(20200 + i);// 这里注意InetAddress.getLocalHost();为空
-//				new KadNet(null, localNode).create();
-				 new KadNet(null, localNode).join(BOOTSTRAP_NODES).create();
+				// new KadNet(null, localNode).create();
+				new KadNet(null, localNode).join(BOOTSTRAP_NODES).create();
 
 			}
+//			new KadParserTorrentServer().start();// 启动种子下载服务
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
 
 		// Textu
 

@@ -23,6 +23,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 
+import com.konka.dhtsearch.exception.DownLoadException;
 import com.konka.dhtsearch.util.Request.Method;
 
 /**
@@ -32,7 +33,7 @@ public class HttpUrlUtils {
 
 	private static final String HEADER_CONTENT_TYPE = "Content-Type";
 
-	public InputStream performRequest(Request request) throws DownLoadExcption, IOException {
+	public InputStream performRequest(Request request) throws DownLoadException, IOException {
 		String url = request.getUrl();
 		HashMap<String, String> map = new HashMap<String, String>();
 		map.putAll(request.getHeaders());
@@ -50,7 +51,7 @@ public class HttpUrlUtils {
 			// not be retrieved.
 			// Signal to the caller that something was wrong with the
 			// connection.
-			throw new DownLoadExcption("download is fails");
+			throw new DownLoadException("download is fails");
 		}
 
 		return connection.getInputStream();

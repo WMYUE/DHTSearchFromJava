@@ -31,7 +31,7 @@ import com.konka.dhtsearch.bittorrentkad.net.KadSendMsgServer;
 public class KadNet implements KeybasedRouting {
 	private final KadReceiveServer kadServer;// 接受消息
 	private final KadSendMsgServer kadSendMsgServer;// 发生消息
-	private final KadParserTorrentServer kadParserTorrentServer;// 解析种子
+	private final KadParserTorrentServer kadParserTorrentServer = new KadParserTorrentServer();// 解析种子
 	private final static Bucket kadBuckets = new SlackBucket(10000);// =
 																	// AppManager.getKadBuckets();//
 																	// 路由表
@@ -46,8 +46,7 @@ public class KadNet implements KeybasedRouting {
 	 * @throws NoSuchAlgorithmException
 	 * @throws IOException
 	 */
-	public KadNet(BootstrapNodesSaver bootstrapNodesSaver, Node localnode)
-			throws NoSuchAlgorithmException, IOException {
+	public KadNet(BootstrapNodesSaver bootstrapNodesSaver, Node localnode) throws NoSuchAlgorithmException, IOException {
 		this.bootstrapNodesSaver = bootstrapNodesSaver;
 		DatagramSocket socket = null;
 		Selector selector = null;
@@ -65,14 +64,13 @@ public class KadNet implements KeybasedRouting {
 
 		this.kadSendMsgServer = new KadSendMsgServer(this);
 		this.kadServer = new KadReceiveServer(selector, this);
-		this.kadParserTorrentServer = new KadParserTorrentServer();
+		// this.kadParserTorrentServer = new KadParserTorrentServer();
 		// Thread.currentThread().setDaemon(true);
 	}
 
 	public void addNodeToBuckets(Node node) {
 		if (!node.equals(localnode)) {
-			kadBuckets
-					.insert(new KadNode().setNode(node).setNodeWasContacted());// 插入一个节点
+			kadBuckets.insert(new KadNode().setNode(node).setNodeWasContacted());// 插入一个节点
 		}
 	}
 
@@ -81,7 +79,10 @@ public class KadNet implements KeybasedRouting {
 
 		kadServer.start();
 		kadSendMsgServer.start();
-		// kadParserTorrentServer.start();
+		// kadParserTorrentServer.
+//		if (!kadParserTorrentServer.isRunning()) {
+//			kadParserTorrentServer.start();
+//		}
 		if (bootstrapNodesSaver != null) {
 			bootstrapNodesSaver.load();
 			bootstrapNodesSaver.start();
