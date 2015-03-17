@@ -264,7 +264,6 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 	private void handleFind_NodeRequest(String transaction, BMap decodedData, Node src) throws BTypeException, IOException {
 		byte[] target = (byte[]) decodedData.getMap(A).get(TARGET);
 		List<Node> lists = kadNet.findNode(new Key(target));
-
 		FindNodeResponse findNodeResponse = new FindNodeResponse(transaction, src);
 		findNodeResponse.setNodes(lists);
 		kadNet.sendMessage(findNodeResponse);
@@ -422,7 +421,7 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 	}
 
 	public void start() {
-		// startThread.setDaemon(true);
+//		 startThread.setDaemon(true);
 		startThread.start();
 	}
 

@@ -16,7 +16,7 @@ import com.konka.dhtsearch.util.ThreadUtil;
  * 发送消息查找node
  * 
  * @author 耳东 (cgp@0731life.com)
- *
+ * 
  */
 public class KadSendMsgServer implements Runnable {
 
@@ -50,18 +50,30 @@ public class KadSendMsgServer implements Runnable {
 		this.isActive.set(true);
 		while (this.isActive.get()) {
 			try {
-			
+				System.out.println("获取数据");
 				List<KadNode> nodes = kadNet.getAllNodes();
-				 System.out.println(nodes.size());
+				
+
+				System.out.println(nodes.size());
 				for (int i = 0; i < nodes.size(); i++) {
-					KadNode node = nodes.get(i);
-					send(node.getNode());
-//					 System.out.println(node.getNode().getKey().toString()+"--"+node.getNode().getSocketAddress());
+					KadNode node = null;
+					try {
+						  node = nodes.get(i);
+						send(node.getNode());
+					} catch (Exception e) {
+						e.printStackTrace();
+						System.out.println("发送错误");
+						System.out.println(node);
+						System.out.println(node.getNode());
+					}
+					// System.out.println(node.getNode().getKey().toString()+"--"+node.getNode().getSocketAddress());
 				}
-				ThreadUtil.sleep(1500);
-//				nodes.removeAll(nodes);
-				nodes=null;
+				System.out.println("发送完毕");
+				nodes.clear();
+				System.out.println(nodes.size());
+				nodes = null;
 				displayAvailableMemory();
+				ThreadUtil.sleep(5000);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -71,29 +83,32 @@ public class KadSendMsgServer implements Runnable {
 	private void send(Node to) throws IOException {
 		FindNodeRequest msg = FindNodeRequest.creatLocalFindNodeRequest(to);
 		send(msg);
-	
+
 	}
+
 	public void displayAvailableMemory() {
 		DecimalFormat df = new DecimalFormat("0.00");
 		// 显示JVM总内存
-//		long totalMem = Runtime.getRuntime().totalMemory();
-//		System.out.println(df.format(totalMem/(1024F*1024F)) + "MB");
+		// long totalMem = Runtime.getRuntime().totalMemory();
+		// System.out.println(df.format(totalMem/(1024F*1024F)) + "MB");
 		// 显示JVM尝试使用的最大内存
-//		long maxMem = Runtime.getRuntime().maxMemory();
-//		System.out.println(df.format(maxMem/(1024F*1024F)) + "MB");
+		// long maxMem = Runtime.getRuntime().maxMemory();
+		// System.out.println(df.format(maxMem/(1024F*1024F)) + "MB");
 		// 空闲内存
-//		long freeMem = Runtime.getRuntime().freeMemory();
-//		System.out.println("空闲内存-----"+(df.format(freeMem/(1024F*1024F)) + "MB"));
-//		Runtime.getRuntime().
+		// long freeMem = Runtime.getRuntime().freeMemory();
+		// System.out.println("空闲内存-----"+(df.format(freeMem/(1024F*1024F)) + "MB"));
+		// Runtime.getRuntime().
 		Runtime.getRuntime().gc();
 		long freeMem1 = Runtime.getRuntime().freeMemory();
-		System.out.println("-----"+(df.format(freeMem1/(1024F*1024F)) + "MB"));
-		
-//		int size=Thread.getAllStackTraces().size();
-//		System.out.println("系统中的线程数="+size);
+		System.out.println("-----" + (df.format(freeMem1 / (1024F * 1024F)) + "MB"));
+
+		// int size=Thread.getAllStackTraces().size();
+		// System.out.println("系统中的线程数="+size);
 	}
+
 	/**
 	 * Shutdown the server and closes the socket 关闭服务
+	 * 
 	 * @param kadServerThread
 	 */
 	public void shutdown() {
@@ -104,8 +119,9 @@ public class KadSendMsgServer implements Runnable {
 		} catch (final InterruptedException e) {
 		}
 	}
+
 	public void start() {
-//		startThread.setDaemon(true);
+		// startThread.setDaemon(true);
 		startThread.start();
 	}
 }

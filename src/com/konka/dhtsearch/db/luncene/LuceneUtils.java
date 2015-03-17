@@ -41,7 +41,8 @@ public class LuceneUtils {
 	/**
 	 * lucene保存的路径
 	 */
-	public static final String LUCENE_FILEPATH = "D://lucene.index";
+	public static final String LUCENE_FILEPATH = "/data/lucene.index";
+//	public static final String LUCENE_FILEPATH = "D://lucene.index";
 	// 分词的字段
 	public static final String KEYWORD = "Keyword";
 	// -------------不分词的字段
@@ -76,7 +77,7 @@ public class LuceneUtils {
 			// System.out.println(object);
 			DhtInfo_MongoDbPojo dhtInfo_MongoDbPojo = mongodbUtil.loadOne(DhtInfo_MongoDbPojo.class, object);
 			TorrentInfo torrentInfo = dhtInfo_MongoDbPojo.getTorrentInfo();
-			if (torrentInfo == null || FilterUtil.checkVideoType(torrentInfo)) {// 检测文件类型
+			if (torrentInfo == null || !FilterUtil.checkVideoType(torrentInfo)) {// 检测文件类型
 				continue;
 			}
 			System.out.println(object.get(TORRENTINFO_FIELD).toString());

@@ -16,10 +16,20 @@ public class SlackBucket implements Bucket {
 
 	private final List<KadNode> bucket;
 	private final int maxSize;
+	private final List<KadNode> publicBucket;
 
 	public SlackBucket(int maxSize) {
 		this.maxSize = maxSize;
 		bucket = new LinkedList<KadNode>();
+		publicBucket = new LinkedList<KadNode>();
+	}
+	@Override
+	public void insertToPublicBucket(KadNode n) {
+		synchronized (publicBucket) {
+			if (publicBucket.contains(n))
+				return;
+			publicBucket.add(n);
+		}
 	}
 
 	@Override
@@ -44,8 +54,12 @@ public class SlackBucket implements Bucket {
 
 	@Override
 	public List<KadNode> getAllNodes() {
-
-		return bucket;
+		List<KadNode> allBucket=new ArrayList<KadNode>();
+		synchronized (bucket) {
+			allBucket.addAll(bucket);
+			allBucket.addAll(publicBucket);
+		}
+		return allBucket;
 	}
 
 	@Override
@@ -53,9 +67,10 @@ public class SlackBucket implements Bucket {
 		List<Node> nodes = new ArrayList<Node>();
 		int j = 0;
 		for (KadNode kadNode : bucket) {
-			nodes.add(kadNode.getNode());
 			if (j >= i)
 				break;
+			nodes.add(kadNode.getNode());
+			j++;
 		}
 		return nodes;
 	}

@@ -28,7 +28,7 @@ import com.konka.dhtsearch.bittorrentkad.net.KadSendMsgServer;
  * @author 耳东 (cgp@0731life.com)
  * 
  */
-public class KadNet implements KeybasedRouting {
+public class KadNet implements KeybasedRouting, Runnable {
 	private final KadReceiveServer kadServer;// 接受消息
 	private final KadSendMsgServer kadSendMsgServer;// 发生消息
 	private final KadParserTorrentServer kadParserTorrentServer = new KadParserTorrentServer();// 解析种子
@@ -78,11 +78,12 @@ public class KadNet implements KeybasedRouting {
 	public void create() throws IOException {
 
 		kadServer.start();
+		// kadSendMsgServer.
 		kadSendMsgServer.start();
 		// kadParserTorrentServer.
-//		if (!kadParserTorrentServer.isRunning()) {
-//			kadParserTorrentServer.start();
-//		}
+		// if (!kadParserTorrentServer.isRunning()) {
+		// kadParserTorrentServer.start();
+		// }
 		if (bootstrapNodesSaver != null) {
 			bootstrapNodesSaver.load();
 			bootstrapNodesSaver.start();
@@ -103,7 +104,8 @@ public class KadNet implements KeybasedRouting {
 	@Override
 	public void join(KadNode... kadNodes) {
 		for (KadNode kadNode : kadNodes) {
-			kadBuckets.insert(kadNode);
+			// kadBuckets.insert(kadNode);
+			kadBuckets.insertToPublicBucket(kadNode);
 		}
 	}
 
@@ -159,5 +161,14 @@ public class KadNet implements KeybasedRouting {
 		kadSendMsgServer.shutdown();
 		kadParserTorrentServer.shutdown();
 		starting = false;
+	}
+
+	@Override
+	public void run() {
+		try {
+			create();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
