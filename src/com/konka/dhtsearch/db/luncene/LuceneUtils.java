@@ -41,8 +41,8 @@ public class LuceneUtils {
 	/**
 	 * lucene保存的路径
 	 */
-	public static final String LUCENE_FILEPATH = "/data/lucene.index";
-//	public static final String LUCENE_FILEPATH = "D://lucene.index";
+//	public static final String LUCENE_FILEPATH = "/data/lucene.index";
+	public static final String LUCENE_FILEPATH = "D://lucene.index";
 	// 分词的字段
 	public static final String KEYWORD = "Keyword";
 	// -------------不分词的字段

@@ -1,6 +1,7 @@
 package com.konka.dhtsearch.bittorrentkad.net;
 
 import java.io.IOException;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
@@ -355,8 +356,8 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 			if (respondData.containsKey(NODES)) {
 				byte[] nodesbyteArray = (byte[]) respondData.get(NODES);
 				List<Node> nodes = Util.passNodes(nodesbyteArray);
-				
-				nodesbyteArray = null;//回收
+
+				nodesbyteArray = null;// 回收
 				addNodesToQueue(nodes);
 			}
 		}
@@ -420,8 +421,11 @@ public class KadReceiveServer implements Runnable, DHTConstant {
 		}
 	}
 
+	public void setUncaughtExceptionHandler(UncaughtExceptionHandler eh) {
+		startThread.setUncaughtExceptionHandler(eh);
+	}
+
 	public void start() {
-//		 startThread.setDaemon(true);
 		startThread.start();
 	}
 

@@ -1,6 +1,7 @@
 package com.konka.dhtsearch.bittorrentkad;
 
 import java.io.IOException;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -21,6 +22,8 @@ import com.konka.dhtsearch.bittorrentkad.krpc.KadMessage;
 import com.konka.dhtsearch.bittorrentkad.net.KadParserTorrentServer;
 import com.konka.dhtsearch.bittorrentkad.net.KadReceiveServer;
 import com.konka.dhtsearch.bittorrentkad.net.KadSendMsgServer;
+import com.konka.dhtsearch.exception.ErrHandler;
+import com.konka.dhtsearch.util.ThreadUtil;
 
 /**
  * KadNet
@@ -30,7 +33,7 @@ import com.konka.dhtsearch.bittorrentkad.net.KadSendMsgServer;
  */
 public class KadNet implements KeybasedRouting, Runnable {
 	private final KadReceiveServer kadServer;// 接受消息
-	private final KadSendMsgServer kadSendMsgServer;// 发生消息
+	private   KadSendMsgServer kadSendMsgServer;// 发生消息
 	private final KadParserTorrentServer kadParserTorrentServer = new KadParserTorrentServer();// 解析种子
 	private final static Bucket kadBuckets = new SlackBucket(10000);// =
 																	// AppManager.getKadBuckets();//
@@ -58,6 +61,7 @@ public class KadNet implements KeybasedRouting, Runnable {
 		socket.bind(localnode.getSocketAddress());
 		selector = Selector.open();
 		channel.register(selector, SelectionKey.OP_READ);
+
 		// -----------------------------------------------------------------------
 
 		// this.kadBuckets = new SlackBucket(1000);
@@ -76,9 +80,27 @@ public class KadNet implements KeybasedRouting, Runnable {
 
 	@Override
 	public void create() throws IOException {
+		kadServer.setUncaughtExceptionHandler(new ErrHandler() {
+			@Override
+			public void caughtEnd() {
 
+				System.gc();
+				ThreadUtil.sleep(1000 * 10);
+				kadServer.start();
+			}
+		});
 		kadServer.start();
-		// kadSendMsgServer.
+
+		kadSendMsgServer.setUncaughtExceptionHandler(new ErrHandler() {
+			@Override
+			public void caughtEnd() {
+				System.out.println("重启"+kadSendMsgServer);
+				System.gc();
+				ThreadUtil.sleep(1000 * 1);
+//				kadSendMsgServer=new KadSendMsgServer(KadNet.this);
+				kadSendMsgServer.start();
+			}
+		});
 		kadSendMsgServer.start();
 		// kadParserTorrentServer.
 		// if (!kadParserTorrentServer.isRunning()) {
@@ -166,6 +188,7 @@ public class KadNet implements KeybasedRouting, Runnable {
 	@Override
 	public void run() {
 		try {
+			//
 			create();
 		} catch (IOException e) {
 			e.printStackTrace();

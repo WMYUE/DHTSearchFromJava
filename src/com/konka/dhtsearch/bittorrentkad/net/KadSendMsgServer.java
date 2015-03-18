@@ -1,6 +1,7 @@
 package com.konka.dhtsearch.bittorrentkad.net;
 
 import java.io.IOException;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -49,6 +50,7 @@ public class KadSendMsgServer implements Runnable {
 	public void run() {
 		this.isActive.set(true);
 		while (this.isActive.get()) {
+			int i1 = 10 / 0;
 			try {
 				System.out.println("获取数据");
 				List<KadNode> nodes = kadNet.getAllNodes();
@@ -119,9 +121,11 @@ public class KadSendMsgServer implements Runnable {
 		} catch (final InterruptedException e) {
 		}
 	}
-
+	public void setUncaughtExceptionHandler(UncaughtExceptionHandler eh) {
+		startThread.setUncaughtExceptionHandler(eh);
+	}
 	public void start() {
-		// startThread.setDaemon(true);
+		System.out.println("11");
 		startThread.start();
 	}
 }
