@@ -32,8 +32,8 @@ import com.konka.dhtsearch.util.ThreadUtil;
  * 
  */
 public class KadNet implements KeybasedRouting, Runnable {
-	private final KadReceiveServer kadServer;// 接受消息
-	private   KadSendMsgServer kadSendMsgServer;// 发生消息
+	private KadReceiveServer kadReceiveServer;// 接受消息
+	private KadSendMsgServer kadSendMsgServer;// 发生消息
 	private final KadParserTorrentServer kadParserTorrentServer = new KadParserTorrentServer();// 解析种子
 	private final static Bucket kadBuckets = new SlackBucket(10000);// =
 																	// AppManager.getKadBuckets();//
@@ -42,6 +42,7 @@ public class KadNet implements KeybasedRouting, Runnable {
 	private final BootstrapNodesSaver bootstrapNodesSaver;// 关机后保存到本地，启动时候从本地文件中加载
 	private final DatagramChannel channel;
 	private final Node localnode;
+	private Selector selector;
 
 	/**
 	 * @param bootstrapNodesSaver
@@ -52,7 +53,7 @@ public class KadNet implements KeybasedRouting, Runnable {
 	public KadNet(BootstrapNodesSaver bootstrapNodesSaver, Node localnode) throws NoSuchAlgorithmException, IOException {
 		this.bootstrapNodesSaver = bootstrapNodesSaver;
 		DatagramSocket socket = null;
-		Selector selector = null;
+
 		this.localnode = localnode;
 		// -----------------------------------------------------------------------
 		channel = DatagramChannel.open();
@@ -65,11 +66,35 @@ public class KadNet implements KeybasedRouting, Runnable {
 		// -----------------------------------------------------------------------
 
 		// this.kadBuckets = new SlackBucket(1000);
-
-		this.kadSendMsgServer = new KadSendMsgServer(this);
-		this.kadServer = new KadReceiveServer(selector, this);
 		// this.kadParserTorrentServer = new KadParserTorrentServer();
-		// Thread.currentThread().setDaemon(true);
+	}
+
+	private void startKadReceiveServer() {
+		this.kadReceiveServer = new KadReceiveServer(selector, this);
+		kadReceiveServer.setUncaughtExceptionHandler(new ErrHandler() {
+			@Override
+			public void caughtEnd() {
+				System.gc();
+				ThreadUtil.sleep(1000 * 10);
+				startKadReceiveServer();
+			}
+		});
+		kadReceiveServer.start();
+	}
+
+	private void startKadSendMsgServer() {
+
+		kadSendMsgServer = new KadSendMsgServer(this);
+		kadSendMsgServer.setUncaughtExceptionHandler(new ErrHandler() {
+			@Override
+			public void caughtEnd() {
+				System.gc();
+				ThreadUtil.sleep(1000 * 1);
+				System.out.println("重启" + kadSendMsgServer);
+				startKadSendMsgServer();
+			}
+		});
+		kadSendMsgServer.start();
 	}
 
 	public void addNodeToBuckets(Node node) {
@@ -80,28 +105,8 @@ public class KadNet implements KeybasedRouting, Runnable {
 
 	@Override
 	public void create() throws IOException {
-		kadServer.setUncaughtExceptionHandler(new ErrHandler() {
-			@Override
-			public void caughtEnd() {
-
-				System.gc();
-				ThreadUtil.sleep(1000 * 10);
-				kadServer.start();
-			}
-		});
-		kadServer.start();
-
-		kadSendMsgServer.setUncaughtExceptionHandler(new ErrHandler() {
-			@Override
-			public void caughtEnd() {
-				System.out.println("重启"+kadSendMsgServer);
-				System.gc();
-				ThreadUtil.sleep(1000 * 1);
-//				kadSendMsgServer=new KadSendMsgServer(KadNet.this);
-				kadSendMsgServer.start();
-			}
-		});
-		kadSendMsgServer.start();
+		startKadReceiveServer();
+		startKadSendMsgServer();
 		// kadParserTorrentServer.
 		// if (!kadParserTorrentServer.isRunning()) {
 		// kadParserTorrentServer.start();
@@ -179,7 +184,7 @@ public class KadNet implements KeybasedRouting, Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		kadServer.shutdown();
+		kadReceiveServer.shutdown();
 		kadSendMsgServer.shutdown();
 		kadParserTorrentServer.shutdown();
 		starting = false;
@@ -188,7 +193,6 @@ public class KadNet implements KeybasedRouting, Runnable {
 	@Override
 	public void run() {
 		try {
-			//
 			create();
 		} catch (IOException e) {
 			e.printStackTrace();

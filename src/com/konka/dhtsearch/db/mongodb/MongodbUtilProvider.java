@@ -1,6 +1,8 @@
 package com.konka.dhtsearch.db.mongodb;
 
-import java.net.UnknownHostException;
+import java.io.InputStream;
+import java.util.Properties;
+
 import com.konka.dhtsearch.db.models.DhtInfo_MongoDbPojo;
 import com.konka.dhtsearch.db.models.PeerInfo;
 import com.mongodb.BasicDBObject;
@@ -15,14 +17,23 @@ public class MongodbUtilProvider {
 
 		if (mongodbUtil == null) {
 			try {
-//				Mongo m = new Mongo("localhost", 27017);
-				Mongo m = new Mongo("198.98.102.169", 27017);
-				DB db = m.getDB("test");
-//				db.dropDatabase();
+				InputStream in = MongodbUtilProvider.class.getClassLoader().getResourceAsStream("config.properties");
+				Properties p = new Properties();
+				p.load(in);
+				in.close();
+				String ipAddress = p.getProperty("ipAddress", "localhost");
+				String dbname = p.getProperty("dbname", "test");
+				String prot = p.getProperty("prot", "27017");
+				// Mongo m = new Mongo("localhost", 27017);
+				// Mongo m = new Mongo("198.98.102.169", 27017);
+				Mongo m = new Mongo(ipAddress, Integer.parseInt(prot));
+				DB db = m.getDB(dbname);
+				// db.dropDatabase();
 				mongodbUtil = new MongodbUtil(db);
 				init(mongodbUtil);
 				init2(mongodbUtil);
-			} catch (UnknownHostException e) {
+
+			} catch (Exception e) {
 				e.printStackTrace();
 				throw new IllegalArgumentException("mongodbUtil初始化失败:error=" + e);
 			}
@@ -32,30 +43,30 @@ public class MongodbUtilProvider {
 	}
 
 	static void init(MongodbUtil mongodbUtil) {
-		DBCollection dbCollection=mongodbUtil.getDBCollection(DhtInfo_MongoDbPojo.class);
- 
-		BasicDBObject basicDBObject1=new BasicDBObject("info_hash", 1);
-		
-		BasicDBObject basicDBObject2=new BasicDBObject();
+		DBCollection dbCollection = mongodbUtil.getDBCollection(DhtInfo_MongoDbPojo.class);
+
+		BasicDBObject basicDBObject1 = new BasicDBObject("info_hash", 1);
+
+		BasicDBObject basicDBObject2 = new BasicDBObject();
 		basicDBObject2.put("unique", true);
 		basicDBObject2.put("dropDups", true);
-		dbCollection.ensureIndex(basicDBObject1, basicDBObject2);//创建唯一索引
+		dbCollection.ensureIndex(basicDBObject1, basicDBObject2);// 创建唯一索引
  
-//		db.Users.ensureIndex({name:1,sex:-1})
-		
-		
+		// db.Users.ensureIndex({name:1,sex:-1})
+
 	}
+
 	static void init2(MongodbUtil mongodbUtil) {
-		DBCollection dbCollection=mongodbUtil.getDBCollection(PeerInfo.class);
-		
-		BasicDBObject basicDBObject1=new BasicDBObject();
+		DBCollection dbCollection = mongodbUtil.getDBCollection(PeerInfo.class);
+
+		BasicDBObject basicDBObject1 = new BasicDBObject();
 		basicDBObject1.put("ipAddress", 1);
 		basicDBObject1.put("port", 1);
-		
-		BasicDBObject basicDBObject2=new BasicDBObject();
+
+		BasicDBObject basicDBObject2 = new BasicDBObject();
 		basicDBObject2.put("unique", true);
 		basicDBObject2.put("dropDups", true);
-		dbCollection.ensureIndex(basicDBObject1, basicDBObject2);//创建唯一索引
-		
+		dbCollection.ensureIndex(basicDBObject1, basicDBObject2);// 创建唯一索引
+
 	}
 }

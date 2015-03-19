@@ -1,9 +1,14 @@
 package com.konka.dhtsearch.db.luncene;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -41,8 +46,8 @@ public class LuceneUtils {
 	/**
 	 * lucene保存的路径
 	 */
-//	public static final String LUCENE_FILEPATH = "/data/lucene.index";
-	public static final String LUCENE_FILEPATH = "D://lucene.index";
+	// public static final String LUCENE_FILEPATH = "/data/lucene.index";
+	public static String LUCENE_FILEPATH = "D://lucene.index";
 	// 分词的字段
 	public static final String KEYWORD = "Keyword";
 	// -------------不分词的字段
@@ -57,6 +62,7 @@ public class LuceneUtils {
 	static int count = 0;
 
 	// DhtInfo_MongoDbPojo
+
 	public static void createIndex() throws Exception {
 
 		MongodbUtil mongodbUtil = getMongodbUtil();
@@ -100,10 +106,24 @@ public class LuceneUtils {
 		indexWriter.close();
 	}
 
+	private static void text() {
+		try {
+			InputStream in = LuceneUtils.class.getClassLoader().getResourceAsStream("config.properties");
+			Properties p = new Properties();
+			p.load(in);
+			in.close();
+			LUCENE_FILEPATH = p.getProperty("LUCENE_FILEPATH", "localhost");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public LuceneUtils() {
+		super();
+	}
+
 	public static MongodbUtil getMongodbUtil() throws UnknownHostException {
-		// Mongo mongoClient = new Mongo();
-		// DB db = mongoClient.getDB("test");
-		// MongodbUtil mongodbUtil = new MongodbUtil(db);
 		MongodbUtil mongodbUtil = MongodbUtilProvider.getMongodbUtil();
 		return mongodbUtil;
 	}
@@ -257,9 +277,9 @@ public class LuceneUtils {
 		Query query = qp.createBooleanQuery(KEYWORD, searchString, BooleanClause.Occur.MUST);// 搜索的字段 关键字 String searchString, int page必须要
 
 		searcher.search(query, collector);
-		
+
 		//
-		
+
 		luceneSearchInfo.setTotal(collector.getTotalHits());
 
 		ScoreDoc[] hits = collector.topDocs((page - 1) * PAGE_COUNT, PAGE_COUNT).scoreDocs; // 进行分页过滤
@@ -287,6 +307,7 @@ public class LuceneUtils {
 	}
 
 	public static void main(String[] args) throws Exception {
+		text();
 		args = new String[] { "index", "com_konka_dhtsearch_db_models_DhtInfo_MongoDbPojo", "fileName" };
 		args = new String[] { "dd" };
 		if (args[0].equals("index")) {
