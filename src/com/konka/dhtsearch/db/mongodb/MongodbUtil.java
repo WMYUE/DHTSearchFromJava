@@ -43,14 +43,6 @@ public class MongodbUtil {
 		DBCollection collection = getDBCollection(object.getClass());
 		DBObject dbobject = objectToDBObject(object);
 		collection.insert(dbobject);
-		DBCursor dbCursor = collection.find();
-//		System.out.println(dbobject);
-		for (; dbCursor.hasNext();) {
-			DBObject dbObject2 = dbCursor.next();
-			if (dbObject2.containsField("lists")) {
-				System.out.println("是集合吗=" + dbObject2);
-			}
-		}
 	}
 
 	/**
@@ -61,7 +53,6 @@ public class MongodbUtil {
 	 */
 	public DBCollection getDBCollection(Class<?> clazz) {
 		DBCollection collection = db.getCollection(getDBCollectionName(clazz));
-
 		return collection;
 	}
 
@@ -71,7 +62,7 @@ public class MongodbUtil {
 		if (collectionAnno != null && collectionAnno.value().trim().length() != 0) {
 			collectionName = collectionAnno.value();
 		} else {
-			collectionName = clazz.getName().replace(".", "_");// mongodb不支挄1�7'.'的名秄1�7
+			collectionName = clazz.getName().replace(".", "_");// mongodb不支持'.'的名字
 		}
 		return collectionName;
 	}
