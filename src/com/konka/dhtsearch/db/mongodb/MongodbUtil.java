@@ -122,7 +122,7 @@ public class MongodbUtil {
 	}
 
 	/**
-	 * 普�1�7�对象转成DbObject
+	 * 将对象转成DbObject
 	 * 
 	 * @param object
 	 * @return
@@ -373,5 +373,4 @@ public class MongodbUtil {
 		}
 		return null;
 	}
-
 }
