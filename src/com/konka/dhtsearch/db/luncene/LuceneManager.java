@@ -1,16 +1,16 @@
 package com.konka.dhtsearch.db.luncene;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StoredField;
@@ -27,6 +27,9 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopScoreDocCollector;
+import org.apache.lucene.search.highlight.Highlighter;
+import org.apache.lucene.search.highlight.QueryScorer;
+import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
@@ -38,16 +41,17 @@ import com.konka.dhtsearch.db.mongodb.MongodbUtilProvider;
 import com.konka.dhtsearch.parser.TorrentInfo;
 import com.konka.dhtsearch.util.FilterUtil;
 import com.konka.dhtsearch.util.KLog;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 
-public class LuceneUtils {
+public class LuceneManager {
 	/**
 	 * lucene保存的路径
 	 */
 	// public static final String LUCENE_FILEPATH = "/data/lucene.index";
-	public static String LUCENE_FILEPATH = "D://lucene.index";
+	public String LUCENE_FILEPATH = "D://lucene.index";
 	// 分词的字段
 	public static final String KEYWORD = "Keyword";
 	// -------------不分词的字段
@@ -58,19 +62,48 @@ public class LuceneUtils {
 	public static final int PAGE_COUNT = 10;// 每页显示的数
 
 	public static final int HITSPERPAGE_COUNT = 20000;// 查询结构总数
-	// private static final String NAME_FIELD = "name";
+	private static final String NAME_FIELD = "name";
 	static int count = 0;
-
 	// DhtInfo_MongoDbPojo
 
-	public static void createIndex() throws Exception {
+	public static LuceneManager luceneManager = null;
 
+	public static LuceneManager getInstance() {
+		if (luceneManager == null) {
+			synchronized (LuceneManager.class) {
+				if (luceneManager == null) {
+					luceneManager = new LuceneManager();
+				}
+			}
+		}
+		return luceneManager;
+	}
+
+	private LuceneManager() {
+		super();
+		try {
+			InputStream in = LuceneManager.class.getClassLoader().getResourceAsStream("config.properties");
+			Properties p = new Properties();
+			p.load(in);
+			in.close();
+			LUCENE_FILEPATH = p.getProperty("LUCENE_FILEPATH", "D://lucene.index");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private MongodbUtil getMongodbUtil() throws UnknownHostException {
+		MongodbUtil mongodbUtil = MongodbUtilProvider.getMongodbUtil();
+		return mongodbUtil;
+	}
+
+	public void createIndex() throws Exception {
 		MongodbUtil mongodbUtil = getMongodbUtil();
 		// DBCursor cursor = mongodbUtil.findDBCursor(DhtInfo_MongoDbPojo.class);
 		DBCursor cursor = mongodbUtil.getHaveAnalyticedDhtInfosOfDBCursor();
 		Directory index = FSDirectory.open(new File(LUCENE_FILEPATH));
 		// TermDocs d
-		Analyzer analyzer = new IKAnalyzer();// 这里要换成ik
+		Analyzer analyzer = new IKAnalyzer();
 		// StandardAnalyzer analyzer = new StandardAnalyzer();// 这里要换成ik
 		IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_9, analyzer);
 		IndexWriter indexWriter = new IndexWriter(index, config);
@@ -86,9 +119,9 @@ public class LuceneUtils {
 			if (torrentInfo == null || !FilterUtil.checkVideoType(torrentInfo)) {// 检测文件类型
 				continue;
 			}
-			System.out.println(object.get(TORRENTINFO_FIELD).toString());
+			System.out.println(((BasicDBObject) object.get(TORRENTINFO_FIELD)).getString("name", "_").toString());
 			doc.add(new StringField(INFO_HASH_FIELD, dhtInfo_MongoDbPojo.getInfo_hash(), Field.Store.YES));// StringField不参加分词
-			// doc.add(new StoredField(NAME_FIELD, ((BasicDBObject)object.get(TORRENTINFO_FIELD)).getString("name","_").toString()));// StringField不参加分词
+			doc.add(new StoredField(NAME_FIELD, ((BasicDBObject) object.get(TORRENTINFO_FIELD)).getString("name", "_").toString()));// StringField不参加分词
 			doc.add(new StoredField(TORRENTINFO_FIELD, object.get(TORRENTINFO_FIELD).toString()));// StringField不参加分词
 			doc.add(new TextField(KEYWORD, torrentInfo.getNeedSegmentationString(), Field.Store.NO));// 多文件的文件名
 
@@ -106,28 +139,6 @@ public class LuceneUtils {
 		indexWriter.close();
 	}
 
-	private static void text() {
-		try {
-			InputStream in = LuceneUtils.class.getClassLoader().getResourceAsStream("config.properties");
-			Properties p = new Properties();
-			p.load(in);
-			in.close();
-			LUCENE_FILEPATH = p.getProperty("LUCENE_FILEPATH", "localhost");
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	public LuceneUtils() {
-		super();
-	}
-
-	public static MongodbUtil getMongodbUtil() throws UnknownHostException {
-		MongodbUtil mongodbUtil = MongodbUtilProvider.getMongodbUtil();
-		return mongodbUtil;
-	}
-
 	/**
 	 * 关键字搜索
 	 * 
@@ -137,7 +148,7 @@ public class LuceneUtils {
 	 *            页码
 	 * @throws Exception
 	 */
-	public static LuceneSearchResult search(String searchString, int page) throws Exception {
+	public LuceneSearchResult search(String searchString, int page) throws Exception {
 		LuceneSearchResult luceneSearchInfo = new LuceneSearchResult();
 		Directory index = FSDirectory.open(new File(LUCENE_FILEPATH));
 
@@ -190,8 +201,9 @@ public class LuceneUtils {
 
 			dhtInfo_MongoDbPojo.setInfo_hash(document.get(INFO_HASH_FIELD));
 			// System.out.println(document.get(NAME_FIELD));
-			// String name=toHighlighter(query, document, NAME_FIELD);
-			// torrentInfo.setName(name);
+			 String name=toHighlighter(query, document, NAME_FIELD);
+			 torrentInfo.setName(name);
+			 System.out.println("==========="+name);
 			dhtInfo_MongoDbPojo.setTorrentInfo(torrentInfo);
 
 			dhtInfo_MongoDbPojos.add(dhtInfo_MongoDbPojo);
@@ -209,7 +221,7 @@ public class LuceneUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static DhtInfo_MongoDbPojo searchByInfoHash(String info_hash) throws Exception {
+	public DhtInfo_MongoDbPojo searchByInfoHash(String info_hash) throws Exception {
 		Directory index = FSDirectory.open(new File(LUCENE_FILEPATH));
 
 		BooleanClause.Occur[] clauses = { BooleanClause.Occur.SHOULD };
@@ -249,22 +261,23 @@ public class LuceneUtils {
 		return null;
 	}
 
-	// private static String toHighlighter(Query query, Document doc, String field) {
-	// try {
-	// SimpleHTMLFormatter simpleHtmlFormatter = new SimpleHTMLFormatter("_","_");
-	// // SimpleHTMLFormatter simpleHtmlFormatter = new SimpleHTMLFormatter("<font color\\=\"red\">", "</font>");
-	// Highlighter highlighter = new Highlighter(simpleHtmlFormatter, new QueryScorer(query));
-	// // System.out.println("doc.get(NAME_FIELD)="+doc.get(NAME_FIELD));
-	// // TokenStream tokenStream1 = new IKAnalyzer().tokenStream(NAME_FIELD, new StringReader(doc.get(NAME_FIELD)));
-	// // String highlighterStr = highlighter.getBestFragment(tokenStream1, doc.get(field));
-	// // return highlighterStr == null ? doc.get(field) : highlighterStr;
-	// } catch ( Exception e) {
-	// // TODO Auto-generated catch block
-	// // logger.error(e.getMessage());
-	// }
-	// return null;
-	// }
-	public static List<LuceneAndroidSearchResult> androidSearch(String searchString, int page) throws Exception {
+	private static String toHighlighter(Query query, Document doc, String field) {
+		try {
+//			SimpleHTMLFormatter simpleHtmlFormatter = new SimpleHTMLFormatter("_", "_");
+			 SimpleHTMLFormatter simpleHtmlFormatter = new SimpleHTMLFormatter("<font color='red'>", "</font>");
+			Highlighter highlighter = new Highlighter(simpleHtmlFormatter, new QueryScorer(query));
+			 System.out.println("doc.get(NAME_FIELD)="+doc.get(NAME_FIELD));
+			 TokenStream tokenStream1 = new IKAnalyzer().tokenStream(NAME_FIELD, new StringReader(doc.get(NAME_FIELD)));
+			 String highlighterStr = highlighter.getBestFragment(tokenStream1, doc.get(field));
+			 return highlighterStr == null ? doc.get(field) : highlighterStr;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			// logger.error(e.getMessage());
+		}
+		return null;
+	}
+
+	public List<LuceneAndroidSearchResult> androidSearch(String searchString, int page) throws Exception {
 		List<LuceneAndroidSearchResult> androidSearchResults = new ArrayList<LuceneAndroidSearchResult>();
 
 		LuceneSearchResult luceneSearchInfo = new LuceneSearchResult();
@@ -307,14 +320,13 @@ public class LuceneUtils {
 	}
 
 	public static void main(String[] args) throws Exception {
-		text();
 		args = new String[] { "index", "com_konka_dhtsearch_db_models_DhtInfo_MongoDbPojo", "fileName" };
-		args = new String[] { "dd" };
+		 args = new String[] { "1" };
 		if (args[0].equals("index")) {
-			createIndex();
+			LuceneManager.getInstance().createIndex();
 		} else {
 			// searchByInfoHash("c43c0f2569560cc3e135dfba2c8fef106361c2be");
-			search(args[0], 1);
+			LuceneManager.getInstance().search(args[0], 1);
 		}
 		// String str = "中华人民币汇改";
 		// List<String> lists = Util.getWords(str, new StandardAnalyzer(luceneVersion));
