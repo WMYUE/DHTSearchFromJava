@@ -1,10 +1,7 @@
 package org.konkakjb.text;
 
-import java.lang.reflect.ParameterizedType;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.LinkedList;
-import java.util.List;
 
 import com.konka.dhtsearch.AppManager;
 import com.konka.dhtsearch.Key;
@@ -12,6 +9,7 @@ import com.konka.dhtsearch.Node;
 import com.konka.dhtsearch.bittorrentkad.KadNet;
 import com.konka.dhtsearch.db.mysql.exception.DhtException;
 import com.konka.dhtsearch.exception.ErrHandler;
+import com.konka.dhtsearch.util.ThreadUtil;
 
 public class SearchText {
 	private static final InetSocketAddress[] BOOTSTRAP_NODES = { //
@@ -45,21 +43,14 @@ public class SearchText {
 		int size = 3;
 		try {
 			for (int i = 0; i < size; i++) {
-				AppManager.init();// 1---
+				AppManager.init();
 				Key key = AppManager.getKeyFactory().generate();
 				Node localNode = new Node(key).setInetAddress(InetAddress.getByName("0.0.0.0")).setPoint(20200 + i);// 这里注意InetAddress.getLocalHost();为空
 				new KadNet(null, localNode).join(BOOTSTRAP_NODES).create();
+				ThreadUtil.sleep(1000);
 			}
-			// new KadParserTorrentServer().start();// 启动种子下载服务
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-
-	public static void text() throws NoSuchFieldException, SecurityException {
-		ParameterizedType pt = (ParameterizedType) SearchText.class.getDeclaredField("list").getGenericType();
-		System.out.println(pt.getActualTypeArguments().length);
-		System.out.println(pt.getActualTypeArguments()[0]);
 	}
 }

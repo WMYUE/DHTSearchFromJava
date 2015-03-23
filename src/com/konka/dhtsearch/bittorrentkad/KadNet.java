@@ -34,7 +34,7 @@ import com.konka.dhtsearch.util.ThreadUtil;
 public class KadNet implements KeybasedRouting, Runnable {
 	private KadReceiveServer kadReceiveServer;// 接受消息
 	private KadSendMsgServer kadSendMsgServer;// 发生消息
-	private final KadParserTorrentServer kadParserTorrentServer = new KadParserTorrentServer();// 解析种子
+	private KadParserTorrentServer kadParserTorrentServer;// = new KadParserTorrentServer();// 解析种子
 	private final static Bucket kadBuckets = new SlackBucket(10000);// =
 																	// AppManager.getKadBuckets();//
 																	// 路由表
@@ -82,6 +82,19 @@ public class KadNet implements KeybasedRouting, Runnable {
 		kadReceiveServer.start();
 	}
 
+	private void startKadParserTorrentServer() {
+		kadParserTorrentServer = new KadParserTorrentServer();
+		kadParserTorrentServer.setUncaughtExceptionHandler(new ErrHandler() {
+			@Override
+			public void caughtEnd() {
+				System.gc();
+				ThreadUtil.sleep(1000 * 10);
+				startKadParserTorrentServer();
+			}
+		});
+		kadParserTorrentServer.start();
+	}
+
 	private void startKadSendMsgServer() {
 
 		kadSendMsgServer = new KadSendMsgServer(this);
@@ -107,6 +120,9 @@ public class KadNet implements KeybasedRouting, Runnable {
 	public void create() throws IOException {
 		startKadReceiveServer();
 		startKadSendMsgServer();
+		if(kadParserTorrentServer==null||!kadParserTorrentServer.isRunning()){
+			startKadParserTorrentServer();
+		}
 		// kadParserTorrentServer.
 		// if (!kadParserTorrentServer.isRunning()) {
 		// kadParserTorrentServer.start();
