@@ -34,7 +34,7 @@ public class KadSendMsgServer implements Runnable {
 	 * 只发送findnode操作，其他请求请使用KadSendMsgServer
 	 * 
 	 * @param msg
-	 *            要发送的消息（一般是具体实现）
+	 *            要发送的消息（一般是具体实现）	
 	 * @throws IOException
 	 *             any socket exception
 	 */
@@ -79,7 +79,6 @@ public class KadSendMsgServer implements Runnable {
 	private void send(Node to) throws IOException {
 		FindNodeRequest msg = FindNodeRequest.creatLocalFindNodeRequest(to);
 		send(msg);
-
 	}
 
 	public void displayAvailableMemory() {

@@ -67,7 +67,6 @@ public class TorrentParser {
 			parseDhtInfo_1(dhtInfo);
 			System.out.println("下载ok");
 		} catch (Exception e) {
-			
 			try {
 				parseDhtInfo_2(dhtInfo);
 			} catch (Exception e1) {
@@ -113,12 +112,11 @@ public class TorrentParser {
 			e.printStackTrace();
 			System.out.println("修改数据库失败");
 		}
-
 	}
 
+	
 	/**
 	 * Base32
-	 * 
 	 * @param dhtInfo
 	 * @throws Exception
 	 */
