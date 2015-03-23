@@ -30,7 +30,6 @@ public class KadSendMsgServer implements Runnable {
 
 		this.kadNet = kadNet;
 	}
-
 	/**
 	 * 只发送findnode操作，其他请求请使用KadSendMsgServer
 	 * 
@@ -120,7 +119,6 @@ public class KadSendMsgServer implements Runnable {
 		startThread.setUncaughtExceptionHandler(eh);
 	}
 	public void start() {
-		System.out.println("11");
 		startThread.start();
 	}
 }
