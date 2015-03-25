@@ -79,7 +79,6 @@ public class HttpUrlUtils {
 		connection.setReadTimeout(timeoutMs);
 		connection.setUseCaches(false);
 		connection.setDoInput(true);
-
 		return connection;
 	}
 

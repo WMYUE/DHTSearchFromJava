@@ -147,7 +147,6 @@ public class TorrentParser {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	/**
@@ -174,7 +173,6 @@ public class TorrentParser {
 			dhtInfoDao.update(dhtInfo);
 
 			throw new Exception(downLoadException);
-
 		} catch (ParseException parseException) {
 			dhtInfo.setAnalysised(DhtInfoStateCode.DOWNLOAD_SUCCESS_BUT_PARSING_FAILED);
 			dhtInfoDao.update(dhtInfo);

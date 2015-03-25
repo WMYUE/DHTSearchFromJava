@@ -10,6 +10,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.konka.dhtsearch.AppManager;
@@ -34,7 +36,7 @@ import com.konka.dhtsearch.util.ThreadUtil;
 public class KadNet implements KeybasedRouting, Runnable {
 	private KadReceiveServer kadReceiveServer;// 接受消息
 	private KadSendMsgServer kadSendMsgServer;// 发生消息
-	private KadParserTorrentServer kadParserTorrentServer;// = new KadParserTorrentServer();// 解析种子
+	private static KadParserTorrentServer kadParserTorrentServer;// = new KadParserTorrentServer();// 解析种子
 	private final static Bucket kadBuckets = new SlackBucket(10000);// =
 																	// AppManager.getKadBuckets();//
 																	// 路由表
@@ -58,7 +60,7 @@ public class KadNet implements KeybasedRouting, Runnable {
 		// -----------------------------------------------------------------------
 		channel = DatagramChannel.open();
 		socket = channel.socket();
-		channel.configureBlocking(false);
+		channel.configureBlocking(false);// 调整此通道的阻塞模式 false 否 ture 是。
 		socket.bind(localnode.getSocketAddress());
 		selector = Selector.open();
 		channel.register(selector, SelectionKey.OP_READ);
@@ -118,9 +120,9 @@ public class KadNet implements KeybasedRouting, Runnable {
 
 	@Override
 	public void create() throws IOException {
-		startKadReceiveServer();
-		startKadSendMsgServer();
-		if(kadParserTorrentServer==null||!kadParserTorrentServer.isRunning()){
+//		startKadReceiveServer();
+//		startKadSendMsgServer();
+		if (kadParserTorrentServer == null || !kadParserTorrentServer.isRunning()) {
 			startKadParserTorrentServer();
 		}
 		// kadParserTorrentServer.
